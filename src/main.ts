@@ -11,6 +11,7 @@ async function bootstrap() {
   await app.listen(3000)
 }
 void bootstrap().catch(() => {
-  writeFileSync('graph.json', PartialGraphHost.toString() ?? '')
+  const isDev = process.env['NODE_ENV'] !== 'production'
+  if (isDev) writeFileSync('error-graph.json', PartialGraphHost.toString() ?? '')
   process.exit(1)
 })
