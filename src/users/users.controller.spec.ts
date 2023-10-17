@@ -56,24 +56,24 @@ describe('UsersController', () => {
 
   describe('findOne', () => {
     it('should return a user', () => {
-      expect(controller.findOne('1')).toStrictEqual({id: 1, email: 'test@test.com'})
+      expect(controller.findOne(1)).toStrictEqual({id: 1, email: 'test@test.com'})
     })
 
     it('should throw an error 404', () => {
-      expect(() => controller.findOne('0')).toThrowError('User not found')
+      expect(() => controller.findOne(0)).toThrowError('User not found')
     })
   })
 
   describe('update', () => {
     it('should return a updated user', () => {
-      expect(controller.update('1', {email: 'test@test.com'})).toStrictEqual({
+      expect(controller.update(1, {email: 'test@test.com'})).toStrictEqual({
         id: 1,
         email: 'test@test.com',
       })
     })
 
     it('should update a user', () => {
-      controller.update('1', {email: 'ttt@ttt.com'})
+      controller.update(1, {email: 'ttt@ttt.com'})
       expect(service.users).toStrictEqual([
         {id: 1, email: 'ttt@ttt.com'},
         {id: 2, email: 'test2@test2.com'},
@@ -81,18 +81,18 @@ describe('UsersController', () => {
     })
 
     it('should throw an error 404', () => {
-      expect(() => controller.update('0', {email: 'ttt@ttt.com'})).toThrowError('User not found')
+      expect(() => controller.update(0, {email: 'ttt@ttt.com'})).toThrowError('User not found')
     })
   })
 
   describe('remove', () => {
     it('should remove a user', () => {
-      controller.remove('1')
+      controller.remove(1)
       expect(service.users).toStrictEqual([{id: 2, email: 'test2@test2.com'}])
     })
 
     it('should throw an error 404', () => {
-      expect(() => controller.remove('0')).toThrowError('User not found')
+      expect(() => controller.remove(0)).toThrowError('User not found')
     })
   })
 })
