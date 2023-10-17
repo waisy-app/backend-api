@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common'
+import {Injectable, NotFoundException} from '@nestjs/common'
 import {CreateUserDto} from './dto/create-user.dto'
 import {UpdateUserDto} from './dto/update-user.dto'
 import {User} from './entities/user.entity'
@@ -6,27 +6,36 @@ import {User} from './entities/user.entity'
 @Injectable()
 export class UsersService {
   public readonly users: User[] = []
+  public lastID: number = 0
 
-  create(createUserDto: CreateUserDto) {
-    this.users.push(createUserDto)
-    return {id: this.users.length - 1, ...createUserDto}
+  create(createUserDto: CreateUserDto): User {
+    const id = ++this.lastID
+    const user = {...createUserDto, id}
+    this.users.push(user)
+    return user
   }
 
-  findAll() {
-    return this.users.map((user, id) => ({id, ...user}))
+  findAll(): User[] {
+    return this.users
   }
 
-  findOne(id: number) {
-    return {id, ...this.users[id]}
+  findOne(id: number): User {
+    const user = this.users.find(user => user.id === id)
+    if (!user) throw new NotFoundException('User not found')
+    return user
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    this.users[id] = {...this.users[id], ...updateUserDto}
-    return {id, ...this.users[id]}
+  update(id: number, updateUserDto: UpdateUserDto): User {
+    const user = this.users.find(user => user.id === id)
+    if (!user) throw new NotFoundException('User not found')
+    const newUser = {...user, ...updateUserDto}
+    this.users.splice(this.users.indexOf(user), 1, newUser)
+    return newUser
   }
 
-  remove(id: number) {
-    this.users.splice(id, 1)
-    return {id}
+  remove(id: number): void {
+    const user = this.users.find(user => user.id === id)
+    if (!user) throw new NotFoundException('User not found')
+    this.users.splice(this.users.indexOf(user), 1)
   }
 }
