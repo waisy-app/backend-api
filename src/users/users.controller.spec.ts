@@ -4,6 +4,7 @@ import {UsersService} from './users.service'
 
 describe('UsersController', () => {
   let controller: UsersController
+  let service: UsersService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -12,6 +13,13 @@ describe('UsersController', () => {
     }).compile()
 
     controller = module.get<UsersController>(UsersController)
+
+    service = module.get<UsersService>(UsersService)
+    service.users.push({email: 'test@test.com'}, {email: 'test2@test2.com'})
+  })
+
+  afterEach(() => {
+    service.users.splice(0, service.users.length)
   })
 
   it('should be defined', () => {
@@ -20,35 +28,59 @@ describe('UsersController', () => {
 
   describe('findAll', () => {
     it('should return all users', () => {
-      expect(controller.findAll()).toBe('This action returns all users')
+      expect(controller.findAll()).toStrictEqual([
+        {id: 0, email: 'test@test.com'},
+        {id: 1, email: 'test2@test2.com'},
+      ])
     })
   })
 
   describe('findOne', () => {
     it('should return a user', () => {
-      expect(controller.findOne('1')).toBe('This action returns a #1 user')
+      expect(controller.findOne('1')).toStrictEqual({id: 1, email: 'test2@test2.com'})
     })
   })
 
   describe('create', () => {
+    it('should return a created user', () => {
+      expect(controller.create({email: 'test@test.com'})).toStrictEqual({
+        id: 2,
+        email: 'test@test.com',
+      })
+    })
+
     it('should create a user', () => {
-      expect(controller.create({email: 'test@test.com'})).toBe(
-        'This action adds a new user {"email":"test@test.com"}',
-      )
+      controller.create({email: 'test@test.com'})
+      expect(service.users).toStrictEqual([
+        {email: 'test@test.com'},
+        {email: 'test2@test2.com'},
+        {email: 'test@test.com'},
+      ])
     })
   })
 
   describe('update', () => {
+    it('should return a updated user', () => {
+      expect(controller.update('1', {email: 'test@test.com'})).toStrictEqual({
+        id: 1,
+        email: 'test@test.com',
+      })
+    })
+
     it('should update a user', () => {
-      expect(controller.update('1', {email: 'test@test.com'})).toBe(
-        'This action updates a #1 user: {"email":"test@test.com"}',
-      )
+      controller.update('1', {email: 'ttt@ttt.com'})
+      expect(service.users).toStrictEqual([{email: 'test@test.com'}, {email: 'ttt@ttt.com'}])
     })
   })
 
   describe('remove', () => {
+    it('should return a removed user id', () => {
+      expect(controller.remove('1')).toStrictEqual({id: 1})
+    })
+
     it('should remove a user', () => {
-      expect(controller.remove('1')).toBe('This action removes a #1 user')
+      controller.remove('1')
+      expect(service.users).toStrictEqual([{email: 'test@test.com'}])
     })
   })
 })
