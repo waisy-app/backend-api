@@ -8,14 +8,13 @@ import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core'
 import {HttpExceptionFilter} from './filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
 import {TimeoutInterceptor} from './interceptors/timeout.interceptor'
-
-const isDev = process.env['NODE_ENV'] !== 'production'
+import {NODE_ENV} from './config/environment/environment.config.constants'
+import {configModule, configProviders} from './config'
 
 @Module({
   imports: [
-    DevtoolsModule.register({
-      http: isDev,
-    }),
+    configModule,
+    DevtoolsModule.register({http: process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT}),
     UsersModule,
   ],
   controllers: [AppController],
@@ -39,6 +38,7 @@ const isDev = process.env['NODE_ENV'] !== 'production'
       provide: APP_INTERCEPTOR,
       useClass: TimeoutInterceptor,
     },
+    ...configProviders,
   ],
 })
 export class AppModule implements NestModule {

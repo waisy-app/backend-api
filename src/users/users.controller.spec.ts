@@ -12,9 +12,9 @@ describe('UsersController', () => {
       providers: [UsersService],
     }).compile()
 
-    controller = module.get<UsersController>(UsersController)
+    controller = module.get(UsersController)
 
-    service = module.get<UsersService>(UsersService)
+    service = module.get(UsersService)
     service.users.push({id: 1, email: 'test@test.com'}, {id: 2, email: 'test2@test2.com'})
     service.lastID = 2
   })
