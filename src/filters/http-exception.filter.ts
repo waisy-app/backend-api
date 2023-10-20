@@ -11,7 +11,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response.status(status).json(exception.getResponse())
 
-    if (status < 500) {
+    const internalServerErrorCode = 500
+    if (status < internalServerErrorCode) {
       console.error(
         `[Response] [${
           request.method

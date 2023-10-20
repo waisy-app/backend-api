@@ -1,5 +1,6 @@
 import {Test, TestingModule} from '@nestjs/testing'
 import {UsersService} from './users.service'
+import {NotFoundException} from '@nestjs/common'
 
 describe('UsersService', () => {
   let service: UsersService
@@ -13,14 +14,6 @@ describe('UsersService', () => {
 
     service.users.push({id: 1, email: 'test@test.com'}, {id: 2, email: 'test2@test2.com'})
     service.lastID = 2
-  })
-
-  afterEach(() => {
-    service.users.splice(0, service.users.length)
-  })
-
-  it('should be defined', () => {
-    expect(service).toBeDefined()
   })
 
   describe('create', () => {
@@ -61,7 +54,8 @@ describe('UsersService', () => {
     })
 
     it('should throw an error 404', () => {
-      expect(() => service.findOne(0)).toThrowError('User not found')
+      const error = new NotFoundException('User not found')
+      expect(() => service.findOne(0)).toThrowError(error)
     })
   })
 
@@ -79,7 +73,8 @@ describe('UsersService', () => {
     })
 
     it('should throw an error 404', () => {
-      expect(() => service.update(3, {email: 'ttt@ttt.com'})).toThrowError('User not found')
+      const error = new NotFoundException('User not found')
+      expect(() => service.update(3, {email: 'ttt@ttt.com'})).toThrowError(error)
     })
   })
 
@@ -90,7 +85,8 @@ describe('UsersService', () => {
     })
 
     it('should throw an error 404', () => {
-      expect(() => service.remove(3)).toThrowError('User not found')
+      const error = new NotFoundException('User not found')
+      expect(() => service.remove(3)).toThrowError(error)
     })
   })
 })
