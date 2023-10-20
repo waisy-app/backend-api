@@ -3,7 +3,7 @@ import {AppController} from './app.controller'
 import {AppService} from './app.service'
 import {DevtoolsModule} from '@nestjs/devtools-integration'
 import {UsersModule} from './users/users.module'
-import {logger} from './middlewares/logger.middleware'
+import {LoggerMiddleware} from './middlewares/logger.middleware'
 import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core'
 import {HttpExceptionFilter} from './filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
@@ -43,6 +43,6 @@ import {configModule, configProviders} from './config'
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {
-    consumer.apply(logger).forRoutes({path: '*', method: RequestMethod.ALL})
+    consumer.apply(LoggerMiddleware).forRoutes({path: '*', method: RequestMethod.ALL})
   }
 }
