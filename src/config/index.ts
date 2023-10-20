@@ -5,7 +5,6 @@ import * as Joi from 'joi'
 import {ConfigModule} from '@nestjs/config/dist/config.module'
 import serverConfigEnvValidation from './server/server.config.env-validation'
 import environmentConfigEnvValidation from './environment/environment.config.env-validation'
-import * as process from 'process'
 import {NODE_ENV} from './environment/environment.config.constants'
 
 // Add all config services here
