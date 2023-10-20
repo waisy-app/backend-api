@@ -4,9 +4,11 @@ import * as request from 'supertest'
 import {AppModule} from '../src/app.module'
 import {EnvironmentConfigService} from '../src/config/environment/environment.config.service'
 import {ServerConfigService} from '../src/config/server/server.config.service'
+import {AppService} from '../src/app.service'
 
 describe('AppController (e2e)', () => {
   let app: INestApplication
+  let appService: AppService
   let serverConfigService: ServerConfigService
   let environmentConfigService: EnvironmentConfigService
 
@@ -18,6 +20,7 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication()
     await app.init()
 
+    appService = app.get(AppService)
     serverConfigService = app.get(ServerConfigService)
     environmentConfigService = app.get(EnvironmentConfigService)
   })
@@ -29,5 +32,20 @@ describe('AppController (e2e)', () => {
     Port: ${serverConfigService.port} 
     Is development: ${environmentConfigService.isDevelopment} 
     Test: ${environmentConfigService.test}`)
+  })
+
+  it('408: Request Timeout', () => {
+    jest.spyOn(appService, 'getHello').mockImplementationOnce(() => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(`Hello World!`)
+        }, 15)
+      })
+    })
+
+    return request(app.getHttpServer()).get('/').expect(408).expect({
+      statusCode: 408,
+      message: 'Request Timeout',
+    })
   })
 })

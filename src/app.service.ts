@@ -9,7 +9,7 @@ export class AppService {
     private readonly environmentConfigService: EnvironmentConfigService,
   ) {}
 
-  getHello(): string {
+  async getHello(): Promise<string> {
     return `Hello World! 
     Port: ${this.serverConfigService.port} 
     Is development: ${this.environmentConfigService.isDevelopment} 
