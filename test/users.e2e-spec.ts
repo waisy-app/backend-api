@@ -25,6 +25,18 @@ describe('UserController (e2e)', () => {
   afterEach(() => app.close())
 
   describe('/users (GET)', () => {
+    describe('errors', () => {
+      it('500: internal server error', () => {
+        jest.spyOn(usersService, 'findAll').mockImplementationOnce(() => {
+          throw new Error()
+        })
+        return request(app.getHttpServer()).get('/users').expect(500).expect({
+          statusCode: 500,
+          message: 'Internal server error',
+        })
+      })
+    })
+
     describe('success', () => {
       it('/users (GET)', () => {
         const results = [
@@ -43,6 +55,16 @@ describe('UserController (e2e)', () => {
           statusCode: 404,
           message: 'User not found',
           error: 'Not Found',
+        })
+      })
+
+      it('500: internal server error', () => {
+        jest.spyOn(usersService, 'findOne').mockImplementationOnce(() => {
+          throw new Error()
+        })
+        return request(app.getHttpServer()).get('/users/1').expect(500).expect({
+          statusCode: 500,
+          message: 'Internal server error',
         })
       })
     })
@@ -78,6 +100,20 @@ describe('UserController (e2e)', () => {
             statusCode: 400,
             message: ['email must be an email'],
             error: 'Bad Request',
+          })
+      })
+
+      it('500: internal server error', () => {
+        jest.spyOn(usersService, 'create').mockImplementationOnce(() => {
+          throw new Error()
+        })
+        return request(app.getHttpServer())
+          .post('/users')
+          .send({email: 'test@test.com'})
+          .expect(500)
+          .expect({
+            statusCode: 500,
+            message: 'Internal server error',
           })
       })
     })
@@ -125,6 +161,20 @@ describe('UserController (e2e)', () => {
             error: 'Bad Request',
           })
       })
+
+      it('500: internal server error', () => {
+        jest.spyOn(usersService, 'update').mockImplementationOnce(() => {
+          throw new Error()
+        })
+        return request(app.getHttpServer())
+          .patch('/users/1')
+          .send({email: 'test@test.com'})
+          .expect(500)
+          .expect({
+            statusCode: 500,
+            message: 'Internal server error',
+          })
+      })
     })
 
     describe('success', () => {
@@ -148,6 +198,16 @@ describe('UserController (e2e)', () => {
           statusCode: 404,
           message: 'User not found',
           error: 'Not Found',
+        })
+      })
+
+      it('500: internal server error', async () => {
+        jest.spyOn(usersService, 'remove').mockImplementationOnce(() => {
+          throw new Error()
+        })
+        return request(app.getHttpServer()).delete('/users/1').expect(500).expect({
+          statusCode: 500,
+          message: 'Internal server error',
         })
       })
     })
