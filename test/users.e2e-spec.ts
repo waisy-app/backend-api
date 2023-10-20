@@ -1,5 +1,5 @@
 import {Test} from '@nestjs/testing'
-import {INestApplication} from '@nestjs/common'
+import {HttpStatus, INestApplication} from '@nestjs/common'
 import * as request from 'supertest'
 import {AppModule} from '../src/app.module'
 import {UsersService} from '../src/users/users.service'
@@ -30,10 +30,13 @@ describe('UserController (e2e)', () => {
         jest.spyOn(usersService, 'findAll').mockImplementationOnce(() => {
           throw new Error()
         })
-        return request(app.getHttpServer()).get('/users').expect(500).expect({
-          statusCode: 500,
-          message: 'Internal server error',
-        })
+        return request(app.getHttpServer())
+          .get('/users')
+          .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+          .expect({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal server error',
+          })
       })
     })
 
@@ -43,7 +46,7 @@ describe('UserController (e2e)', () => {
           {id: 1, email: 't@t.t'},
           {id: 2, email: '2@2.2'},
         ]
-        return request(app.getHttpServer()).get('/users').expect(200).expect(results)
+        return request(app.getHttpServer()).get('/users').expect(HttpStatus.OK).expect(results)
       })
     })
   })
@@ -51,8 +54,8 @@ describe('UserController (e2e)', () => {
   describe('/users/:id (GET)', () => {
     describe('errors', () => {
       it('404: user not found', () => {
-        return request(app.getHttpServer()).get('/users/3').expect(404).expect({
-          statusCode: 404,
+        return request(app.getHttpServer()).get('/users/3').expect(HttpStatus.NOT_FOUND).expect({
+          statusCode: HttpStatus.NOT_FOUND,
           message: 'User not found',
           error: 'Not Found',
         })
@@ -62,17 +65,20 @@ describe('UserController (e2e)', () => {
         jest.spyOn(usersService, 'findOne').mockImplementationOnce(() => {
           throw new Error()
         })
-        return request(app.getHttpServer()).get('/users/1').expect(500).expect({
-          statusCode: 500,
-          message: 'Internal server error',
-        })
+        return request(app.getHttpServer())
+          .get('/users/1')
+          .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+          .expect({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal server error',
+          })
       })
     })
 
     describe('success', () => {
       it('200', () => {
         const results = {id: 1, email: 't@t.t'}
-        return request(app.getHttpServer()).get('/users/1').expect(200).expect(results)
+        return request(app.getHttpServer()).get('/users/1').expect(HttpStatus.OK).expect(results)
       })
     })
   })
@@ -83,9 +89,9 @@ describe('UserController (e2e)', () => {
         return request(app.getHttpServer())
           .post('/users')
           .send({})
-          .expect(400)
+          .expect(HttpStatus.BAD_REQUEST)
           .expect({
-            statusCode: 400,
+            statusCode: HttpStatus.BAD_REQUEST,
             message: ['email must be an email'],
             error: 'Bad Request',
           })
@@ -95,9 +101,9 @@ describe('UserController (e2e)', () => {
         return request(app.getHttpServer())
           .post('/users')
           .send({email: 't'})
-          .expect(400)
+          .expect(HttpStatus.BAD_REQUEST)
           .expect({
-            statusCode: 400,
+            statusCode: HttpStatus.BAD_REQUEST,
             message: ['email must be an email'],
             error: 'Bad Request',
           })
@@ -110,9 +116,9 @@ describe('UserController (e2e)', () => {
         return request(app.getHttpServer())
           .post('/users')
           .send({email: 'test@test.com'})
-          .expect(500)
+          .expect(HttpStatus.INTERNAL_SERVER_ERROR)
           .expect({
-            statusCode: 500,
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             message: 'Internal server error',
           })
       })
@@ -128,7 +134,7 @@ describe('UserController (e2e)', () => {
         await request(app.getHttpServer())
           .post('/users')
           .send({email: 'test@test.com'})
-          .expect(201)
+          .expect(HttpStatus.CREATED)
           .expect(results[2])
 
         expect(usersService.users).toEqual(results)
@@ -142,9 +148,9 @@ describe('UserController (e2e)', () => {
         return request(app.getHttpServer())
           .patch('/users/3')
           .send({email: 'test@test.com'})
-          .expect(404)
+          .expect(HttpStatus.NOT_FOUND)
           .expect({
-            statusCode: 404,
+            statusCode: HttpStatus.NOT_FOUND,
             message: 'User not found',
             error: 'Not Found',
           })
@@ -154,9 +160,9 @@ describe('UserController (e2e)', () => {
         return request(app.getHttpServer())
           .patch('/users/1')
           .send({email: 't'})
-          .expect(400)
+          .expect(HttpStatus.BAD_REQUEST)
           .expect({
-            statusCode: 400,
+            statusCode: HttpStatus.BAD_REQUEST,
             message: ['email must be an email'],
             error: 'Bad Request',
           })
@@ -169,9 +175,9 @@ describe('UserController (e2e)', () => {
         return request(app.getHttpServer())
           .patch('/users/1')
           .send({email: 'test@test.com'})
-          .expect(500)
+          .expect(HttpStatus.INTERNAL_SERVER_ERROR)
           .expect({
-            statusCode: 500,
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             message: 'Internal server error',
           })
       })
@@ -183,7 +189,7 @@ describe('UserController (e2e)', () => {
         await request(app.getHttpServer())
           .patch('/users/1')
           .send({email: 'test@test.com'})
-          .expect(200)
+          .expect(HttpStatus.OK)
           .expect(results)
 
         expect(usersService.users[0]).toEqual(results)
@@ -194,8 +200,8 @@ describe('UserController (e2e)', () => {
   describe('/users/:id (DELETE)', () => {
     describe('errors', () => {
       it('404: user not found', () => {
-        return request(app.getHttpServer()).delete('/users/3').expect(404).expect({
-          statusCode: 404,
+        return request(app.getHttpServer()).delete('/users/3').expect(HttpStatus.NOT_FOUND).expect({
+          statusCode: HttpStatus.NOT_FOUND,
           message: 'User not found',
           error: 'Not Found',
         })
@@ -205,17 +211,20 @@ describe('UserController (e2e)', () => {
         jest.spyOn(usersService, 'remove').mockImplementationOnce(() => {
           throw new Error()
         })
-        return request(app.getHttpServer()).delete('/users/1').expect(500).expect({
-          statusCode: 500,
-          message: 'Internal server error',
-        })
+        return request(app.getHttpServer())
+          .delete('/users/1')
+          .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+          .expect({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal server error',
+          })
       })
     })
 
     describe('success', () => {
       it('200', async () => {
         const results = [{id: 2, email: '2@2.2'}]
-        await request(app.getHttpServer()).delete('/users/1').expect(200).expect({})
+        await request(app.getHttpServer()).delete('/users/1').expect(HttpStatus.OK).expect({})
 
         expect(usersService.users).toEqual(results)
       })

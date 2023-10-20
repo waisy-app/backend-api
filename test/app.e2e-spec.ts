@@ -1,5 +1,5 @@
 import {Test} from '@nestjs/testing'
-import {INestApplication} from '@nestjs/common'
+import {HttpStatus, INestApplication} from '@nestjs/common'
 import * as request from 'supertest'
 import {AppModule} from '../src/app.module'
 import {EnvironmentConfigService} from '../src/config/environment/environment.config.service'
@@ -28,7 +28,7 @@ describe('AppController (e2e)', () => {
   afterEach(() => app.close())
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer()).get('/').expect(200).expect(`Hello World! 
+    return request(app.getHttpServer()).get('/').expect(HttpStatus.OK).expect(`Hello World! 
     Port: ${serverConfigService.port} 
     Is development: ${environmentConfigService.isDevelopment} 
     Test: ${environmentConfigService.test}`)
@@ -43,8 +43,8 @@ describe('AppController (e2e)', () => {
       })
     })
 
-    return request(app.getHttpServer()).get('/').expect(408).expect({
-      statusCode: 408,
+    return request(app.getHttpServer()).get('/').expect(HttpStatus.REQUEST_TIMEOUT).expect({
+      statusCode: HttpStatus.REQUEST_TIMEOUT,
       message: 'Request Timeout',
     })
   })

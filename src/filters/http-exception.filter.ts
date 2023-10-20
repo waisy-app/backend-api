@@ -1,4 +1,4 @@
-import {ExceptionFilter, Catch, ArgumentsHost, HttpException} from '@nestjs/common'
+import {ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus} from '@nestjs/common'
 import {Request, Response} from 'express'
 import {EnvironmentConfigService} from '../config/environment/environment.config.service'
 
@@ -14,8 +14,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response.status(status).json(exception.getResponse())
 
-    const internalServerErrorCode = 500
-    if (status < internalServerErrorCode && !this.environmentConfigService.isTest) {
+    if (status < HttpStatus.INTERNAL_SERVER_ERROR && !this.environmentConfigService.isTest) {
       console.error(
         `[Response] [${
           request.method
