@@ -14,8 +14,10 @@ import {configModule, configProviders} from './config'
 @Module({
   imports: [
     configModule,
-    DevtoolsModule.register({http: process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT}),
     UsersModule,
+    ...(process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
+      ? [DevtoolsModule.register({http: true})]
+      : []),
   ],
   controllers: [AppController],
   providers: [
