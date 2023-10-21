@@ -3,7 +3,7 @@ import {AppController} from './app.controller'
 import {AppService} from './app.service'
 import {DevtoolsModule} from '@nestjs/devtools-integration'
 import {UsersModule} from './users/users.module'
-import {LoggerMiddleware} from './middlewares/logger.middleware'
+import {RequestLoggerMiddleware} from './middlewares/request-logger.middleware'
 import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core'
 import {HttpExceptionFilter} from './filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
@@ -32,17 +32,23 @@ import {configModule, configProviders} from './config'
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
       useClass: TimeoutInterceptor,
     },
+    ...(process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
+      ? [
+          {
+            provide: APP_INTERCEPTOR,
+            useClass: LoggingInterceptor,
+          },
+        ]
+      : []),
     ...configProviders,
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): any {
-    consumer.apply(LoggerMiddleware).forRoutes({path: '*', method: RequestMethod.ALL})
+  configure(consumer: MiddlewareConsumer) {
+    if (process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT) {
+      consumer.apply(RequestLoggerMiddleware).forRoutes({path: '*', method: RequestMethod.ALL})
+    }
   }
 }
