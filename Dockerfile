@@ -1,6 +1,7 @@
 ## Development stage
-FROM node:18.18-alpine As development
+FROM amd64/node:18.18-alpine As development
 
+RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
 # Copy application dependency manifests to the container image.
 # A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
@@ -14,14 +15,15 @@ RUN npm ci
 COPY --chown=node:node . .
 
 ## Build stage
-FROM node:18.18-alpine As build
+FROM amd64/node:18.18-alpine As build
 
+RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
 
 COPY --chown=node:node package*.json ./
 
 # In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
-COPY --chown=node:node --from=development /app/node_modules ./node_modules
+COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 
 COPY --chown=node:node . .
 
@@ -33,14 +35,15 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 
 ## Production stage
-FROM node:18.18-alpine As production
+FROM amd64/node:18.18-alpine As production
 
+RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy the bundled code from the build stage to the production image
-COPY --chown=node:node --from=build /app/node_modules ./node_modules
-COPY --chown=node:node --from=build /app/dist ./dist
-COPY --chown=node:node --from=build /app/.env ./
+COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+COPY --chown=node:node --from=build /usr/src/app/.env ./
 
 USER node
 
