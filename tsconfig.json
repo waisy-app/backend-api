@@ -1,6 +1,13 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+// For common server
+//    "module": "commonjs",
+
+// For serverless
+// https://docs.nestjs.com/fundamentals/lazy-loading-modules#getting-started
+    "module": "esnext",
+    "moduleResolution": "node",
+
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -16,6 +23,6 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
   }
 }
