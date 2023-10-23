@@ -16,10 +16,14 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(value => {
         const timeAgo = Date.now() - response.locals.startTime
-        this.logger.verbose(
-          `Response {${request.url}, ${request.method}, ${response.statusCode}} \x1b[33m+${timeAgo}ms`,
-          `Body ${JSON.stringify(value)}`,
-        )
+        this.logger.debug({
+          message: 'Response',
+          url: request.url,
+          method: request.method,
+          statusCode: response.statusCode,
+          msAgo: timeAgo,
+          body: value,
+        })
       }),
     )
   }

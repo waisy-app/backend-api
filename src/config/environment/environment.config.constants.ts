@@ -9,6 +9,12 @@ export const NODE_ENV = {
   defaultValue: 'production',
 }
 
+export type AppNameType = string
+export const APP_NAME = {
+  name: 'APP_NAME',
+  defaultValue: 'NEST',
+}
+
 export type TestType = 1
 export const TEST = {
   name: 'TEST',

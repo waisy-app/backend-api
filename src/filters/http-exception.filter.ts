@@ -25,10 +25,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (status < HttpStatus.INTERNAL_SERVER_ERROR && this.environmentConfigService.isDevelopment) {
       const timeAgo = Date.now() - response.locals.startTime
-      this.logger.verbose(
-        `Response {${request.url}, ${request.method}, ${status}} \x1b[33m+${timeAgo}ms`,
-        `Body ${JSON.stringify(exception.getResponse())}`,
-      )
+      this.logger.debug({
+        message: 'Response with exception',
+        url: request.url,
+        method: request.method,
+        status,
+        msAgo: timeAgo,
+        body: exception.getResponse(),
+      })
     }
   }
 }
