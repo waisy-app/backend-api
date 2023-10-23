@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {NODE_ENV, TEST, TestType} from './environment.config.constants'
+import {APP_NAME, AppNameType, NODE_ENV, TEST, TestType} from './environment.config.constants'
 
 @Injectable()
 export class EnvironmentConfigService {
@@ -18,7 +18,11 @@ export class EnvironmentConfigService {
     return this.configService.get(NODE_ENV.name) === NODE_ENV.options.TEST
   }
 
-  get test(): number {
+  get appName() {
+    return this.configService.get(APP_NAME.name) as AppNameType
+  }
+
+  get test() {
     return this.configService.get(TEST.name) as TestType
   }
 }
