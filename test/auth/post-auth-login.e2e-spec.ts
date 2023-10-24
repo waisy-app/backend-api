@@ -2,15 +2,16 @@ import {Test} from '@nestjs/testing'
 import {HttpStatus, INestApplication} from '@nestjs/common'
 import * as request from 'supertest'
 import {AppModule} from '../../src/app.module'
+import {AuthService} from '../../src/auth/auth.service'
 import {UsersService} from '../../src/users/users.service'
-import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 import {JwtService} from '@nestjs/jwt'
-import {Payload} from '../../src/auth/entities/payload.entity'
+import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 
-describe('/users (POST)', () => {
+describe('/auth/login (POST)', () => {
   let app: INestApplication
-  let usersService: UsersService
-  let bearerToken: string
+  let authService: AuthService
+  let jwtService: JwtService
+  let authConfigService: AuthConfigService
 
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -20,17 +21,12 @@ describe('/users (POST)', () => {
     app = moduleFixture.createNestApplication()
     await app.init()
 
-    const authConfigService = app.get(AuthConfigService)
-    const jwtService = app.get(JwtService)
+    authService = app.get(AuthService)
+    jwtService = app.get(JwtService)
+    authConfigService = app.get(AuthConfigService)
+    const usersService = app.get(UsersService)
 
-    const payload: Payload = {sub: 1, email: 'test@test.test'}
-    const accessToken = jwtService.sign(payload, {secret: authConfigService.jwtSecretToken})
-    bearerToken = `Bearer ${accessToken}`
-
-    usersService = app.get(UsersService)
-    usersService.users.push({id: 1, email: 't@t.t', password: '123'})
-    usersService.users.push({id: 2, email: '2@2.2', password: '123'})
-    usersService.lastID = 2
+    usersService.users.push({id: 1, email: 'test@test.com', password: '123'})
   })
 
   afterEach(() => app.close())
@@ -38,9 +34,8 @@ describe('/users (POST)', () => {
   describe('errors', () => {
     it('400: email is required', () => {
       return request(app.getHttpServer())
-        .post('/users')
+        .post('/auth/login')
         .send({password: '123'})
-        .set('Authorization', bearerToken)
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
           statusCode: HttpStatus.BAD_REQUEST,
@@ -51,9 +46,8 @@ describe('/users (POST)', () => {
 
     it('400: email is not an email', () => {
       return request(app.getHttpServer())
-        .post('/users')
-        .send({email: 't', password: '123'})
-        .set('Authorization', bearerToken)
+        .post('/auth/login')
+        .send({email: 'test', password: '123'})
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
           statusCode: HttpStatus.BAD_REQUEST,
@@ -64,37 +58,47 @@ describe('/users (POST)', () => {
 
     it('400: password is required', () => {
       return request(app.getHttpServer())
-        .post('/users')
+        .post('/auth/login')
         .send({email: 'test@test.com'})
-        .set('Authorization', bearerToken)
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
+          statusCode: HttpStatus.BAD_REQUEST,
           message: ['password must be a string'],
           error: 'Bad Request',
-          statusCode: HttpStatus.BAD_REQUEST,
         })
     })
 
-    it('401: unauthorized', () => {
+    it('401: wrong email', () => {
       return request(app.getHttpServer())
-        .post('/users')
-        .send({email: 'test@test.com, password: 123'})
+        .post('/auth/login')
+        .send({email: 'ttt@ttt.com', password: '123'})
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
           statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Missing access token',
+          message: 'Wrong email or password',
+          error: 'Unauthorized',
+        })
+    })
+
+    it('401: wrong password', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send({email: 'test@test.com', password: '321'})
+        .expect(HttpStatus.UNAUTHORIZED)
+        .expect({
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Wrong email or password',
           error: 'Unauthorized',
         })
     })
 
     it('500: internal server error', () => {
-      jest.spyOn(usersService, 'create').mockImplementationOnce(() => {
+      jest.spyOn(authService, 'signIn').mockImplementationOnce(() => {
         throw new Error()
       })
       return request(app.getHttpServer())
-        .post('/users')
+        .post('/auth/login')
         .send({email: 'test@test.com', password: '123'})
-        .set('Authorization', bearerToken)
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -104,20 +108,20 @@ describe('/users (POST)', () => {
   })
 
   describe('success', () => {
-    it('201', async () => {
-      const results = [
-        {id: 1, email: 't@t.t', password: '123'},
-        {id: 2, email: '2@2.2', password: '123'},
-        {id: 3, email: 'test@test.com', password: '123'},
-      ]
-      await request(app.getHttpServer())
-        .post('/users')
+    it('200', () => {
+      const expected = jwtService.sign(
+        {sub: 1, email: 'test@test.com'},
+        {
+          secret: authConfigService.jwtSecretToken,
+        },
+      )
+      return request(app.getHttpServer())
+        .post('/auth/login')
         .send({email: 'test@test.com', password: '123'})
-        .set('Authorization', bearerToken)
-        .expect(HttpStatus.CREATED)
-        .expect(results[2])
-
-      expect(usersService.users).toEqual(results)
+        .expect(HttpStatus.OK)
+        .expect({
+          access_token: expected,
+        })
     })
   })
 })
