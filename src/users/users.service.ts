@@ -8,24 +8,23 @@ export class UsersService {
   public readonly users: User[] = []
   public lastID: number = 0
 
-  create(createUserDto: CreateUserDto): User {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const id = ++this.lastID
     const user = {...createUserDto, id}
     this.users.push(user)
     return user
   }
 
-  findAll(): User[] {
+  async findAll(): Promise<User[]> {
     return this.users
   }
 
-  findOne(id: number): User {
+  async findOneByID(id: number): Promise<User | null> {
     const user = this.users.find(user => user.id === id)
-    if (!user) throw new NotFoundException('User not found')
-    return user
+    return user ?? null
   }
 
-  update(id: number, updateUserDto: UpdateUserDto): User {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = this.users.find(user => user.id === id)
     if (!user) throw new NotFoundException('User not found')
     const newUser = {...user, ...updateUserDto}
@@ -33,9 +32,15 @@ export class UsersService {
     return newUser
   }
 
-  remove(id: number): void {
+  async remove(id: number): Promise<number> {
     const user = this.users.find(user => user.id === id)
     if (!user) throw new NotFoundException('User not found')
     this.users.splice(this.users.indexOf(user), 1)
+    return user.id
+  }
+
+  async findOneByEmail(email: string): Promise<User | null> {
+    const user = this.users.find(user => user.email === email)
+    return user ?? null
   }
 }

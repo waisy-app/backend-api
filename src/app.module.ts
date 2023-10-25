@@ -10,14 +10,18 @@ import {LoggingInterceptor} from './interceptors/logging.interceptor'
 import {TimeoutInterceptor} from './interceptors/timeout.interceptor'
 import {NODE_ENV} from './config/environment/environment.config.constants'
 import {configModule, configProviders} from './config'
+import {AuthModule} from './auth/auth.module'
+import {ProfileModule} from './profile/profile.module'
 
 @Module({
   imports: [
     configModule,
     UsersModule,
+    AuthModule,
     ...(process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
       ? [DevtoolsModule.register({http: true})]
       : []),
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [
