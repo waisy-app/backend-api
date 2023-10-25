@@ -10,6 +10,12 @@ import {JwtModule} from '@nestjs/jwt'
 import {JwtStrategy} from './strategies/jwt.strategy'
 import {APP_GUARD} from '@nestjs/core'
 import {JwtAuthGuard} from './guards/jwt-auth.guard'
+import {
+  JWT_ACCESS_TOKEN_EXPIRES_IN,
+  JWT_SECRET_TOKEN,
+  JwtAccessTokenExpiresInType,
+  JwtSecretTokenType,
+} from '../config/auth/auth.config.constants'
 
 @Module({
   imports: [
@@ -18,10 +24,15 @@ import {JwtAuthGuard} from './guards/jwt-auth.guard'
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
-      useFactory: (authConfigService: AuthConfigService) => ({
-        secret: authConfigService.jwtSecretToken,
-        signOptions: {expiresIn: authConfigService.jwtSecretTokenExpirationTime},
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get(JWT_SECRET_TOKEN.name) as JwtSecretTokenType
+        const expiresIn = configService.get(
+          JWT_ACCESS_TOKEN_EXPIRES_IN.name,
+        ) as JwtAccessTokenExpiresInType
+
+        if (!secret || !expiresIn) throw new Error('JWT config is not defined')
+        return {secret, signOptions: {expiresIn}}
+      },
       inject: [ConfigService],
     }),
   ],

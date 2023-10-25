@@ -15,7 +15,7 @@ export class AuthConfigService {
     return this.configService.get(JWT_SECRET_TOKEN.name) as JwtSecretTokenType
   }
 
-  get jwtSecretTokenExpirationTime() {
+  get jwtAccessTokenExpiresIn() {
     return this.configService.get(JWT_ACCESS_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
   }
 }
