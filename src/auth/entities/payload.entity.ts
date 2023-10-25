@@ -1,4 +1,7 @@
+import {User} from '../../users/entities/user.entity'
+
 export class Payload {
-  sub: number
-  email: string
+  sub: User['id']
+  iat: number
+  exp: number
 }

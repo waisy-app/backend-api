@@ -61,9 +61,7 @@ describe('UsersController', () => {
     it('should throw an error 404', () => {
       const error = new NotFoundException('User not found')
 
-      jest.spyOn(usersService, 'findOneByID').mockImplementation(async () => {
-        throw error
-      })
+      jest.spyOn(usersService, 'findOneByID').mockImplementation(async () => null)
 
       expect(() => usersController.findOne(0)).rejects.toThrowError(error)
     })

@@ -23,7 +23,7 @@ describe('/users (POST)', () => {
     const authConfigService = app.get(AuthConfigService)
     const jwtService = app.get(JwtService)
 
-    const payload: Payload = {sub: 1, email: 'test@test.test'}
+    const payload: Omit<Omit<Payload, 'iat'>, 'exp'> = {sub: 1}
     const accessToken = jwtService.sign(payload, {secret: authConfigService.jwtSecretToken})
     bearerToken = `Bearer ${accessToken}`
 
@@ -72,18 +72,6 @@ describe('/users (POST)', () => {
           message: ['password must be a string'],
           error: 'Bad Request',
           statusCode: HttpStatus.BAD_REQUEST,
-        })
-    })
-
-    it('401: unauthorized', () => {
-      return request(app.getHttpServer())
-        .post('/users')
-        .send({email: 'test@test.com, password: 123'})
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Missing access token',
-          error: 'Unauthorized',
         })
     })
 

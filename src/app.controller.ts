@@ -1,12 +1,12 @@
 import {Controller, Get} from '@nestjs/common'
 import {AppService} from './app.service'
-import {SkipAuth} from './auth/decorators/skip-auth.decorator'
+import {SkipJwtAuth} from './auth/decorators/skip-jwt-auth.decorator'
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @SkipAuth()
+  @SkipJwtAuth()
   @Get()
   getHello(): Promise<string> {
     return this.appService.getHello()

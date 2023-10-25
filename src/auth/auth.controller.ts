@@ -1,22 +1,18 @@
-import {Body, Controller, Get, HttpCode, HttpStatus, Post, Request} from '@nestjs/common'
+import {Controller, HttpCode, HttpStatus, Post, Request, UseGuards} from '@nestjs/common'
+import {User} from '../users/entities/user.entity'
+import {LocalAuthGuard} from './guards/local-auth.guard'
 import {AuthService} from './auth.service'
-import {SignInDto} from './dto/sign-in.dto'
-import {AuthUser} from './entities/auth-user.entity'
-import {SkipAuth} from './decorators/skip-auth.decorator'
+import {SkipJwtAuth} from './decorators/skip-jwt-auth.decorator'
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @SkipAuth()
+  @SkipJwtAuth()
+  @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto.email, signInDto.password)
-  }
-
-  @Get('profile')
-  getProfile(@Request() request: Request & {user: AuthUser}) {
-    return request.user
+  login(@Request() req: Request & {user: {id: User['id']}}) {
+    return this.authService.login(req.user.id)
   }
 }

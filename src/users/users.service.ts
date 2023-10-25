@@ -19,10 +19,9 @@ export class UsersService {
     return this.users
   }
 
-  async findOneByID(id: number): Promise<User> {
+  async findOneByID(id: number): Promise<User | null> {
     const user = this.users.find(user => user.id === id)
-    if (!user) throw new NotFoundException('User not found')
-    return user
+    return user ?? null
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {

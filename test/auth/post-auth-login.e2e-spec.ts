@@ -32,39 +32,25 @@ describe('/auth/login (POST)', () => {
   afterEach(() => app.close())
 
   describe('errors', () => {
-    it('400: email is required', () => {
+    it('401: missing email', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
         .send({password: '123'})
-        .expect(HttpStatus.BAD_REQUEST)
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: ['email must be an email'],
-          error: 'Bad Request',
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Unauthorized',
         })
     })
 
-    it('400: email is not an email', () => {
+    it('401: missing password', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
-        .send({email: 'test', password: '123'})
-        .expect(HttpStatus.BAD_REQUEST)
+        .send({email: 'ttt@ttt.com'})
+        .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: ['email must be an email'],
-          error: 'Bad Request',
-        })
-    })
-
-    it('400: password is required', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'test@test.com'})
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect({
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: ['password must be a string'],
-          error: 'Bad Request',
+          statusCode: HttpStatus.UNAUTHORIZED,
+          message: 'Unauthorized',
         })
     })
 
@@ -93,7 +79,7 @@ describe('/auth/login (POST)', () => {
     })
 
     it('500: internal server error', () => {
-      jest.spyOn(authService, 'signIn').mockImplementationOnce(() => {
+      jest.spyOn(authService, 'login').mockImplementationOnce(() => {
         throw new Error()
       })
       return request(app.getHttpServer())
@@ -110,7 +96,7 @@ describe('/auth/login (POST)', () => {
   describe('success', () => {
     it('200', () => {
       const expected = jwtService.sign(
-        {sub: 1, email: 'test@test.com'},
+        {sub: 1},
         {
           secret: authConfigService.jwtSecretToken,
         },
@@ -119,9 +105,7 @@ describe('/auth/login (POST)', () => {
         .post('/auth/login')
         .send({email: 'test@test.com', password: '123'})
         .expect(HttpStatus.OK)
-        .expect({
-          access_token: expected,
-        })
+        .expect({access_token: expected})
     })
   })
 })

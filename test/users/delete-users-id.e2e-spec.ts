@@ -23,7 +23,7 @@ describe('/users/:id (DELETE)', () => {
     const authConfigService = app.get(AuthConfigService)
     const jwtService = app.get(JwtService)
 
-    const payload: Payload = {sub: 1, email: 'test@test.test'}
+    const payload: Omit<Omit<Payload, 'iat'>, 'exp'> = {sub: 1}
     const accessToken = jwtService.sign(payload, {secret: authConfigService.jwtSecretToken})
     bearerToken = `Bearer ${accessToken}`
 
@@ -42,8 +42,7 @@ describe('/users/:id (DELETE)', () => {
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
           statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Missing access token',
-          error: 'Unauthorized',
+          message: 'Unauthorized',
         })
     })
 

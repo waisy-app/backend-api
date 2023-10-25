@@ -61,9 +61,8 @@ describe('UsersService', () => {
       })
     })
 
-    it('should throw an error 404', () => {
-      const error = new NotFoundException('User not found')
-      expect(() => service.findOneByID(0)).rejects.toThrowError(error)
+    it('should return null', async () => {
+      expect(await service.findOneByID(0)).toBeNull()
     })
   })
 
