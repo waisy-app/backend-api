@@ -16,6 +16,7 @@ import {
   JwtAccessTokenExpiresInType,
   JwtSecretTokenType,
 } from '../config/auth/auth.config.constants'
+import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import {
     ConfigService,
     AuthConfigService,
     JwtStrategy,
+    RefreshTokenStrategy,
     AuthService,
     {
       provide: APP_GUARD,

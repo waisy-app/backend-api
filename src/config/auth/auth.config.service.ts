@@ -2,6 +2,8 @@ import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {
   JWT_ACCESS_TOKEN_EXPIRES_IN,
+  JWT_REFRESH_SECRET_TOKEN,
+  JWT_REFRESH_TOKEN_EXPIRES_IN,
   JWT_SECRET_TOKEN,
   JwtAccessTokenExpiresInType,
   JwtSecretTokenType,
@@ -17,5 +19,13 @@ export class AuthConfigService {
 
   get jwtAccessTokenExpiresIn() {
     return this.configService.get(JWT_ACCESS_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
+  }
+
+  get jwtRefreshSecretToken() {
+    return this.configService.get(JWT_REFRESH_SECRET_TOKEN.name) as JwtSecretTokenType
+  }
+
+  get jwtRefreshTokenExpiresIn() {
+    return this.configService.get(JWT_REFRESH_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
   }
 }

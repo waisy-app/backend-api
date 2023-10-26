@@ -29,15 +29,25 @@ describe('AuthService', () => {
   })
 
   describe('login', () => {
-    it('should return a token', () => {
-      const token = authService.login(1)
-      const expected = jwtService.sign(
-        {sub: 1},
-        {
-          secret: authConfigService.jwtSecretToken,
-        },
-      )
-      expect(token.access_token).toBe(expected)
+    it('should return a token', async () => {
+      jest.spyOn(usersService, 'update').mockImplementation(async () => ({
+        id: 1,
+        email: 'test@test.com',
+        password: '123',
+      }))
+      const [tokens, access_token, refresh_token] = await Promise.all([
+        authService.login(1),
+        jwtService.signAsync({sub: 1}),
+        jwtService.signAsync(
+          {sub: 1},
+          {
+            secret: authConfigService.jwtRefreshSecretToken,
+            expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
+          },
+        ),
+      ])
+      expect(tokens).toStrictEqual({access_token, refresh_token})
+      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: refresh_token})
     })
   })
 
@@ -66,6 +76,43 @@ describe('AuthService', () => {
       jest.restoreAllMocks()
       const user = await authService.validateUser('tt.tt.tt', returnedUser.password)
       expect(user).toBeNull()
+    })
+  })
+
+  describe('logout', () => {
+    it('should remove refresh token', async () => {
+      jest.spyOn(usersService, 'update').mockImplementation(async () => ({
+        id: 1,
+        email: 'test@test.com',
+        password: '123',
+      }))
+      await authService.logout(1)
+      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: undefined})
+    })
+  })
+
+  describe('refreshTokens', () => {
+    it('should return a token', async () => {
+      jest.spyOn(usersService, 'update').mockImplementation(async () => ({
+        id: 1,
+        email: 'test@test.com',
+        password: '123',
+      }))
+
+      const [tokens, access_token, refresh_token] = await Promise.all([
+        authService.refreshTokens(1),
+        jwtService.signAsync({sub: 1}),
+        jwtService.signAsync(
+          {sub: 1},
+          {
+            secret: authConfigService.jwtRefreshSecretToken,
+            expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
+          },
+        ),
+      ])
+
+      expect(tokens).toStrictEqual({access_token, refresh_token})
+      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: refresh_token})
     })
   })
 })

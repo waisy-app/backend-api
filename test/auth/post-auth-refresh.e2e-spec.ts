@@ -7,11 +7,13 @@ import {UsersService} from '../../src/users/users.service'
 import {JwtService} from '@nestjs/jwt'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 
-describe('/auth/login (POST)', () => {
+describe('/auth/refresh (POST)', () => {
   let app: INestApplication
   let authService: AuthService
-  let jwtService: JwtService
+  let usersService: UsersService
+  let bearerToken: string
   let authConfigService: AuthConfigService
+  let jwtService: JwtService
 
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -23,19 +25,33 @@ describe('/auth/login (POST)', () => {
 
     authService = app.get(AuthService)
     jwtService = app.get(JwtService)
+    usersService = app.get(UsersService)
     authConfigService = app.get(AuthConfigService)
-    const usersService = app.get(UsersService)
 
-    usersService.users.push({id: 1, email: 'test@test.com', password: '123'})
+    const payload = {sub: 1}
+    const refreshToken = jwtService.sign(payload, {
+      secret: authConfigService.jwtRefreshSecretToken,
+      expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
+    })
+    bearerToken = `Bearer ${refreshToken}`
+
+    usersService.users.push({
+      id: 1,
+      email: 'test@test.com',
+      password: '123',
+      refreshToken,
+    })
   })
 
-  afterEach(() => app.close())
+  afterEach(() => {
+    app.close()
+    jest.restoreAllMocks()
+  })
 
   describe('errors', () => {
-    it('401: missing email', () => {
+    it('401: unauthorized', () => {
       return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({password: '123'})
+        .post('/auth/refresh')
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
           statusCode: HttpStatus.UNAUTHORIZED,
@@ -43,48 +59,31 @@ describe('/auth/login (POST)', () => {
         })
     })
 
-    it('401: missing password', () => {
+    it('401: expired token', () => {
+      const expiredRefreshToken = jwtService.sign(
+        {sub: 1},
+        {
+          secret: authConfigService.jwtRefreshSecretToken,
+          expiresIn: '0s',
+        },
+      )
       return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'ttt@ttt.com'})
+        .post('/auth/refresh')
+        .set('Authorization', `Bearer ${expiredRefreshToken}`)
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
           statusCode: HttpStatus.UNAUTHORIZED,
           message: 'Unauthorized',
-        })
-    })
-
-    it('401: wrong email', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'ttt@ttt.com', password: '123'})
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Wrong email or password',
-          error: 'Unauthorized',
-        })
-    })
-
-    it('401: wrong password', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'test@test.com', password: '321'})
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Wrong email or password',
-          error: 'Unauthorized',
         })
     })
 
     it('500: internal server error', () => {
-      jest.spyOn(authService, 'login').mockImplementationOnce(() => {
+      jest.spyOn(authService, 'refreshTokens').mockImplementationOnce(() => {
         throw new Error()
       })
       return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'test@test.com', password: '123'})
+        .post('/auth/refresh')
+        .set('Authorization', bearerToken)
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -100,16 +99,19 @@ describe('/auth/login (POST)', () => {
         jwtService.signAsync(
           {sub: 1},
           {
-            expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
             secret: authConfigService.jwtRefreshSecretToken,
+            expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
           },
         ),
       ])
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'test@test.com', password: '123'})
+
+      await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .set('Authorization', bearerToken)
         .expect(HttpStatus.OK)
         .expect({access_token, refresh_token})
+
+      expect(usersService.users[0].refreshToken).toBe(refresh_token)
     })
   })
 })
