@@ -18,15 +18,39 @@ describe('AuthController', () => {
   })
 
   describe('login', () => {
-    it('should return a token', async () => {
+    it('should return tokens', async () => {
       const expected = {
-        access_token: 'test',
+        access_token: 'test-access',
+        refresh_token: 'test-refresh',
       }
 
-      jest.spyOn(authService, 'login').mockImplementation(() => expected)
+      jest.spyOn(authService, 'login').mockImplementation(async () => expected)
 
       const req = {user: {id: 1}} as Request & {user: {id: number}}
-      expect(authController.login(req)).toStrictEqual(expected)
+      expect(await authController.login(req)).toStrictEqual(expected)
+    })
+  })
+
+  describe('logout', () => {
+    it('should return undefined', async () => {
+      jest.spyOn(authService, 'logout').mockImplementation(async () => undefined)
+
+      const req = {user: {id: 1}} as Request & {user: {id: number}}
+      expect(await authController.logout(req)).toBeUndefined()
+      expect(authService.logout).toBeCalledWith(req.user.id)
+    })
+  })
+
+  describe('refreshTokens', () => {
+    it('should return tokens', async () => {
+      const expected = {
+        access_token: 'test-access',
+        refresh_token: 'test-refresh',
+      }
+      jest.spyOn(authService, 'refreshTokens').mockImplementation(async () => expected)
+
+      const req = {user: {id: 1}} as Request & {user: {id: number}}
+      expect(await authController.refreshTokens(req)).toStrictEqual(expected)
     })
   })
 })
