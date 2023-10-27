@@ -26,7 +26,9 @@ describe('/auth/login (POST)', () => {
     authConfigService = app.get(AuthConfigService)
     const usersService = app.get(UsersService)
 
-    usersService.users.push({id: 1, email: 'test@test.com', password: '123'})
+    const password = await authService.hashText('123')
+    usersService.users.push({id: 1, email: 'test@test.com', password})
+    usersService.lastID = 1
   })
 
   afterEach(() => app.close())
@@ -51,18 +53,6 @@ describe('/auth/login (POST)', () => {
         .expect({
           statusCode: HttpStatus.UNAUTHORIZED,
           message: 'Unauthorized',
-        })
-    })
-
-    it('401: wrong email', () => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send({email: 'ttt@ttt.com', password: '123'})
-        .expect(HttpStatus.UNAUTHORIZED)
-        .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Wrong email or password',
-          error: 'Unauthorized',
         })
     })
 
@@ -94,7 +84,7 @@ describe('/auth/login (POST)', () => {
   })
 
   describe('success', () => {
-    it('200', async () => {
+    it('200: old user', async () => {
       const [access_token, refresh_token] = await Promise.all([
         jwtService.signAsync({sub: 1}),
         jwtService.signAsync(
@@ -108,6 +98,25 @@ describe('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
         .send({email: 'test@test.com', password: '123'})
+        .expect(HttpStatus.OK)
+        .expect({access_token, refresh_token})
+    })
+
+    it('200: new user', async () => {
+      const [access_token, refresh_token] = await Promise.all([
+        jwtService.signAsync({sub: 2}),
+        jwtService.signAsync(
+          {sub: 2},
+          {
+            expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
+            secret: authConfigService.jwtRefreshSecretToken,
+          },
+        ),
+      ])
+
+      return request(app.getHttpServer())
+        .post('/auth/login')
+        .send({email: 'ttt@ttt.com', password: '321'})
         .expect(HttpStatus.OK)
         .expect({access_token, refresh_token})
     })

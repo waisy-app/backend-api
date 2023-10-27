@@ -6,12 +6,14 @@ import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {JWT_REFRESH_STRATEGY_NAME} from './strategies.constants'
 import {Payload} from '../entities/payload.entity'
 import {UsersService} from '../../users/users.service'
+import {AuthService} from '../auth.service'
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH_STRATEGY_NAME) {
   constructor(
     private readonly authConfigService: AuthConfigService,
     private readonly usersService: UsersService,
+    private readonly authService: AuthService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -26,7 +28,11 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
 
     const userID = payload.sub
     const user = await this.usersService.findOneByID(userID)
-    if (!user || !user.refreshToken || authRefreshToken !== user.refreshToken) {
+    const isTokenMatch = await this.authService.compareHash(
+      authRefreshToken,
+      `${user?.refreshToken}`,
+    )
+    if (!user || !isTokenMatch) {
       throw new ForbiddenException('Access Denied')
     }
 

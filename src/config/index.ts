@@ -1,6 +1,5 @@
 import {ServerConfigService} from './server/server.config.service'
 import {EnvironmentConfigService} from './environment/environment.config.service'
-import environmentConfig from './environment/environment.config'
 import * as Joi from 'joi'
 import {ConfigModule} from '@nestjs/config'
 import serverConfigEnvValidation from './server/server.config.env-validation'
@@ -10,6 +9,8 @@ import {LoggerConfigService} from './logger/logger.config.service'
 import loggerConfigEnvValidation from './logger/logger.config.env-validation'
 import {AuthConfigService} from './auth/auth.config.service'
 import authConfigEnvValidation from './auth/auth.config.env-validation'
+import authConfig from './auth/auth.config'
+import serverConfig from './server/server.config'
 
 // Add all config services here
 export const configProviders = [
@@ -20,7 +21,7 @@ export const configProviders = [
 ]
 
 // Add all custom config here
-const configsForLoad = [environmentConfig]
+const configsForLoad = [authConfig, serverConfig]
 
 // Add all config validation here
 const validationSchema = Joi.object({

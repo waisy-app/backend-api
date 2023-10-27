@@ -23,3 +23,9 @@ export const JWT_REFRESH_TOKEN_EXPIRES_IN = {
   name: 'JWT_REFRESH_TOKEN_EXPIRES_IN',
   default: '60d',
 }
+
+export type HashRoundsType = number
+export const HASH_ROUNDS = {
+  name: 'HASH_ROUNDS',
+  defaultValue: 10,
+}
