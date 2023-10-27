@@ -2,19 +2,21 @@ import {Test, TestingModule} from '@nestjs/testing'
 import {TimeoutInterceptor} from './timeout.interceptor'
 import {RequestTimeoutException} from '@nestjs/common'
 import {Observable, of, throwError, TimeoutError} from 'rxjs'
-import {EnvironmentConfigService} from '../config/environment/environment.config.service'
 import {configModule} from '../config'
+import {ServerConfigService} from '../config/server/server.config.service'
 
 describe('TimeoutInterceptor', () => {
   let interceptor: TimeoutInterceptor
+  let serverConfigService: ServerConfigService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [configModule],
-      providers: [TimeoutInterceptor, EnvironmentConfigService],
+      providers: [TimeoutInterceptor, ServerConfigService],
     }).compile()
 
     interceptor = module.get(TimeoutInterceptor)
+    serverConfigService = module.get(ServerConfigService)
   })
 
   it('should handle the request without timing out', done => {
@@ -55,7 +57,7 @@ describe('TimeoutInterceptor', () => {
         return new Observable(observer => {
           setTimeout(() => {
             observer.error(new Error('Timeout occurred'))
-          }, 15)
+          }, serverConfigService.requestTimeoutMs + 5)
         })
       },
     }

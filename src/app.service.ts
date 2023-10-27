@@ -12,7 +12,6 @@ export class AppService {
   async getHello(): Promise<string> {
     return `Hello World! 
     Port: ${this.serverConfigService.port} 
-    Is development: ${this.environmentConfigService.isDevelopment} 
-    Test: ${this.environmentConfigService.test}`
+    Is development: ${this.environmentConfigService.isDevelopment}`
   }
 }

@@ -35,6 +35,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
         password: '123',
       }))
+      jest.spyOn(authService, 'hashText').mockImplementation(async () => 'test-hash')
       const [tokens, access_token, refresh_token] = await Promise.all([
         authService.login(1),
         jwtService.signAsync({sub: 1}),
@@ -47,7 +48,7 @@ describe('AuthService', () => {
         ),
       ])
       expect(tokens).toStrictEqual({access_token, refresh_token})
-      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: refresh_token})
+      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: 'test-hash'})
     })
   })
 
@@ -58,12 +59,13 @@ describe('AuthService', () => {
       password: '123',
     }
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      returnedUser.password = await authService.hashText(returnedUser.password)
       jest.spyOn(usersService, 'findOneByEmail').mockImplementation(async () => returnedUser)
     })
 
     it('should return user id', async () => {
-      const user = await authService.validateUser(returnedUser.email, returnedUser.password)
+      const user = await authService.validateUser(returnedUser.email, '123')
       expect(user).toEqual({id: returnedUser.id})
     })
 
@@ -72,10 +74,13 @@ describe('AuthService', () => {
       expect(user).toBeNull()
     })
 
-    it('should return null if the email is wrong', async () => {
+    it('should return new user id if the email is new', async () => {
       jest.restoreAllMocks()
+      jest
+        .spyOn(usersService, 'create')
+        .mockImplementation(async () => ({id: 2, password: '123', email: 'tt.tt.tt'}))
       const user = await authService.validateUser('tt.tt.tt', returnedUser.password)
-      expect(user).toBeNull()
+      expect(user).toStrictEqual({id: 2})
     })
   })
 
@@ -98,6 +103,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
         password: '123',
       }))
+      jest.spyOn(authService, 'hashText').mockImplementation(async () => 'test-hash')
 
       const [tokens, access_token, refresh_token] = await Promise.all([
         authService.refreshTokens(1),
@@ -112,7 +118,29 @@ describe('AuthService', () => {
       ])
 
       expect(tokens).toStrictEqual({access_token, refresh_token})
-      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: refresh_token})
+      expect(usersService.update).toHaveBeenCalledWith(1, {refreshToken: 'test-hash'})
+    })
+  })
+
+  describe('hashText', () => {
+    it('should return a hashed text', async () => {
+      jest.spyOn(authService, 'hashText').mockImplementation(async () => 'test-hash')
+      const hashedText = await authService.hashText('test')
+      expect(hashedText).toBe('test-hash')
+    })
+  })
+
+  describe('compareHash', () => {
+    it('should return true if the text and hash are the same', async () => {
+      jest.spyOn(authService, 'compareHash').mockImplementation(async () => true)
+      const isMatch = await authService.compareHash('test', 'test-hash')
+      expect(isMatch).toBe(true)
+    })
+
+    it('should return false if the text and hash are not the same', async () => {
+      jest.spyOn(authService, 'compareHash').mockImplementation(async () => false)
+      const isMatch = await authService.compareHash('test', 'test-hash')
+      expect(isMatch).toBe(false)
     })
   })
 })

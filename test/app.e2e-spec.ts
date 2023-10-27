@@ -30,8 +30,7 @@ describe('AppController (e2e)', () => {
   it('/ (GET)', () => {
     return request(app.getHttpServer()).get('/').expect(HttpStatus.OK).expect(`Hello World! 
     Port: ${serverConfigService.port} 
-    Is development: ${environmentConfigService.isDevelopment} 
-    Test: ${environmentConfigService.test}`)
+    Is development: ${environmentConfigService.isDevelopment}`)
   })
 
   it('408: Request Timeout', () => {
@@ -39,7 +38,7 @@ describe('AppController (e2e)', () => {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve(`Hello World!`)
-        }, 15)
+        }, serverConfigService.requestTimeoutMs + 5)
       })
     })
 

@@ -35,12 +35,15 @@ describe('/auth/refresh (POST)', () => {
     })
     bearerToken = `Bearer ${refreshToken}`
 
+    const hashedPassword = await authService.hashText('123')
+    const hashedRefreshToken = await authService.hashText(refreshToken)
     usersService.users.push({
       id: 1,
       email: 'test@test.com',
-      password: '123',
-      refreshToken,
+      password: hashedPassword,
+      refreshToken: hashedRefreshToken,
     })
+    usersService.lastID = 1
   })
 
   afterEach(() => {
@@ -111,7 +114,11 @@ describe('/auth/refresh (POST)', () => {
         .expect(HttpStatus.OK)
         .expect({access_token, refresh_token})
 
-      expect(usersService.users[0].refreshToken).toBe(refresh_token)
+      const isTokenMatch = await authService.compareHash(
+        refresh_token,
+        usersService.users[0].refreshToken!,
+      )
+      expect(isTokenMatch).toBeTruthy()
     })
   })
 })

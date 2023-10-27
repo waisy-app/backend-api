@@ -26,8 +26,7 @@ describe('AppController', () => {
     it('should return "Hello World!"', async () => {
       expect(await appController.getHello()).toBe(`Hello World! 
     Port: ${serverConfigService.port} 
-    Is development: ${environmentConfigService.isDevelopment} 
-    Test: ${environmentConfigService.test}`)
+    Is development: ${environmentConfigService.isDevelopment}`)
     })
   })
 })
