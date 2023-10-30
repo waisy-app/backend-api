@@ -8,6 +8,8 @@ import {
   Delete,
   ParseIntPipe,
   NotFoundException,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common'
 import {UsersService} from './users.service'
 import {CreateUserDto} from './dto/create-user.dto'
@@ -15,6 +17,7 @@ import {UpdateUserDto} from './dto/update-user.dto'
 import {SkipJwtAuth} from '../auth/decorators/skip-jwt-auth.decorator'
 
 @Controller('users')
+@UsePipes(new ValidationPipe({whitelist: true}))
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

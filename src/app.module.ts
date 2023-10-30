@@ -1,10 +1,10 @@
-import {MiddlewareConsumer, Module, NestModule, RequestMethod, ValidationPipe} from '@nestjs/common'
+import {MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common'
 import {AppController} from './app.controller'
 import {AppService} from './app.service'
 import {DevtoolsModule} from '@nestjs/devtools-integration'
 import {UsersModule} from './users/users.module'
 import {RequestLoggerMiddleware} from './middlewares/request-logger.middleware'
-import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core'
+import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core'
 import {HttpExceptionFilter} from './filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
 import {TimeoutInterceptor} from './interceptors/timeout.interceptor'
@@ -47,12 +47,14 @@ const isDev = process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
         plugins: isDev ? [ApolloServerPluginLandingPageLocalDefault()] : undefined,
         autoTransformHttpErrors: false,
         includeStacktraceInErrorResponses: false,
-        formatError: (error: GraphQLFormattedError) => ({
-          path: error.path,
-          locations: error.locations,
-          message: error.message,
-          code: error.extensions?.code,
-        }),
+        formatError: (error: GraphQLFormattedError) => {
+          return {
+            path: error.path,
+            locations: error.locations,
+            message: error.message,
+            code: error.extensions?.code,
+          }
+        },
       }),
       inject: [ConfigService],
     }),
@@ -76,10 +78,6 @@ const isDev = process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
     },
     AppService,
     ComplexityPlugin,
-    {
-      provide: APP_PIPE,
-      useValue: new ValidationPipe({whitelist: true}),
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: TimeoutInterceptor,
