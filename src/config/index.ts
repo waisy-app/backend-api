@@ -11,6 +11,8 @@ import {AuthConfigService} from './auth/auth.config.service'
 import authConfigEnvValidation from './auth/auth.config.env-validation'
 import authConfig from './auth/auth.config'
 import serverConfig from './server/server.config'
+import {GraphqlConfigService} from './graphql/graphql.config.service'
+import graphqlConfigEnvValidation from './graphql/graphql.config.env-validation'
 
 // Add all config services here
 export const configProviders = [
@@ -18,6 +20,7 @@ export const configProviders = [
   ServerConfigService,
   LoggerConfigService,
   AuthConfigService,
+  GraphqlConfigService,
 ]
 
 // Add all custom config here
@@ -29,6 +32,7 @@ const validationSchema = Joi.object({
   ...environmentConfigEnvValidation,
   ...loggerConfigEnvValidation,
   ...authConfigEnvValidation,
+  ...graphqlConfigEnvValidation,
 })
 
 export const configModule = ConfigModule.forRoot({

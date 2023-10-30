@@ -1,38 +1,53 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common'
-import {Request, Response} from 'express'
-import {EnvironmentConfigService} from '../config/environment/environment.config.service'
+import {Catch, ArgumentsHost, HttpException, Logger, HttpExceptionBody} from '@nestjs/common'
+import {GqlArgumentsHost, GqlContextType, GqlExceptionFilter} from '@nestjs/graphql'
+import {Response} from 'express'
+import {GraphQLError} from 'graphql'
+import {HttpArgumentsHost} from '@nestjs/common/interfaces'
+import {ErrorFormatterService} from '../error-formatter/error-formatter.service'
 
 @Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter {
+export class HttpExceptionFilter implements GqlExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name)
 
-  constructor(private readonly environmentConfigService: EnvironmentConfigService) {}
+  constructor(private readonly errorFormatterService: ErrorFormatterService) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp()
-    const response = ctx.getResponse<Response>()
-    const request = ctx.getRequest<Request>()
+    const gqlHost = GqlArgumentsHost.create(host)
+    const requestType = gqlHost.getType<GqlContextType>()
+    this.logger.debug(`Request type: ${requestType}`)
+
+    if (requestType === 'http') return this.catchHttp(exception, host.switchToHttp())
+    else if (requestType === 'graphql') return this.catchGraphql(exception)
+
+    this.logger.warn({
+      message: 'Unknown request type',
+      requestType,
+    })
+  }
+
+  catchHttp(exception: HttpException, context: HttpArgumentsHost) {
+    const response = context.getResponse<Response>()
     const status = exception.getStatus()
+    const exceptionResponse = exception.getResponse() as HttpExceptionBody
 
-    response.status(status).json(exception.getResponse())
+    let error: string
+    if (exceptionResponse.error) {
+      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.error)
+    } else if (typeof exceptionResponse.message === 'string') {
+      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.message)
+    } else error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.message[0])
 
-    if (status < HttpStatus.INTERNAL_SERVER_ERROR && this.environmentConfigService.isDevelopment) {
-      const timeAgo = Date.now() - response.locals.startTime
-      this.logger.debug({
-        message: 'Response with exception',
-        url: request.url,
-        method: request.method,
-        status,
-        msAgo: timeAgo,
-        body: exception.getResponse(),
-      })
-    }
+    response.status(status).json({message: exceptionResponse.message, error})
+  }
+
+  catchGraphql(exception: HttpException) {
+    const exceptionBody = exception.getResponse() as HttpExceptionBody
+    let code: string
+    if (exceptionBody.error) {
+      code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.error)
+    } else if (typeof exceptionBody.message === 'string') {
+      code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.message)
+    } else code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.message[0])
+    return new GraphQLError(exceptionBody.message.toString(), {extensions: {code}})
   }
 }
