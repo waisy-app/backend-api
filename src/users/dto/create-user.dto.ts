@@ -7,5 +7,5 @@ export class CreateUserDto {
   password: string
   @IsOptional()
   @IsString()
-  refreshToken?: string
+  refreshToken?: string | null
 }

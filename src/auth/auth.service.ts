@@ -5,6 +5,7 @@ import {User} from '../users/entities/user.entity'
 import {Payload} from './types/payload.type'
 import {AuthConfigService} from '../config/auth/auth.config.service'
 import * as bcrypt from 'bcrypt'
+import {CurrentUserType} from './types/current-user.type'
 
 @Injectable()
 export class AuthService {
@@ -22,25 +23,25 @@ export class AuthService {
     return tokens
   }
 
-  async validateUser(email: string, password: string): Promise<{id: User['id']} | null> {
+  async validateUser(email: string, password: string): Promise<CurrentUserType | null> {
     const user = await this.usersService.findOneByEmail(email)
 
     if (!user) {
       this.logger.debug(`User with email ${email} not found. Creating new user...`)
       const hashedPassword = await this.hashText(password)
       const newUser = await this.usersService.create({email, password: hashedPassword})
-      return {id: newUser.id}
+      return {id: newUser.id, email: newUser.email}
     }
 
     const isPasswordMatch = await this.compareHash(password, user.password)
     if (isPasswordMatch) {
-      return {id: user.id}
+      return {id: user.id, email: user.email}
     }
     return null
   }
 
   async logout(userID: User['id']) {
-    await this.usersService.update({id: userID, refreshToken: undefined})
+    await this.usersService.update({id: userID, refreshToken: null})
   }
 
   async refreshTokens(userID: User['id']) {

@@ -8,6 +8,6 @@ export class User {
   email: string
   @Column()
   password: string
-  @Column({default: null, nullable: true})
-  refreshToken?: string
+  @Column({type: String, default: null, nullable: true, unique: true})
+  refreshToken?: string | null
 }

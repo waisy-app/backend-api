@@ -15,7 +15,7 @@ export class UsersService {
       throw new BadRequestException(`User with email ${createUserInput.email} already exists`)
     }
     const newUser = this.usersRepository.create(createUserInput)
-    return this.usersRepository.save(newUser)
+    return this.usersRepository.save(newUser, {data: {password: true, email: true, id: true}})
   }
 
   async findAll(): Promise<User[]> {
@@ -29,7 +29,8 @@ export class UsersService {
   async update(updateUserInput: UpdateUserInput): Promise<User> {
     const user = await this.usersRepository.findOneBy({id: updateUserInput.id})
     if (!user) throw new NotFoundException(`User not found`)
-    await this.usersRepository.update(updateUserInput.id, updateUserInput)
+    const {id, ...userUpdateData} = updateUserInput
+    await this.usersRepository.update(id, userUpdateData)
     return {...user, ...updateUserInput}
   }
 

@@ -1,5 +1,4 @@
 import {Module} from '@nestjs/common'
-import {AuthController} from './auth.controller'
 import {AuthService} from './auth.service'
 import {UsersModule} from '../users/users.module'
 import {ConfigModule, ConfigService} from '@nestjs/config'
@@ -17,6 +16,7 @@ import {
   JwtSecretTokenType,
 } from '../config/auth/auth.config.constants'
 import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
+import {AuthResolver} from './auth.resolver'
 
 @Module({
   imports: [
@@ -37,7 +37,6 @@ import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
   providers: [
     AuthService,
     LocalStrategy,
@@ -46,6 +45,7 @@ import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
     JwtStrategy,
     RefreshTokenStrategy,
     AuthService,
+    AuthResolver,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

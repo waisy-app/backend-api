@@ -11,5 +11,5 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
   password?: User['password']
   @IsString()
-  refreshToken?: User['refreshToken']
+  refreshToken?: string
 }

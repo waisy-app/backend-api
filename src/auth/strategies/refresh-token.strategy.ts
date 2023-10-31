@@ -7,6 +7,7 @@ import {JWT_REFRESH_STRATEGY_NAME} from './strategies.constants'
 import {Payload} from '../types/payload.type'
 import {UsersService} from '../../users/users.service'
 import {AuthService} from '../auth.service'
+import {CurrentUserType} from '../types/current-user.type'
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH_STRATEGY_NAME) {
@@ -22,7 +23,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
     })
   }
 
-  async validate(req: Request, payload: Payload) {
+  async validate(req: Request, payload: Payload): Promise<CurrentUserType> {
     const authRefreshToken = req.get('Authorization')?.replace('Bearer', '').trim()
     if (!authRefreshToken) throw new UnauthorizedException('Refresh token not found')
 
@@ -32,9 +33,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
       authRefreshToken,
       `${user?.refreshToken}`,
     )
-    if (!user || !isTokenMatch) {
-      throw new ForbiddenException('Access Denied')
-    }
+    if (!user || !isTokenMatch) throw new ForbiddenException('Access Denied')
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {password, refreshToken, ...result} = user
