@@ -25,12 +25,29 @@ import {AllExceptionsFilter} from './filters/all-exception.filter'
 import {GraphQLFormattedError} from 'graphql'
 import {GraphqlExceptionFilter} from './filters/graphql-exception.filter'
 import {ErrorFormatterModule} from './error-formatter/error-formatter.module'
+import {TypeOrmModule} from '@nestjs/typeorm'
+import {User} from './users/entities/user.entity'
 
 const isDev = process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
 
 @Module({
   imports: [
     configModule,
+    TypeOrmModule.forRootAsync({
+      useFactory: () => ({
+        type: 'postgres',
+        host: 'localhost',
+        port: 5432,
+        username: 'waisy',
+        password: '1234',
+        database: 'waisy',
+        entities: [User],
+        logging: isDev ? true : ['error', 'warn', 'schema'],
+        synchronize: true, // NOT FOR PRODUCTION
+        migrationsRun: false, // NOT FOR PRODUCTION
+        cache: true,
+      }),
+    }),
     UsersModule,
     AuthModule,
     GraphQLModule.forRootAsync<ApolloDriverConfig>({

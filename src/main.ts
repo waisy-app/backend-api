@@ -20,7 +20,8 @@ async function bootstrap() {
   const serverConfigService = app.get(ServerConfigService)
   await app.listen(serverConfigService.port)
 }
-void bootstrap().catch(() => {
+void bootstrap().catch(error => {
+  loggerInstance.error({message: error.message, stack: error.stack})
   if (isDev) writeFileSync('error-graph.json', PartialGraphHost.toString() ?? '')
   process.exit(1)
 })

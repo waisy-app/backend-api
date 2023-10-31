@@ -2,7 +2,7 @@ import {Injectable, Logger} from '@nestjs/common'
 import {UsersService} from '../users/users.service'
 import {JwtService} from '@nestjs/jwt'
 import {User} from '../users/entities/user.entity'
-import {Payload} from './entities/payload.entity'
+import {Payload} from './types/payload.type'
 import {AuthConfigService} from '../config/auth/auth.config.service'
 import * as bcrypt from 'bcrypt'
 
@@ -40,7 +40,7 @@ export class AuthService {
   }
 
   async logout(userID: User['id']) {
-    await this.usersService.update(userID, {refreshToken: undefined})
+    await this.usersService.update({id: userID, refreshToken: undefined})
   }
 
   async refreshTokens(userID: User['id']) {
@@ -59,7 +59,7 @@ export class AuthService {
 
   private async updateRefreshToken(userID: User['id'], refreshToken: string) {
     const hashToken = await this.hashText(refreshToken)
-    await this.usersService.update(userID, {refreshToken: hashToken})
+    await this.usersService.update({refreshToken: hashToken, id: userID})
   }
 
   private async getTokens(userID: User['id']) {

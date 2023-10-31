@@ -15,7 +15,7 @@ export class UsersResolver {
 
   @SkipJwtAuth()
   @Query(() => User, {name: 'user', nullable: true})
-  async getUser(@Args('id', {type: () => Int}) id: number) {
+  async getUser(@Args('id') id: string) {
     return this.usersService.findOneByID(id)
   }
 
@@ -40,11 +40,11 @@ export class UsersResolver {
 
   @Mutation(() => User)
   async updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-    return this.usersService.update(updateUserInput.id, updateUserInput)
+    return this.usersService.update(updateUserInput)
   }
 
   @Mutation(() => Int)
-  async removeUser(@Args('id', {type: () => Int}) id: number) {
+  async removeUser(@Args('id') id: string) {
     return this.usersService.remove(id)
   }
 }

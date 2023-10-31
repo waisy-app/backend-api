@@ -5,7 +5,7 @@ import {AppModule} from '../../src/app.module'
 import {UsersService} from '../../src/users/users.service'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 import {JwtService} from '@nestjs/jwt'
-import {Payload} from '../../src/auth/entities/payload.entity'
+import {Payload} from '../../src/auth/types/payload.type'
 import {ReasonPhrases} from 'http-status-codes'
 
 describe('/users (POST)', () => {

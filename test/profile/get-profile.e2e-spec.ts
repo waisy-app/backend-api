@@ -5,7 +5,7 @@ import {AppModule} from '../../src/app.module'
 import {UsersService} from '../../src/users/users.service'
 import {JwtService} from '@nestjs/jwt'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
-import {Payload} from '../../src/auth/entities/payload.entity'
+import {Payload} from '../../src/auth/types/payload.type'
 import {JwtAuthGuard} from '../../src/auth/guards/jwt-auth.guard'
 import {ReasonPhrases} from 'http-status-codes'
 

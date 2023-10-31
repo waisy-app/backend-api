@@ -4,7 +4,7 @@ import {Request} from 'express'
 import {ForbiddenException, Injectable, UnauthorizedException} from '@nestjs/common'
 import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {JWT_REFRESH_STRATEGY_NAME} from './strategies.constants'
-import {Payload} from '../entities/payload.entity'
+import {Payload} from '../types/payload.type'
 import {UsersService} from '../../users/users.service'
 import {AuthService} from '../auth.service'
 
