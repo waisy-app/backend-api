@@ -5,6 +5,7 @@ import {AppModule} from '../../src/app.module'
 import {AuthService} from '../../src/auth/auth.service'
 import {UsersService} from '../../src/users/users.service'
 import {JwtService} from '@nestjs/jwt'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe('/auth/logout (POST)', () => {
   let app: INestApplication
@@ -47,8 +48,8 @@ describe('/auth/logout (POST)', () => {
         .post('/auth/logout')
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized',
+          message: ReasonPhrases.UNAUTHORIZED,
+          error: 'UNAUTHORIZED',
         })
     })
 
@@ -61,8 +62,8 @@ describe('/auth/logout (POST)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
+          error: 'INTERNAL_SERVER_ERROR',
+          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
         })
     })
   })

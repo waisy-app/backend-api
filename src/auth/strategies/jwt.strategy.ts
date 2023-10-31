@@ -5,6 +5,7 @@ import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {Payload} from '../entities/payload.entity'
 import {UsersService} from '../../users/users.service'
 import {JWT_STRATEGY_NAME} from './strategies.constants'
+import {User} from '../../users/models/user.model'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
@@ -21,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
     })
   }
 
-  async validate(payload: Payload) {
+  async validate(payload: Payload): Promise<User> {
     this.logger.debug({message: 'Validating JWT payload', payload})
     const user = await this.usersService.findOneByID(payload.sub)
     if (!user) throw new UnauthorizedException()

@@ -11,11 +11,11 @@ import {
 export class LoggerConfigService {
   constructor(private configService: ConfigService) {}
 
-  get loggerLevel(): string {
+  get loggerLevel() {
     return this.configService.get(LOGGER_LEVEL.name) as LoggerLevelType
   }
 
-  get loggerFormat(): string {
+  get loggerFormat() {
     return this.configService.get(LOGGER_FORMAT.name) as LoggerFormatType
   }
 }

@@ -6,6 +6,7 @@ import {AuthService} from '../../src/auth/auth.service'
 import {UsersService} from '../../src/users/users.service'
 import {JwtService} from '@nestjs/jwt'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe('/auth/login (POST)', () => {
   let app: INestApplication
@@ -40,8 +41,8 @@ describe('/auth/login (POST)', () => {
         .send({password: '123'})
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized',
+          message: ReasonPhrases.UNAUTHORIZED,
+          error: 'UNAUTHORIZED',
         })
     })
 
@@ -51,8 +52,8 @@ describe('/auth/login (POST)', () => {
         .send({email: 'ttt@ttt.com'})
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized',
+          error: 'UNAUTHORIZED',
+          message: ReasonPhrases.UNAUTHORIZED,
         })
     })
 
@@ -62,9 +63,8 @@ describe('/auth/login (POST)', () => {
         .send({email: 'test@test.com', password: '321'})
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
           message: 'Wrong email or password',
-          error: 'Unauthorized',
+          error: 'UNAUTHORIZED',
         })
     })
 
@@ -77,8 +77,8 @@ describe('/auth/login (POST)', () => {
         .send({email: 'test@test.com', password: '123'})
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
+          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+          error: 'INTERNAL_SERVER_ERROR',
         })
     })
   })

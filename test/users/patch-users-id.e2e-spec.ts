@@ -6,6 +6,7 @@ import {UsersService} from '../../src/users/users.service'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 import {JwtService} from '@nestjs/jwt'
 import {Payload} from '../../src/auth/entities/payload.entity'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe('/users/:id (PATCH)', () => {
   let app: INestApplication
@@ -38,8 +39,8 @@ describe('/users/:id (PATCH)', () => {
   describe('errors', () => {
     it('401: unauthorized', () => {
       return request(app.getHttpServer()).patch('/users/1').expect(HttpStatus.UNAUTHORIZED).expect({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Unauthorized',
+        message: ReasonPhrases.UNAUTHORIZED,
+        error: 'UNAUTHORIZED',
       })
     })
 
@@ -50,9 +51,8 @@ describe('/users/:id (PATCH)', () => {
         .send({email: 'test@test.com'})
         .expect(HttpStatus.NOT_FOUND)
         .expect({
-          statusCode: HttpStatus.NOT_FOUND,
           message: 'User not found',
-          error: 'Not Found',
+          error: 'NOT_FOUND',
         })
     })
 
@@ -63,9 +63,8 @@ describe('/users/:id (PATCH)', () => {
         .send({email: 't'})
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
-          statusCode: HttpStatus.BAD_REQUEST,
           message: ['email must be an email'],
-          error: 'Bad Request',
+          error: 'BAD_REQUEST',
         })
     })
 
@@ -79,8 +78,8 @@ describe('/users/:id (PATCH)', () => {
         .send({email: 'test@test.com'})
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
+          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+          error: 'INTERNAL_SERVER_ERROR',
         })
     })
   })

@@ -1,16 +1,16 @@
 import {Injectable, NotFoundException} from '@nestjs/common'
-import {CreateUserDto} from './dto/create-user.dto'
 import {UpdateUserDto} from './dto/update-user.dto'
 import {User} from './entities/user.entity'
+import {CreateUserInput} from './dto/create-user.input'
 
 @Injectable()
 export class UsersService {
   public readonly users: User[] = []
   public lastID: number = 0
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserInput: CreateUserInput): Promise<User> {
     const id = ++this.lastID
-    const user = {...createUserDto, id}
+    const user = {...createUserInput, id}
     this.users.push(user)
     return user
   }

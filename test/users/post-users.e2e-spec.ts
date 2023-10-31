@@ -6,6 +6,7 @@ import {UsersService} from '../../src/users/users.service'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 import {JwtService} from '@nestjs/jwt'
 import {Payload} from '../../src/auth/entities/payload.entity'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe('/users (POST)', () => {
   let app: INestApplication
@@ -43,9 +44,8 @@ describe('/users (POST)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
-          statusCode: HttpStatus.BAD_REQUEST,
           message: ['email must be an email'],
-          error: 'Bad Request',
+          error: 'BAD_REQUEST',
         })
     })
 
@@ -56,9 +56,8 @@ describe('/users (POST)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
-          statusCode: HttpStatus.BAD_REQUEST,
           message: ['email must be an email'],
-          error: 'Bad Request',
+          error: 'BAD_REQUEST',
         })
     })
 
@@ -70,8 +69,7 @@ describe('/users (POST)', () => {
         .expect(HttpStatus.BAD_REQUEST)
         .expect({
           message: ['password must be a string'],
-          error: 'Bad Request',
-          statusCode: HttpStatus.BAD_REQUEST,
+          error: 'BAD_REQUEST',
         })
     })
 
@@ -85,8 +83,8 @@ describe('/users (POST)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
+          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+          error: 'INTERNAL_SERVER_ERROR',
         })
     })
   })

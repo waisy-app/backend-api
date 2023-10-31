@@ -8,7 +8,7 @@ import {JwtService} from '@nestjs/jwt'
 import {Payload} from '../../src/auth/entities/payload.entity'
 import {ReasonPhrases} from 'http-status-codes'
 
-describe('/users (GET)', () => {
+describe('createUser (GraphQL)', () => {
   let app: INestApplication
   let usersService: UsersService
   let bearerToken: string
@@ -38,38 +38,63 @@ describe('/users (GET)', () => {
 
   describe('errors', () => {
     it('401: unauthorized', () => {
-      return request(app.getHttpServer()).get('/users').expect(HttpStatus.UNAUTHORIZED).expect({
-        message: ReasonPhrases.UNAUTHORIZED,
-        error: 'UNAUTHORIZED',
-      })
+      return request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query:
+            'mutation {createUser(createUserInput:{email: "test@test.test", password: "321"}) {id}}',
+        })
+        .expect(HttpStatus.OK)
+        .expect({
+          data: null,
+          errors: [
+            {
+              path: ['createUser'],
+              locations: [{line: 1, column: 11}],
+              message: ReasonPhrases.UNAUTHORIZED,
+              code: 'UNAUTHORIZED',
+            },
+          ],
+        })
     })
 
     it('500: internal server error', () => {
-      jest.spyOn(usersService, 'findAll').mockImplementationOnce(() => {
-        throw new Error()
+      jest.spyOn(usersService, 'create').mockImplementationOnce(() => {
+        throw new Error('test')
       })
       return request(app.getHttpServer())
-        .get('/users')
+        .post('/graphql')
+        .send({
+          query:
+            'mutation {createUser(createUserInput:{email: "test@test.test", password: "321"}) {id}}',
+        })
         .set('Authorization', bearerToken)
-        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect(HttpStatus.OK)
         .expect({
-          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-          error: 'INTERNAL_SERVER_ERROR',
+          data: null,
+          errors: [
+            {
+              path: ['createUser'],
+              locations: [{line: 1, column: 11}],
+              message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+              code: 'INTERNAL_SERVER_ERROR',
+            },
+          ],
         })
     })
   })
 
   describe('success', () => {
     it('200', () => {
-      const results = [
-        {id: 1, email: 't@t.t', password: '123'},
-        {id: 2, email: '2@2.2', password: '123'},
-      ]
       return request(app.getHttpServer())
-        .get('/users')
+        .post('/graphql')
+        .send({
+          query:
+            'mutation {createUser(createUserInput: {email: "test@test.test", password: "321"}) {id email}}',
+        })
         .set('Authorization', bearerToken)
         .expect(HttpStatus.OK)
-        .expect(results)
+        .expect({data: {createUser: {id: 3, email: 'test@test.test'}}})
     })
   })
 })

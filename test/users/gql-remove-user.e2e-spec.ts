@@ -8,7 +8,7 @@ import {JwtService} from '@nestjs/jwt'
 import {Payload} from '../../src/auth/entities/payload.entity'
 import {ReasonPhrases} from 'http-status-codes'
 
-describe('/users (GET)', () => {
+describe('removeUser (GraphQL)', () => {
   let app: INestApplication
   let usersService: UsersService
   let bearerToken: string
@@ -38,38 +38,60 @@ describe('/users (GET)', () => {
 
   describe('errors', () => {
     it('401: unauthorized', () => {
-      return request(app.getHttpServer()).get('/users').expect(HttpStatus.UNAUTHORIZED).expect({
-        message: ReasonPhrases.UNAUTHORIZED,
-        error: 'UNAUTHORIZED',
-      })
+      return request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: 'mutation {removeUser(id: 2)}',
+        })
+        .expect(HttpStatus.OK)
+        .expect({
+          data: null,
+          errors: [
+            {
+              path: ['removeUser'],
+              locations: [{line: 1, column: 11}],
+              message: ReasonPhrases.UNAUTHORIZED,
+              code: 'UNAUTHORIZED',
+            },
+          ],
+        })
     })
 
     it('500: internal server error', () => {
-      jest.spyOn(usersService, 'findAll').mockImplementationOnce(() => {
-        throw new Error()
+      jest.spyOn(usersService, 'remove').mockImplementationOnce(() => {
+        throw new Error('test')
       })
       return request(app.getHttpServer())
-        .get('/users')
+        .post('/graphql')
+        .send({
+          query: 'mutation {removeUser(id: 2)}',
+        })
         .set('Authorization', bearerToken)
-        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect(HttpStatus.OK)
         .expect({
-          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-          error: 'INTERNAL_SERVER_ERROR',
+          data: null,
+          errors: [
+            {
+              path: ['removeUser'],
+              locations: [{line: 1, column: 11}],
+              message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+              code: 'INTERNAL_SERVER_ERROR',
+            },
+          ],
         })
     })
   })
 
   describe('success', () => {
     it('200', () => {
-      const results = [
-        {id: 1, email: 't@t.t', password: '123'},
-        {id: 2, email: '2@2.2', password: '123'},
-      ]
       return request(app.getHttpServer())
-        .get('/users')
+        .post('/graphql')
+        .send({
+          query: 'mutation {removeUser(id: 2)}',
+        })
         .set('Authorization', bearerToken)
         .expect(HttpStatus.OK)
-        .expect(results)
+        .expect({data: {removeUser: 2}})
     })
   })
 })

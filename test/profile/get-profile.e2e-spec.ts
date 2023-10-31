@@ -7,6 +7,7 @@ import {JwtService} from '@nestjs/jwt'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 import {Payload} from '../../src/auth/entities/payload.entity'
 import {JwtAuthGuard} from '../../src/auth/guards/jwt-auth.guard'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe('/profile (GET)', () => {
   let app: INestApplication
@@ -40,8 +41,8 @@ describe('/profile (GET)', () => {
   describe('errors', () => {
     it('401: unauthorized', () => {
       return request(app.getHttpServer()).get('/profile').expect(HttpStatus.UNAUTHORIZED).expect({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Unauthorized',
+        message: ReasonPhrases.UNAUTHORIZED,
+        error: 'UNAUTHORIZED',
       })
     })
 
@@ -55,8 +56,8 @@ describe('/profile (GET)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized',
+          message: ReasonPhrases.UNAUTHORIZED,
+          error: 'UNAUTHORIZED',
         })
     })
 
@@ -73,8 +74,8 @@ describe('/profile (GET)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized',
+          message: ReasonPhrases.UNAUTHORIZED,
+          error: 'UNAUTHORIZED',
         })
     })
 
@@ -88,8 +89,8 @@ describe('/profile (GET)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.UNAUTHORIZED)
         .expect({
-          statusCode: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized',
+          message: ReasonPhrases.UNAUTHORIZED,
+          error: 'UNAUTHORIZED',
         })
     })
 
@@ -102,8 +103,8 @@ describe('/profile (GET)', () => {
         .set('Authorization', bearerToken)
         .expect(HttpStatus.INTERNAL_SERVER_ERROR)
         .expect({
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
+          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+          error: 'INTERNAL_SERVER_ERROR',
         })
     })
   })

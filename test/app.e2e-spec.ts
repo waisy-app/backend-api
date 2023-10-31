@@ -5,6 +5,7 @@ import {AppModule} from '../src/app.module'
 import {EnvironmentConfigService} from '../src/config/environment/environment.config.service'
 import {ServerConfigService} from '../src/config/server/server.config.service'
 import {AppService} from '../src/app.service'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe('AppController (e2e)', () => {
   let app: INestApplication
@@ -43,8 +44,8 @@ describe('AppController (e2e)', () => {
     })
 
     return request(app.getHttpServer()).get('/').expect(HttpStatus.REQUEST_TIMEOUT).expect({
-      statusCode: HttpStatus.REQUEST_TIMEOUT,
-      message: 'Request Timeout',
+      message: ReasonPhrases.REQUEST_TIMEOUT,
+      error: 'REQUEST_TIMEOUT',
     })
   })
 })

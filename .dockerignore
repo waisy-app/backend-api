@@ -6,6 +6,7 @@ Dockerfile
 /dist
 node_modules
 error-graph.json
+schema.gql
 
 # Logs
 logs
