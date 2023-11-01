@@ -5,7 +5,7 @@ import {DevtoolsModule} from '@nestjs/devtools-integration'
 import {UsersModule} from './users/users.module'
 import {RequestLoggerMiddleware} from './middlewares/request-logger.middleware'
 import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core'
-import {HttpExceptionFilter} from './filters/http-exception.filter'
+import {HttpExceptionFilter} from './exception-filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
 import {TimeoutInterceptor} from './interceptors/timeout.interceptor'
 import {NODE_ENV} from './config/environment/environment.config.constants'
@@ -21,12 +21,13 @@ import {
   GRAPHQL_AUTO_SCHEMA_BUILD,
   GraphqlAutoSchemaBuildType,
 } from './config/graphql/graphql.config.constants'
-import {AllExceptionsFilter} from './filters/all-exception.filter'
+import {AllExceptionsFilter} from './exception-filters/all-exception.filter'
 import {GraphQLFormattedError} from 'graphql'
-import {GraphqlExceptionFilter} from './filters/graphql-exception.filter'
+import {GraphqlExceptionFilter} from './exception-filters/graphql-exception.filter'
 import {ErrorFormatterModule} from './error-formatter/error-formatter.module'
 import {TypeOrmModule} from '@nestjs/typeorm'
 import {User} from './users/entities/user.entity'
+import {CryptService} from './crypt/crypt.service'
 
 const isDev = process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
 
@@ -108,10 +109,11 @@ const isDev = process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
         ]
       : []),
     ...configProviders,
+    CryptService,
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
+  configure(consumer: MiddlewareConsumer): void {
     if (isDev) {
       consumer.apply(RequestLoggerMiddleware).forRoutes({path: '*', method: RequestMethod.ALL})
     }

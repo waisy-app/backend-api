@@ -12,13 +12,13 @@ export class GraphqlExceptionFilter implements GqlExceptionFilter {
 
   constructor(private readonly errorFormatterService: ErrorFormatterService) {}
 
-  catch(exception: GraphQLError, host: ArgumentsHost) {
+  catch(exception: GraphQLError, host: ArgumentsHost): void {
     const gqlHost = GqlArgumentsHost.create(host)
     const requestType = gqlHost.getType<GqlContextType>()
 
     this.logger.debug(`Request type: ${requestType}`)
 
-    if (requestType === 'graphql') return this.catchGraphql(exception)
+    if (requestType === 'graphql') return
     else if (requestType === 'http') return this.catchHttp(gqlHost.switchToHttp())
 
     this.logger.warn({
@@ -27,11 +27,7 @@ export class GraphqlExceptionFilter implements GqlExceptionFilter {
     })
   }
 
-  catchGraphql(exception: GraphQLError) {
-    return exception
-  }
-
-  catchHttp(context: HttpArgumentsHost) {
+  catchHttp(context: HttpArgumentsHost): void {
     const response = context.getResponse<Response>()
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       message: ReasonPhrases.INTERNAL_SERVER_ERROR,

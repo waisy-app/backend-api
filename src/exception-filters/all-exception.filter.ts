@@ -12,7 +12,7 @@ export class AllExceptionsFilter implements GqlExceptionFilter {
 
   constructor(private readonly errorFormatterService: ErrorFormatterService) {}
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const gqlHost = GqlArgumentsHost.create(host)
     const requestType = gqlHost.getType<GqlContextType>()
 
@@ -28,15 +28,15 @@ export class AllExceptionsFilter implements GqlExceptionFilter {
     })
   }
 
-  catchGraphql() {
-    return new GraphQLError(ReasonPhrases.INTERNAL_SERVER_ERROR, {
+  catchGraphql(): void {
+    new GraphQLError(ReasonPhrases.INTERNAL_SERVER_ERROR, {
       extensions: {
         code: this.errorFormatterService.formatHttpErrorCode(ReasonPhrases.INTERNAL_SERVER_ERROR),
       },
     })
   }
 
-  catchHttp(context: HttpArgumentsHost) {
+  catchHttp(context: HttpArgumentsHost): void {
     const response = context.getResponse<Response>()
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       message: ReasonPhrases.INTERNAL_SERVER_ERROR,
