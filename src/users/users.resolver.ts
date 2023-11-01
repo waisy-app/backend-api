@@ -15,7 +15,7 @@ export class UsersResolver {
 
   @SkipJwtAuth()
   @Query(() => User, {name: 'user', nullable: true})
-  async getUser(@Args('id') id: string) {
+  async getUser(@Args('id') id: string): Promise<User | null> {
     return this.usersService.findOneByID(id)
   }
 
@@ -23,7 +23,10 @@ export class UsersResolver {
     name: 'users',
     complexity: (options: ComplexityEstimatorArgs) => options.args.count * options.childComplexity,
   })
-  async getUsers(@Args('count', {type: () => Int}) count: number, @CurrentUser() user: User) {
+  async getUsers(
+    @Args('count', {type: () => Int}) count: number,
+    @CurrentUser() user: User,
+  ): Promise<User[]> {
     this.logger.debug({
       message: 'Current user',
       user,
@@ -33,18 +36,18 @@ export class UsersResolver {
   }
 
   @Mutation(() => User)
-  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
+  createUser(@Args('createUserInput') createUserInput: CreateUserInput): Promise<User> {
     console.log(createUserInput)
     return this.usersService.create(createUserInput)
   }
 
   @Mutation(() => User)
-  async updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
+  async updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput): Promise<User> {
     return this.usersService.update(updateUserInput)
   }
 
   @Mutation(() => Int)
-  async removeUser(@Args('id') id: string) {
+  async removeUser(@Args('id') id: string): Promise<string> {
     return this.usersService.remove(id)
   }
 }

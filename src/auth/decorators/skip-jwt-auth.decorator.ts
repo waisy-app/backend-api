@@ -1,4 +1,4 @@
-import {SetMetadata} from '@nestjs/common'
+import {CustomDecorator, SetMetadata} from '@nestjs/common'
 
-export const IS_PUBLIC_KEY = 'isPublic'
-export const SkipJwtAuth = () => SetMetadata(IS_PUBLIC_KEY, true)
+export const SKIP_JWT_AUTH = 'skip_jwt_auth'
+export const SkipJwtAuth = (): CustomDecorator => SetMetadata(SKIP_JWT_AUTH, true)

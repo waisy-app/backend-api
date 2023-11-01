@@ -5,8 +5,7 @@ import {AuthService} from './auth.service'
 import {LocalAuthGuard} from './guards/local-auth.guard'
 import {SkipJwtAuth} from './decorators/skip-jwt-auth.decorator'
 import {LoginInput} from './dto/login.input'
-import {CurrentUser} from './decorators/current-user.decorator'
-import {CurrentUserType} from './types/current-user.type'
+import {CurrentUser, ICurrentUser} from './decorators/current-user.decorator'
 import {JwtRefreshGuard} from './guards/jwt-refresh.guard'
 
 @Resolver(() => Auth)
@@ -19,12 +18,12 @@ export class AuthResolver {
     description: `Get access token and refresh token. 
     Find and login already existing user or create new user if email is not registered`,
   })
-  login(@Args('loginInput') loginInput: LoginInput, @CurrentUser() user: CurrentUserType) {
+  login(@Args('input') input: LoginInput, @CurrentUser() user: ICurrentUser): Promise<Auth> {
     return this.authService.login(user.id)
   }
 
   @Mutation(() => Boolean, {description: 'Logout user by deleting refresh token from database'})
-  async logout(@CurrentUser() user: CurrentUserType) {
+  async logout(@CurrentUser() user: ICurrentUser): Promise<true> {
     await this.authService.logout(user.id)
     return true
   }
@@ -32,7 +31,7 @@ export class AuthResolver {
   @SkipJwtAuth()
   @UseGuards(JwtRefreshGuard)
   @Mutation(() => Auth, {description: 'Refresh access token and refresh token'})
-  refreshToken(@CurrentUser() user: CurrentUserType) {
+  refreshToken(@CurrentUser() user: ICurrentUser): Promise<Auth> {
     return this.authService.refreshTokens(user.id)
   }
 }

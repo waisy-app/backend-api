@@ -2,10 +2,10 @@ import {ExtractJwt, Strategy} from 'passport-jwt'
 import {PassportStrategy} from '@nestjs/passport'
 import {Injectable, Logger, UnauthorizedException} from '@nestjs/common'
 import {AuthConfigService} from '../../config/auth/auth.config.service'
-import {Payload} from '../types/payload.type'
 import {UsersService} from '../../users/users.service'
 import {JWT_STRATEGY_NAME} from './strategies.constants'
-import {User} from '../../users/models/user.model'
+import {JwtPayload} from '../auth.service'
+import {ICurrentUser} from '../decorators/current-user.decorator'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
@@ -22,12 +22,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
     })
   }
 
-  async validate(payload: Payload): Promise<User> {
+  async validate(payload: JwtPayload): Promise<ICurrentUser> {
     this.logger.debug({message: 'Validating JWT payload', payload})
     const user = await this.usersService.findOneByID(payload.sub)
     if (!user) throw new UnauthorizedException()
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const {password, refreshToken, ...result} = user
-    return result
+    return {id: user.id, email: user.email}
   }
 }

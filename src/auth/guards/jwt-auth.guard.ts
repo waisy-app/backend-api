@@ -2,8 +2,9 @@ import {JWT_STRATEGY_NAME} from '../strategies/strategies.constants'
 import {AuthGuard} from '@nestjs/passport'
 import {ExecutionContext, Injectable} from '@nestjs/common'
 import {Reflector} from '@nestjs/core'
-import {IS_PUBLIC_KEY} from '../decorators/skip-jwt-auth.decorator'
+import {SKIP_JWT_AUTH} from '../decorators/skip-jwt-auth.decorator'
 import {GqlExecutionContext} from '@nestjs/graphql'
+import {Observable} from 'rxjs'
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard(JWT_STRATEGY_NAME) {
@@ -11,8 +12,8 @@ export class JwtAuthGuard extends AuthGuard(JWT_STRATEGY_NAME) {
     super()
   }
 
-  canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(SKIP_JWT_AUTH, [
       context.getHandler(),
       context.getClass(),
     ])
@@ -20,7 +21,7 @@ export class JwtAuthGuard extends AuthGuard(JWT_STRATEGY_NAME) {
     return super.canActivate(context)
   }
 
-  getRequest(context: ExecutionContext) {
+  getRequest(context: ExecutionContext): Request {
     const ctx = GqlExecutionContext.create(context)
     return ctx.getContext().req
   }

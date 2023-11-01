@@ -6,8 +6,8 @@ export class User {
   id: string
   @Column({unique: true})
   email: string
-  @Column()
-  password: string
+  @Column({type: String, default: null, nullable: true})
+  password: string | null
   @Column({type: String, default: null, nullable: true, unique: true})
-  refreshToken?: string | null
+  refreshToken: string | null
 }
