@@ -3,21 +3,22 @@ import {Observable} from 'rxjs'
 import {catchError, tap} from 'rxjs/operators'
 import {GqlContextType, GqlExecutionContext} from '@nestjs/graphql'
 import {HttpArgumentsHost, WsArgumentsHost} from '@nestjs/common/interfaces'
+import {EnvironmentConfigService} from '../config/environment/environment.config.service'
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name)
-  private startRequestTime: number
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    this.startRequestTime = Date.now()
+    if (EnvironmentConfigService.isDevelopment) return next.handle()
+    const startRequestTime = Date.now()
     const otherInfo = this.getOtherInfo(context)
 
     return next.handle().pipe(
       tap(value => {
         this.logger.debug({
           ...otherInfo,
-          ms: this.getMS(),
+          ms: this.getMS(startRequestTime),
           message: 'Response',
           returns: value,
         })
@@ -25,7 +26,7 @@ export class LoggingInterceptor implements NestInterceptor {
       catchError(error => {
         this.logger.debug({
           ...otherInfo,
-          ms: this.getMS(),
+          ms: this.getMS(startRequestTime),
           message: 'Response with exception',
         })
         throw error
@@ -33,8 +34,8 @@ export class LoggingInterceptor implements NestInterceptor {
     )
   }
 
-  private getMS() {
-    return `+${Date.now() - this.startRequestTime}ms`
+  private getMS(startRequestTime: number): string {
+    return `+${Date.now() - startRequestTime}ms`
   }
 
   private getOtherInfo(context: ExecutionContext): object | undefined {

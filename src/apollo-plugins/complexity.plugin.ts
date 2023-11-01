@@ -4,7 +4,7 @@ import {fieldExtensionsEstimator, getComplexity, simpleEstimator} from 'graphql-
 import {ApolloServerPlugin, GraphQLRequestListener} from '@apollo/server'
 import {Logger} from '@nestjs/common'
 import {GraphqlConfigService} from '../config/graphql/graphql.config.service'
-import {GraphqlComplexityLimitError} from '../graphql-errors/graphql-complexity-limit.error'
+import {GraphqlComplexityLimitException} from '../exceptions/graphql-complexity-limit.exception'
 
 @Plugin()
 export class ComplexityPlugin implements ApolloServerPlugin {
@@ -31,7 +31,7 @@ export class ComplexityPlugin implements ApolloServerPlugin {
         })
         if (complexity > maxComplexity) {
           const errorText = `Query is too complex: ${complexity}. Maximum allowed complexity: ${maxComplexity}`
-          throw new GraphqlComplexityLimitError(errorText)
+          throw new GraphqlComplexityLimitException(errorText)
         }
         logger.debug(`Query complexity: ${complexity}`)
       },

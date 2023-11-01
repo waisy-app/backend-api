@@ -1,45 +1,32 @@
-import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common'
+import {Injectable} from '@nestjs/common'
 import {User} from './entities/user.entity'
-import {CreateUserInput} from './dto/create-user.input'
 import {InjectRepository} from '@nestjs/typeorm'
 import {Repository} from 'typeorm'
-import {UpdateUserInput} from './dto/update-user.input'
+
+type ICreateUserInput = Pick<User, 'email' | 'password'>
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
+  constructor(@InjectRepository(User) readonly usersRepository: Repository<User>) {}
 
-  async create(createUserInput: CreateUserInput): Promise<User> {
-    const user = await this.findOneByEmail(createUserInput.email)
-    if (user) {
-      throw new BadRequestException(`User with email ${createUserInput.email} already exists`)
-    }
-    const newUser = this.usersRepository.create(createUserInput)
+  async createOrUpdate(userInput: ICreateUserInput): Promise<User> {
+    const newUser = this.usersRepository.create(userInput)
     return this.usersRepository.save(newUser, {data: {password: true, email: true, id: true}})
-  }
-
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find()
   }
 
   async findOneByID(id: User['id']): Promise<User | null> {
     return this.usersRepository.findOneBy({id})
   }
 
-  async update(updateUserInput: UpdateUserInput): Promise<User> {
-    const user = await this.usersRepository.findOneBy({id: updateUserInput.id})
-    if (!user) throw new NotFoundException(`User not found`)
-    const {id, ...userUpdateData} = updateUserInput
-    await this.usersRepository.update(id, userUpdateData)
-    return {...user, ...updateUserInput}
-  }
-
-  async remove(id: User['id']): Promise<User['id']> {
-    await this.usersRepository.delete(id)
-    return id
-  }
-
   async findOneByEmail(email: User['email']): Promise<User | null> {
     return this.usersRepository.findOneBy({email})
+  }
+
+  async updateRefreshToken(id: User['id'], refreshToken: User['refreshToken']): Promise<void> {
+    await this.usersRepository.update(id, {refreshToken})
+  }
+
+  async remove(id: User['id']): Promise<void> {
+    await this.usersRepository.delete(id)
   }
 }

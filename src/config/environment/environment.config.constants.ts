@@ -14,9 +14,3 @@ export const APP_NAME = {
   name: 'APP_NAME',
   defaultValue: 'NEST',
 }
-
-export type TestType = 1
-export const TEST = {
-  name: 'TEST',
-  defaultValue: 1,
-}

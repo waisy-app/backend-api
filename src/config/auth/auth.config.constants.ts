@@ -8,7 +8,7 @@ export const JWT_SECRET_TOKEN = {
 export type JwtAccessTokenExpiresInType = string
 export const JWT_ACCESS_TOKEN_EXPIRES_IN = {
   name: 'JWT_ACCESS_TOKEN_EXPIRES_IN',
-  default: '15d',
+  default: '1h',
 }
 
 export type JwtRefreshSecretTokenType = string

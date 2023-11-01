@@ -24,7 +24,7 @@ export class AuthService {
   }
 
   async logout(userID: User['id']): Promise<void> {
-    await this.usersService.update({id: userID, refreshToken: null})
+    await this.usersService.updateRefreshToken(userID, null)
   }
 
   async refreshTokens(userID: User['id']): Promise<Auth> {
@@ -35,7 +35,7 @@ export class AuthService {
 
   private async updateRefreshToken(userID: User['id'], refreshToken: string): Promise<void> {
     const hashToken = await this.cryptService.hashText(refreshToken)
-    await this.usersService.update({refreshToken: hashToken, id: userID})
+    await this.usersService.updateRefreshToken(userID, hashToken)
   }
 
   private async getTokens(userID: User['id']): Promise<Auth> {

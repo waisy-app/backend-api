@@ -12,6 +12,7 @@ import {JwtAuthGuard} from './guards/jwt-auth.guard'
 import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
 import {AuthResolver} from './auth.resolver'
 import {jwtModuleConfig} from './config/jwt-module.config'
+import {CryptService} from '../crypt/crypt.service'
 
 @Module({
   imports: [UsersModule, PassportModule, JwtModule.registerAsync(jwtModuleConfig)],
@@ -24,6 +25,7 @@ import {jwtModuleConfig} from './config/jwt-module.config'
     RefreshTokenStrategy,
     AuthService,
     AuthResolver,
+    CryptService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

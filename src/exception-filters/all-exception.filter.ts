@@ -18,7 +18,6 @@ export class AllExceptionsFilter implements GqlExceptionFilter {
 
     this.logger.debug(`Request type: ${requestType}`)
 
-    this.logger.error(exception)
     if (requestType === 'graphql') return this.catchGraphql()
     else if (requestType === 'http') return this.catchHttp(gqlHost.switchToHttp())
 
@@ -29,7 +28,7 @@ export class AllExceptionsFilter implements GqlExceptionFilter {
   }
 
   catchGraphql(): void {
-    new GraphQLError(ReasonPhrases.INTERNAL_SERVER_ERROR, {
+    throw new GraphQLError(ReasonPhrases.INTERNAL_SERVER_ERROR, {
       extensions: {
         code: this.errorFormatterService.formatHttpErrorCode(ReasonPhrases.INTERNAL_SERVER_ERROR),
       },

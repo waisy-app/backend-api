@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nest build",
     "build:webpack": "nest build --webpack --path tsconfig.build-webpack.json",
-    "graphql:generate-schema": "ts-node src/schema-generator.ts",
+    "graphql:generate-schema": "ts-node src/scripts/schema-generator.script.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -21,7 +21,7 @@
     "test:watch": "NODE_ENV=test jest --watch",
     "test:cov": "NODE_ENV=test jest --coverage",
     "test:debug": "NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json"
+    "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json --runInBand"
   },
   "engines": {
     "node": ">=18.18.0"
@@ -32,7 +32,6 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/devtools-integration": "^0.1.5",
     "@nestjs/graphql": "^12.0.9",
     "@nestjs/jwt": "^10.1.1",
     "@nestjs/mapped-types": "*",

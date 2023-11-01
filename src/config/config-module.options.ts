@@ -1,27 +1,14 @@
-import {ServerConfigService} from './server/server.config.service'
-import {EnvironmentConfigService} from './environment/environment.config.service'
 import * as Joi from 'joi'
-import {ConfigModule} from '@nestjs/config'
+import {ConfigModuleOptions} from '@nestjs/config'
 import serverConfigEnvValidation from './server/server.config.env-validation'
 import environmentConfigEnvValidation from './environment/environment.config.env-validation'
 import {NODE_ENV} from './environment/environment.config.constants'
-import {LoggerConfigService} from './logger/logger.config.service'
 import loggerConfigEnvValidation from './logger/logger.config.env-validation'
-import {AuthConfigService} from './auth/auth.config.service'
 import authConfigEnvValidation from './auth/auth.config.env-validation'
 import authConfig from './auth/auth.config'
 import serverConfig from './server/server.config'
-import {GraphqlConfigService} from './graphql/graphql.config.service'
 import graphqlConfigEnvValidation from './graphql/graphql.config.env-validation'
-
-// Add all config services here
-export const configProviders = [
-  EnvironmentConfigService,
-  ServerConfigService,
-  LoggerConfigService,
-  AuthConfigService,
-  GraphqlConfigService,
-]
+import postgresConfigEnvValidation from './postgres/postgres.config.env-validation'
 
 // Add all custom config here
 const configsForLoad = [authConfig, serverConfig]
@@ -33,9 +20,10 @@ const validationSchema = Joi.object({
   ...loggerConfigEnvValidation,
   ...authConfigEnvValidation,
   ...graphqlConfigEnvValidation,
+  ...postgresConfigEnvValidation,
 })
 
-export const configModule = ConfigModule.forRoot({
+export const configModuleOptions: ConfigModuleOptions = {
   envFilePath:
     process.env[NODE_ENV.name] === NODE_ENV.options.TEST
       ? ['.env.test.local', '.env.test', '.env']
@@ -50,4 +38,4 @@ export const configModule = ConfigModule.forRoot({
   expandVariables: true,
   load: configsForLoad,
   validationSchema,
-})
+}

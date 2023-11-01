@@ -48,6 +48,6 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
     } else if (typeof exceptionBody.message === 'string') {
       code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.message)
     } else code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.message[0])
-    new GraphQLError(exceptionBody.message.toString(), {extensions: {code}})
+    throw new GraphQLError(exceptionBody.message.toString(), {extensions: {code}})
   }
 }

@@ -15,23 +15,23 @@ import {
 export class AuthConfigService {
   constructor(private configService: ConfigService) {}
 
-  get jwtSecretToken() {
+  get jwtSecretToken(): JwtSecretTokenType {
     return this.configService.get(JWT_SECRET_TOKEN.name) as JwtSecretTokenType
   }
 
-  get jwtAccessTokenExpiresIn() {
+  get jwtAccessTokenExpiresIn(): JwtAccessTokenExpiresInType {
     return this.configService.get(JWT_ACCESS_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
   }
 
-  get jwtRefreshSecretToken() {
+  get jwtRefreshSecretToken(): JwtSecretTokenType {
     return this.configService.get(JWT_REFRESH_SECRET_TOKEN.name) as JwtSecretTokenType
   }
 
-  get jwtRefreshTokenExpiresIn() {
+  get jwtRefreshTokenExpiresIn(): JwtAccessTokenExpiresInType {
     return this.configService.get(JWT_REFRESH_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
   }
 
-  get hashRounds() {
+  get hashRounds(): HashRoundsType {
     return this.configService.get(HASH_ROUNDS.name) as HashRoundsType
   }
 }

@@ -1,6 +1,6 @@
 import {UseGuards} from '@nestjs/common'
 import {Auth} from './models/auth.model'
-import {Args, Mutation, Resolver} from '@nestjs/graphql'
+import {Args, Mutation, Query, Resolver} from '@nestjs/graphql'
 import {AuthService} from './auth.service'
 import {LocalAuthGuard} from './guards/local-auth.guard'
 import {SkipJwtAuth} from './decorators/skip-jwt-auth.decorator'
@@ -33,5 +33,11 @@ export class AuthResolver {
   @Mutation(() => Auth, {description: 'Refresh access token and refresh token'})
   refreshToken(@CurrentUser() user: ICurrentUser): Promise<Auth> {
     return this.authService.refreshTokens(user.id)
+  }
+
+  @SkipJwtAuth()
+  @Query(() => String)
+  test(): string {
+    return 'test'
   }
 }
