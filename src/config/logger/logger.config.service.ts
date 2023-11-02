@@ -11,11 +11,19 @@ import {
 export class LoggerConfigService {
   constructor(private configService: ConfigService) {}
 
-  get loggerLevel() {
+  get loggerLevel(): LoggerLevelType {
     return this.configService.get(LOGGER_LEVEL.name) as LoggerLevelType
   }
 
-  get loggerFormat() {
+  get loggerFormat(): LoggerFormatType {
     return this.configService.get(LOGGER_FORMAT.name) as LoggerFormatType
+  }
+
+  static get isPrettyFormat(): boolean {
+    return process.env[LOGGER_FORMAT.name] === LOGGER_FORMAT.options.PRETTY
+  }
+
+  static get isJsonFormat(): boolean {
+    return process.env[LOGGER_FORMAT.name] === LOGGER_FORMAT.options.JSON
   }
 }

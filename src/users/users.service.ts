@@ -1,46 +1,32 @@
-import {Injectable, NotFoundException} from '@nestjs/common'
-import {UpdateUserDto} from './dto/update-user.dto'
+import {Injectable} from '@nestjs/common'
 import {User} from './entities/user.entity'
-import {CreateUserInput} from './dto/create-user.input'
+import {InjectRepository} from '@nestjs/typeorm'
+import {Repository} from 'typeorm'
+
+type ICreateUserInput = Pick<User, 'email' | 'password'>
 
 @Injectable()
 export class UsersService {
-  public readonly users: User[] = []
-  public lastID: number = 0
+  constructor(@InjectRepository(User) readonly usersRepository: Repository<User>) {}
 
-  async create(createUserInput: CreateUserInput): Promise<User> {
-    const id = ++this.lastID
-    const user = {...createUserInput, id}
-    this.users.push(user)
-    return user
+  async createOrUpdate(userInput: ICreateUserInput): Promise<User> {
+    const newUser = this.usersRepository.create(userInput)
+    return this.usersRepository.save(newUser, {data: {password: true, email: true, id: true}})
   }
 
-  async findAll(): Promise<User[]> {
-    return this.users
+  async findOneByID(id: User['id']): Promise<User | null> {
+    return this.usersRepository.findOneBy({id})
   }
 
-  async findOneByID(id: number): Promise<User | null> {
-    const user = this.users.find(user => user.id === id)
-    return user ?? null
+  async findOneByEmail(email: User['email']): Promise<User | null> {
+    return this.usersRepository.findOneBy({email})
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = this.users.find(user => user.id === id)
-    if (!user) throw new NotFoundException('User not found')
-    const newUser = {...user, ...updateUserDto}
-    this.users.splice(this.users.indexOf(user), 1, newUser)
-    return newUser
+  async updateRefreshToken(id: User['id'], refreshToken: User['refreshToken']): Promise<void> {
+    await this.usersRepository.update(id, {refreshToken})
   }
 
-  async remove(id: number): Promise<number> {
-    const user = this.users.find(user => user.id === id)
-    if (!user) throw new NotFoundException('User not found')
-    this.users.splice(this.users.indexOf(user), 1)
-    return user.id
-  }
-
-  async findOneByEmail(email: string): Promise<User | null> {
-    const user = this.users.find(user => user.email === email)
-    return user ?? null
+  async remove(id: User['id']): Promise<void> {
+    await this.usersRepository.delete(id)
   }
 }

@@ -1,7 +1,6 @@
 name: Node.js CI
 
-on:
-  push:
+on: push
 
 env:
   NODE_ENV: test
@@ -13,12 +12,27 @@ jobs:
     strategy:
       matrix:
         node-version: [18.18]
+        postgres-version: [16.0]
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres-version }}
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: 1234
+          POSTGRES_USER: waisy
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -31,6 +45,9 @@ jobs:
 
       - name: Check for linting
         run: npm run lint:check
+
+      - name: GraphQL generate schema
+        run: npm run graphql:generate-schema
 
       - name: Run tests
         run: npm test

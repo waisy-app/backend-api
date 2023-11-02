@@ -3,6 +3,6 @@ import {NODE_ENV} from '../environment/environment.config.constants'
 
 const isTest = process.env[NODE_ENV.name] === NODE_ENV.options.TEST
 
-export default () => ({
+export default (): Record<string, unknown> => ({
   [HASH_ROUNDS.name]: isTest ? 1 : HASH_ROUNDS.defaultValue,
 })

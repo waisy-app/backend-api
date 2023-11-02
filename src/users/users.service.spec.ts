@@ -1,107 +1,126 @@
 import {Test} from '@nestjs/testing'
 import {UsersService} from './users.service'
-import {NotFoundException} from '@nestjs/common'
+import {getRepositoryToken} from '@nestjs/typeorm'
+import {User} from './entities/user.entity'
 
-describe('UsersService', () => {
-  let service: UsersService
+describe(UsersService.name, () => {
+  let usersService: UsersService
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [UsersService],
+      providers: [
+        UsersService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+            findOneBy: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+      ],
     }).compile()
 
-    service = module.get(UsersService)
-
-    service.users.push(
-      {id: 1, email: 'test@test.com', password: '123'},
-      {id: 2, email: 'test2@test2.com', password: '123'},
-    )
-    service.lastID = 2
+    usersService = module.get(UsersService)
   })
 
-  describe('create', () => {
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  describe(UsersService.prototype.createOrUpdate.name, () => {
     it('should return a created user', async () => {
-      expect(await service.create({email: 'test3@test3.com', password: '123'})).toStrictEqual({
-        id: 3,
-        email: 'test3@test3.com',
-        password: '123',
-      })
-    })
+      const userInput = {email: 't@t.com', password: '123'}
+      const expected = {
+        id: '1',
+        refreshToken: null,
+        ...userInput,
+      }
 
-    it('should create a user', async () => {
-      await service.create({email: 'test3@test3.com', password: '123'})
-      expect(service.users).toStrictEqual([
-        {id: 1, email: 'test@test.com', password: '123'},
-        {id: 2, email: 'test2@test2.com', password: '123'},
-        {id: 3, email: 'test3@test3.com', password: '123'},
-      ])
-    })
+      jest.spyOn(usersService.usersRepository, 'create').mockReturnValueOnce(expected)
+      jest.spyOn(usersService.usersRepository, 'save').mockResolvedValueOnce(expected)
 
-    it('should increment lastID', async () => {
-      await service.create({email: 'ttt@ttt.com', password: '123'})
-      expect(service.lastID).toBe(3)
+      const user = await usersService.createOrUpdate(userInput)
+      expect(user).toStrictEqual(expected)
     })
   })
 
-  describe('findAll', () => {
-    it('should return all users', async () => {
-      expect(await service.findAll()).toStrictEqual([
-        {id: 1, email: 'test@test.com', password: '123'},
-        {id: 2, email: 'test2@test2.com', password: '123'},
-      ])
-    })
-  })
-
-  describe('findOne', () => {
+  describe(UsersService.prototype.findOneByID.name, () => {
     it('should return a user', async () => {
-      expect(await service.findOneByID(1)).toStrictEqual({
-        id: 1,
-        email: 'test@test.com',
+      const expected = {
+        id: '1',
+        email: 't@t.com',
         password: '123',
-      })
+        refreshToken: null,
+      }
+
+      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
+
+      const user = await usersService.findOneByID(expected.id)
+      expect(user).toStrictEqual(expected)
     })
 
     it('should return null', async () => {
-      expect(await service.findOneByID(0)).toBeNull()
+      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(null)
+
+      const userID = '0'
+      const result = await usersService.findOneByID(userID)
+      expect(result).toBeNull()
     })
   })
 
-  describe('update', () => {
-    it('should return an updated user', async () => {
-      expect(await service.update(1, {email: 'ttt@ttt.com', password: '321'})).toStrictEqual({
-        id: 1,
-        email: 'ttt@ttt.com',
-        password: '321',
-      })
+  describe(UsersService.prototype.findOneByEmail.name, () => {
+    it('should return a user', async () => {
+      const expected = {
+        id: '1',
+        email: 't@t.com',
+        password: '123',
+        refreshToken: null,
+      }
+
+      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
+
+      const user = await usersService.findOneByEmail(expected.id)
+      expect(user).toStrictEqual(expected)
     })
 
+    it('should return null', async () => {
+      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(null)
+
+      const userID = '0'
+      const result = await usersService.findOneByEmail(userID)
+      expect(result).toBeNull()
+    })
+  })
+
+  describe(UsersService.prototype.updateRefreshToken.name, () => {
     it('should update a user', async () => {
-      await service.update(1, {email: 'ttt@ttt.com'})
-      expect(service.users).toStrictEqual([
-        {id: 1, email: 'ttt@ttt.com', password: '123'},
-        {id: 2, email: 'test2@test2.com', password: '123'},
-      ])
-    })
+      jest.spyOn(usersService.usersRepository, 'update').mockReturnValueOnce(
+        new Promise(resolve => {
+          resolve({affected: 1, raw: {}, generatedMaps: []})
+        }),
+      )
 
-    it('should throw an error 404', () => {
-      const error = new NotFoundException('User not found')
-      expect(() => service.update(3, {email: 'ttt@ttt.com'})).rejects.toThrowError(error)
+      const userID = '1'
+      const refreshToken = '123'
+      await usersService.updateRefreshToken(userID, refreshToken)
+      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {refreshToken})
     })
   })
 
-  describe('remove', () => {
+  describe(UsersService.prototype.remove.name, () => {
     it('should remove a user', async () => {
-      await service.remove(1)
-      expect(service.users).toStrictEqual([{id: 2, email: 'test2@test2.com', password: '123'}])
-    })
+      jest.spyOn(usersService.usersRepository, 'delete').mockReturnValueOnce(
+        new Promise(resolve => {
+          resolve({affected: 1, raw: {}})
+        }),
+      )
 
-    it('should return a removed user id', async () => {
-      expect(await service.remove(1)).toBe(1)
-    })
-
-    it('should throw an error 404', () => {
-      const error = new NotFoundException('User not found')
-      expect(() => service.remove(3)).rejects.toThrowError(error)
+      const userID = '1'
+      await usersService.remove(userID)
+      expect(usersService.usersRepository.delete).toHaveBeenCalledWith(userID)
     })
   })
 })

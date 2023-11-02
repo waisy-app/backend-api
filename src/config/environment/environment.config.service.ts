@@ -1,28 +1,28 @@
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {APP_NAME, AppNameType, NODE_ENV, TEST, TestType} from './environment.config.constants'
+import {APP_NAME, AppNameType, NODE_ENV, NodeEnvType} from './environment.config.constants'
 
 @Injectable()
 export class EnvironmentConfigService {
   constructor(private configService: ConfigService) {}
 
-  get isDevelopment(): boolean {
-    return this.configService.get(NODE_ENV.name) === NODE_ENV.options.DEVELOPMENT
+  static get isDevelopment(): boolean {
+    return process.env[NODE_ENV.name] === NODE_ENV.options.DEVELOPMENT
   }
 
-  get isProduction(): boolean {
-    return this.configService.get(NODE_ENV.name) === NODE_ENV.options.PRODUCTION
+  static get isProduction(): boolean {
+    return process.env[NODE_ENV.name] === NODE_ENV.options.PRODUCTION
   }
 
-  get isTest(): boolean {
-    return this.configService.get(NODE_ENV.name) === NODE_ENV.options.TEST
+  static get isTest(): boolean {
+    return process.env[NODE_ENV.name] === NODE_ENV.options.TEST
   }
 
-  get appName() {
+  get nodeEnv(): NodeEnvType {
+    return this.configService.get(NODE_ENV.name) as NodeEnvType
+  }
+
+  get appName(): AppNameType {
     return this.configService.get(APP_NAME.name) as AppNameType
-  }
-
-  get test() {
-    return this.configService.get(TEST.name) as TestType
   }
 }
