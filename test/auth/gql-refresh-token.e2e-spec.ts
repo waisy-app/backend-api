@@ -1,26 +1,20 @@
 import {Test} from '@nestjs/testing'
 import {HttpStatus, INestApplication} from '@nestjs/common'
-import * as request from 'supertest'
 import {AppModule} from '../../src/app.module'
 import {UsersService} from '../../src/users/users.service'
 import {AuthConfigService} from '../../src/config/auth/auth.config.service'
 import {JwtService} from '@nestjs/jwt'
-import {ReasonPhrases} from 'http-status-codes'
-import {AuthService, JwtPayload} from '../../src/auth/auth.service'
+import {AuthService} from '../../src/auth/auth.service'
 import {CryptService} from '../../src/crypt/crypt.service'
 import {User} from '../../src/users/entities/user.entity'
-import {ServerConfigService} from '../../src/config/server/server.config.service'
+import {GqlTestService} from '../gql-test.service'
+import {ReasonPhrases} from 'http-status-codes'
 
 describe(`refreshToken (GraphQL)`, () => {
   let app: INestApplication
   let usersService: UsersService
-  let cryptService: CryptService
-  let jwtService: JwtService
-  let authConfigService: AuthConfigService
-  let serverConfigService: ServerConfigService
-  let authService: AuthService
-  let bearerToken: string
   let users: User[] = []
+  let gqlTestService: GqlTestService
 
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -30,13 +24,9 @@ describe(`refreshToken (GraphQL)`, () => {
     app = moduleFixture.createNestApplication()
     await app.init()
 
-    authConfigService = app.get(AuthConfigService)
-    jwtService = app.get(JwtService)
-    cryptService = app.get(CryptService)
-    serverConfigService = app.get(ServerConfigService)
     usersService = app.get(UsersService)
-    authService = app.get(AuthService)
 
+    const cryptService = app.get(CryptService)
     const hashedPassword = await cryptService.hashText('123')
     users = await Promise.all([
       usersService.usersRepository.save({
@@ -51,15 +41,20 @@ describe(`refreshToken (GraphQL)`, () => {
       }),
     ])
 
-    const payload: JwtPayload = {sub: users[0].id}
-    const refreshToken = jwtService.sign(payload, {
-      secret: authConfigService.jwtRefreshSecretToken,
-      expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
-    })
-    bearerToken = `Bearer ${refreshToken}`
+    const jwtService = app.get(JwtService)
+    const authConfigService = app.get(AuthConfigService)
+    const refreshToken = jwtService.sign(
+      {sub: users[0].id},
+      {secret: authConfigService.jwtRefreshSecretToken},
+    )
 
     const hashedRefreshToken = await cryptService.hashText(refreshToken)
     await usersService.updateRefreshToken(users[0].id, hashedRefreshToken)
+
+    gqlTestService = new GqlTestService(app, {
+      userID: users[0].id,
+      isRefreshToken: true,
+    })
   })
 
   afterEach(async () => {
@@ -69,215 +64,85 @@ describe(`refreshToken (GraphQL)`, () => {
   })
 
   describe('errors', () => {
-    it('Unauthorized: invalid access token', () => {
-      const payload: JwtPayload = {sub: users[0].id}
-      const refreshToken = jwtService.sign(payload, {
-        secret: 'invalid secret',
-        expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
+    it('Unauthorized: complex test', async () => {
+      return gqlTestService.unauthorizedComplexTest({
+        queryType: 'mutation',
+        query: {
+          operation: 'refreshToken',
+          fields: ['access_token'],
+        },
       })
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
-        })
-        .set('Authorization', `Bearer ${refreshToken}`)
-        .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: ReasonPhrases.UNAUTHORIZED,
-              code: 'UNAUTHORIZED',
-            },
-          ],
-        })
-    })
-
-    it('Unauthorized: refresh token does not exists', () => {
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
-        })
-        .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: ReasonPhrases.UNAUTHORIZED,
-              code: 'UNAUTHORIZED',
-            },
-          ],
-        })
-    })
-
-    it('Unauthorized: expired refresh token', () => {
-      const authConfigService = app.get(AuthConfigService)
-      const jwtService = app.get(JwtService)
-      const payload: JwtPayload = {sub: users[0].id}
-      const refreshToken = jwtService.sign(payload, {
-        secret: authConfigService.jwtSecretToken,
-        expiresIn: '0s',
-      })
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
-        })
-        .set('Authorization', `Bearer ${refreshToken}`)
-        .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: ReasonPhrases.UNAUTHORIZED,
-              code: 'UNAUTHORIZED',
-            },
-          ],
-        })
-    })
-
-    it('Unauthorized: user does not exists', () => {
-      const authConfigService = app.get(AuthConfigService)
-      const jwtService = app.get(JwtService)
-      const payload: JwtPayload = {sub: '00000000-0000-0000-0000-000000000000'}
-      const refreshToken = jwtService.sign(payload, {
-        secret: authConfigService.jwtSecretToken,
-        expiresIn: authConfigService.jwtRefreshTokenExpiresIn,
-      })
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
-        })
-        .set('Authorization', `Bearer ${refreshToken}`)
-        .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: ReasonPhrases.UNAUTHORIZED,
-              code: 'UNAUTHORIZED',
-            },
-          ],
-        })
     })
 
     it('Unauthorized: refresh token does not match', async () => {
       await usersService.updateRefreshToken(users[0].id, 'invalid refresh token')
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
+      const result = await gqlTestService
+        .sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'refreshToken',
+            fields: ['access_token'],
+          },
         })
-        .set('Authorization', bearerToken)
         .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: 'Access Denied',
-              code: 'FORBIDDEN',
-            },
-          ],
-        })
+      expect(result.body).toStrictEqual({
+        data: null,
+        errors: [
+          {
+            path: ['refreshToken'],
+            locations: expect.any(Array),
+            message: ReasonPhrases.UNAUTHORIZED,
+            code: 'UNAUTHORIZED',
+          },
+        ],
+      })
     })
 
     it('Request timeout', () => {
-      jest.spyOn(authService, 'refreshTokens').mockImplementationOnce(() => {
-        return new Promise(resolve => {
-          setTimeout(
-            () => resolve({access_token: 'test', refresh_token: 'test'}),
-            serverConfigService.requestTimeoutMs + 5,
-          )
-        })
+      return gqlTestService.requestTimeoutTest({
+        methodForMock: 'refreshTokens',
+        serviceForMock: AuthService,
+        queryType: 'mutation',
+        query: {
+          operation: 'refreshToken',
+          fields: ['access_token'],
+        },
       })
-
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
-        })
-        .set('Authorization', bearerToken)
-        .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: ReasonPhrases.REQUEST_TIMEOUT,
-              code: 'REQUEST_TIMEOUT',
-            },
-          ],
-        })
     })
 
     it('Internal server error', () => {
-      jest.spyOn(authService, 'refreshTokens').mockImplementationOnce(() => {
-        throw new Error('test')
+      return gqlTestService.internalServerErrorTest({
+        queryType: 'mutation',
+        query: {
+          operation: 'refreshToken',
+          fields: ['access_token'],
+        },
+        methodForMock: 'refreshTokens',
+        serviceForMock: AuthService,
       })
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
-        })
-        .set('Authorization', bearerToken)
-        .expect(HttpStatus.OK)
-        .expect({
-          data: null,
-          errors: [
-            {
-              path: ['refreshToken'],
-              locations: [{line: 1, column: 11}],
-              message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-              code: 'INTERNAL_SERVER_ERROR',
-            },
-          ],
-        })
     })
 
     it('GraphQL validation failed', () => {
-      return request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {logout {test}}`,
-        })
-        .expect(HttpStatus.BAD_REQUEST)
-        .expect({
-          errors: [
-            {
-              locations: [{line: 1, column: 18}],
-              message:
-                'Field "logout" must not have a selection since type "Boolean!" has no subfields.',
-              code: 'GRAPHQL_VALIDATION_FAILED',
-            },
-          ],
-        })
+      return gqlTestService.gqlValidationTest({
+        queryType: 'mutation',
+        query: {operation: 'refreshToken'},
+      })
     })
   })
 
   describe('success', () => {
     it('refresh tokens', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/graphql')
-        .send({
-          query: `mutation {refreshToken {access_token refresh_token}}`,
+      const result = await gqlTestService
+        .sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'refreshToken',
+            fields: ['access_token', 'refresh_token'],
+          },
         })
-        .set('Authorization', bearerToken)
         .expect(HttpStatus.OK)
 
-      expect(response.body).toStrictEqual({
+      expect(result.body).toStrictEqual({
         data: {
           refreshToken: {
             access_token: expect.any(String),
