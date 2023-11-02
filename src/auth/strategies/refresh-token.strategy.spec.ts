@@ -52,17 +52,17 @@ describe(RefreshTokenStrategy.name, () => {
       )
     })
 
-    it('should throw ForbiddenException if user not found', async () => {
+    it('should throw UnauthorizedException if user not found', async () => {
       const req = {get: jest.fn()}
       req.get.mockReturnValue('Bearer token')
       const userID = '1'
-      const expectedError = new UnauthorizedException('Access Denied')
+      const expectedError = new UnauthorizedException()
       await expect(refreshTokenStrategy.validate(req as any, {sub: userID})).rejects.toThrow(
         expectedError,
       )
     })
 
-    it('should throw ForbiddenException if refresh token not match', async () => {
+    it('should throw UnauthorizedException if refresh token not match', async () => {
       const req = {get: jest.fn()}
       req.get.mockReturnValue('Bearer token')
       const userID = '1'
@@ -70,7 +70,7 @@ describe(RefreshTokenStrategy.name, () => {
       user.refreshToken = 'refreshToken'
       jest.spyOn(usersService, 'findOneByID').mockResolvedValueOnce(user)
       jest.spyOn(cryptService, 'compareHash').mockResolvedValueOnce(false)
-      const expectedError = new UnauthorizedException('Access Denied')
+      const expectedError = new UnauthorizedException()
       await expect(refreshTokenStrategy.validate(req as any, {sub: userID})).rejects.toThrow(
         expectedError,
       )

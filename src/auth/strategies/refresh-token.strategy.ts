@@ -1,7 +1,7 @@
 import {PassportStrategy} from '@nestjs/passport'
 import {ExtractJwt, Strategy} from 'passport-jwt'
 import {Request} from 'express'
-import {ForbiddenException, Injectable, UnauthorizedException} from '@nestjs/common'
+import {Injectable, UnauthorizedException} from '@nestjs/common'
 import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {JWT_REFRESH_STRATEGY_NAME} from './strategies.constants'
 import {UsersService} from '../../users/users.service'
@@ -33,7 +33,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
       authRefreshToken,
       `${user?.refreshToken}`,
     )
-    if (!user || !isTokenMatch) throw new ForbiddenException('Access Denied')
+    if (!user || !isTokenMatch) throw new UnauthorizedException()
     return {id: user.id, email: user.email}
   }
 }
