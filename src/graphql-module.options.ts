@@ -20,6 +20,7 @@ export const graphqlModuleOptions: GqlModuleAsyncOptions<
     includeStacktraceInErrorResponses: false,
     introspection: EnvironmentConfigService.isDevelopment,
     autoSchemaFile: configService.get(GRAPHQL_AUTO_SCHEMA_BUILD.name) && 'schema.gql',
+    subscriptions: {'graphql-ws': true},
     plugins: EnvironmentConfigService.isDevelopment
       ? [ApolloServerPluginLandingPageLocalDefault()]
       : undefined,
