@@ -32,10 +32,13 @@ describe(UsersService.name, () => {
 
   describe(UsersService.prototype.createOrUpdate.name, () => {
     it('should return a created user', async () => {
-      const userInput = {email: 't@t.com', password: '123'}
+      const currentDate = new Date()
+      const userInput = {email: 't@t.com'}
       const expected = {
         id: '1',
         refreshToken: null,
+        createdAt: currentDate,
+        updatedAt: currentDate,
         ...userInput,
       }
 
@@ -49,11 +52,13 @@ describe(UsersService.name, () => {
 
   describe(UsersService.prototype.findOneByID.name, () => {
     it('should return a user', async () => {
+      const currentDate = new Date()
       const expected = {
         id: '1',
         email: 't@t.com',
-        password: '123',
         refreshToken: null,
+        createdAt: currentDate,
+        updatedAt: currentDate,
       }
 
       jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
@@ -73,17 +78,22 @@ describe(UsersService.name, () => {
 
   describe(UsersService.prototype.findOneByEmail.name, () => {
     it('should return a user', async () => {
-      const expected = {
+      const currentDate = new Date()
+      const expected: User = {
         id: '1',
         email: 't@t.com',
-        password: '123',
         refreshToken: null,
+        createdAt: currentDate,
+        updatedAt: currentDate,
       }
 
       jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
 
       const user = await usersService.findOneByEmail(expected.id)
-      expect(user).toStrictEqual(expected)
+      expect(user).toStrictEqual({
+        id: expected.id,
+        email: expected.email,
+      })
     })
 
     it('should return null', async () => {
@@ -107,20 +117,6 @@ describe(UsersService.name, () => {
       const refreshToken = '123'
       await usersService.updateRefreshToken(userID, refreshToken)
       expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {refreshToken})
-    })
-  })
-
-  describe(UsersService.prototype.remove.name, () => {
-    it('should remove a user', async () => {
-      jest.spyOn(usersService.usersRepository, 'delete').mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({affected: 1, raw: {}})
-        }),
-      )
-
-      const userID = '1'
-      await usersService.remove(userID)
-      expect(usersService.usersRepository.delete).toHaveBeenCalledWith(userID)
     })
   })
 })

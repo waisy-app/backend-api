@@ -13,9 +13,15 @@ import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
 import {AuthResolver} from './auth.resolver'
 import {jwtModuleConfig} from './config/jwt-module.config'
 import {CryptService} from '../crypt/crypt.service'
+import {MailConfirmationModule} from '../mail-confirmation/mail-confirmation.module'
 
 @Module({
-  imports: [UsersModule, PassportModule, JwtModule.registerAsync(jwtModuleConfig)],
+  imports: [
+    UsersModule,
+    PassportModule,
+    MailConfirmationModule,
+    JwtModule.registerAsync(jwtModuleConfig),
+  ],
   providers: [
     AuthService,
     LocalStrategy,

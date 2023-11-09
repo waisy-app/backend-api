@@ -4,9 +4,9 @@ import {Args, Mutation, Query, Resolver} from '@nestjs/graphql'
 import {AuthService} from './auth.service'
 import {LocalAuthGuard} from './guards/local-auth.guard'
 import {SkipJwtAuth} from './decorators/skip-jwt-auth.decorator'
-import {LoginInput} from './dto/login.input'
 import {CurrentUser, ICurrentUser} from './decorators/current-user.decorator'
 import {JwtRefreshGuard} from './guards/jwt-refresh.guard'
+import {LoginArgs} from './dto/login.args'
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -18,7 +18,7 @@ export class AuthResolver {
     description: `Get access token and refresh token. 
     Find and login already existing user or create new user if email is not registered`,
   })
-  login(@Args('input') input: LoginInput, @CurrentUser() user: ICurrentUser): Promise<Auth> {
+  login(@Args() input: LoginArgs, @CurrentUser() user: ICurrentUser): Promise<Auth> {
     return this.authService.login(user.id)
   }
 
@@ -35,8 +35,7 @@ export class AuthResolver {
     return this.authService.refreshTokens(user.id)
   }
 
-  @SkipJwtAuth()
-  @Query(() => String)
+  @Query(() => String, {description: 'Just for testing'})
   test(): string {
     return 'test'
   }

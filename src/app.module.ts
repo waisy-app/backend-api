@@ -16,6 +16,7 @@ import {CryptService} from './crypt/crypt.service'
 import {typeOrmModuleOptions} from './type-orm-module.options'
 import {graphqlModuleOptions} from './graphql-module.options'
 import {ConfigModule} from './config/config.module'
+import {MailConfirmationModule} from './mail-confirmation/mail-confirmation.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import {ConfigModule} from './config/config.module'
     ConfigModule,
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     GraphQLModule.forRootAsync(graphqlModuleOptions),
+    MailConfirmationModule,
   ],
   providers: [
     ComplexityPlugin,

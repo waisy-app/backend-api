@@ -16,6 +16,7 @@ export class AllExceptionsFilter implements GqlExceptionFilter {
     const gqlHost = GqlArgumentsHost.create(host)
     const requestType = gqlHost.getType<GqlContextType>()
 
+    this.logger.error(exception)
     this.logger.debug(`Request type: ${requestType}`)
 
     if (requestType === 'graphql') return this.catchGraphql()

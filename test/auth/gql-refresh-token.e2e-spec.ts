@@ -27,16 +27,13 @@ describe(`refreshToken (GraphQL)`, () => {
     usersService = app.get(UsersService)
 
     const cryptService = app.get(CryptService)
-    const hashedPassword = await cryptService.hashText('123')
     users = await Promise.all([
       usersService.usersRepository.save({
         email: 'test@test.com',
-        password: hashedPassword,
         refreshToken: 'refresh_token',
       }),
       usersService.usersRepository.save({
         email: 'test2@test2.com',
-        password: hashedPassword,
         refreshToken: 'refresh token',
       }),
     ])
@@ -59,7 +56,7 @@ describe(`refreshToken (GraphQL)`, () => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    await usersService.usersRepository.clear()
+    await usersService.usersRepository.delete({})
     await app.close()
   })
 

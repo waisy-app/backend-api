@@ -3,14 +3,17 @@ import {HttpStatus, INestApplication} from '@nestjs/common'
 import {AppModule} from '../../src/app.module'
 import {UsersService} from '../../src/users/users.service'
 import {AuthService} from '../../src/auth/auth.service'
-import {CryptService} from '../../src/crypt/crypt.service'
 import {User} from '../../src/users/entities/user.entity'
 import {GqlTestService} from '../gql-test.service'
+import {MailConfirmationService} from '../../src/mail-confirmation/mail-confirmation.service'
+import {MailConfirmation} from '../../src/mail-confirmation/entities/mail-confirmation.entity'
 
 describe(`login (GraphQL)`, () => {
   let app: INestApplication
   let usersService: UsersService
+  let mailConfirmationService: MailConfirmationService
   let users: User[] = []
+  let mailConfirmations: MailConfirmation[] = []
   let gqlTestService: GqlTestService
 
   beforeEach(async () => {
@@ -21,19 +24,16 @@ describe(`login (GraphQL)`, () => {
     app = moduleFixture.createNestApplication()
     await app.init()
 
-    const cryptService = app.get(CryptService)
     usersService = app.get(UsersService)
+    mailConfirmationService = app.get(MailConfirmationService)
 
-    const hashedPassword = await cryptService.hashText('123')
     users = await Promise.all([
-      usersService.usersRepository.save({
-        email: 'test@test.com',
-        password: hashedPassword,
-      }),
-      usersService.usersRepository.save({
-        email: 'test2@test2.com',
-        password: hashedPassword,
-      }),
+      usersService.usersRepository.save({email: 'test@test.com'}),
+      usersService.usersRepository.save({email: 'test2@test2.com'}),
+    ])
+    mailConfirmations = await Promise.all([
+      mailConfirmationService.mailConfirmationsRepository.save({user: users[0], code: 123456}),
+      mailConfirmationService.mailConfirmationsRepository.save({user: users[1], code: 654321}),
     ])
 
     gqlTestService = new GqlTestService(app, {userID: users[0].id})
@@ -41,12 +41,13 @@ describe(`login (GraphQL)`, () => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    await usersService.usersRepository.clear()
+    await mailConfirmationService.mailConfirmationsRepository.delete({})
+    await usersService.usersRepository.delete({})
     await app.close()
   })
 
   describe('errors', () => {
-    it('Unauthorized: wrong email or password', () => {
+    it('Unauthorized: wrong confirmation code', () => {
       return gqlTestService
         .sendRequest({
           queryType: 'mutation',
@@ -54,12 +55,13 @@ describe(`login (GraphQL)`, () => {
             operation: 'login',
             fields: ['access_token'],
             variables: {
-              input: {
-                type: 'LoginInput!',
-                value: {
-                  email: users[0].email,
-                  password: '321',
-                },
+              email: {
+                type: 'String!',
+                value: users[0].email,
+              },
+              confirmationCode: {
+                type: 'Int!',
+                value: 123466,
               },
             },
           },
@@ -71,7 +73,40 @@ describe(`login (GraphQL)`, () => {
             {
               path: ['login'],
               locations: [{line: 2, column: 7}],
-              message: 'Wrong email or password',
+              message: 'Wrong email or confirmation code',
+              code: 'UNAUTHORIZED',
+            },
+          ],
+        })
+    })
+
+    it('Unauthorized: wrong email', () => {
+      return gqlTestService
+        .sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'login',
+            fields: ['access_token'],
+            variables: {
+              email: {
+                type: 'String!',
+                value: 'ttt@tttt.ttt',
+              },
+              confirmationCode: {
+                type: 'Int!',
+                value: 123456,
+              },
+            },
+          },
+        })
+        .expect(HttpStatus.OK)
+        .expect({
+          data: null,
+          errors: [
+            {
+              path: ['login'],
+              locations: [{line: 2, column: 7}],
+              message: 'Wrong email or confirmation code',
               code: 'UNAUTHORIZED',
             },
           ],
@@ -86,12 +121,13 @@ describe(`login (GraphQL)`, () => {
             operation: 'login',
             fields: ['access_token'],
             variables: {
-              input: {
-                type: 'LoginInput!',
-                value: {
-                  email: 'test',
-                  password: '123',
-                },
+              email: {
+                type: 'String!',
+                value: 'test@test',
+              },
+              confirmationCode: {
+                type: 'Int!',
+                value: 123456,
               },
             },
           },
@@ -111,7 +147,7 @@ describe(`login (GraphQL)`, () => {
       })
     })
 
-    it('Validation error: max password length', async () => {
+    it('Validation error: max code length', async () => {
       const result = await gqlTestService
         .sendRequest({
           queryType: 'mutation',
@@ -119,12 +155,13 @@ describe(`login (GraphQL)`, () => {
             operation: 'login',
             fields: ['access_token'],
             variables: {
-              input: {
-                type: 'LoginInput!',
-                value: {
-                  email: 'test@test.test',
-                  password: 'a'.repeat(251),
-                },
+              email: {
+                type: 'String!',
+                value: users[0].email,
+              },
+              confirmationCode: {
+                type: 'Int!',
+                value: 1000000,
               },
             },
           },
@@ -137,7 +174,7 @@ describe(`login (GraphQL)`, () => {
           {
             path: ['login'],
             locations: expect.any(Array),
-            message: 'password: maximum length is 250 characters',
+            message: 'confirmationCode: must be 6 digits',
             code: 'BAD_REQUEST',
           },
         ],
@@ -152,12 +189,13 @@ describe(`login (GraphQL)`, () => {
             operation: 'login',
             fields: ['access_token'],
             variables: {
-              input: {
-                type: 'LoginInput!',
-                value: {
-                  email: 'test@test.test',
-                  password: '1',
-                },
+              email: {
+                type: 'String!',
+                value: users[0].email,
+              },
+              confirmationCode: {
+                type: 'Int!',
+                value: 111,
               },
             },
           },
@@ -170,7 +208,7 @@ describe(`login (GraphQL)`, () => {
           {
             path: ['login'],
             locations: expect.any(Array),
-            message: 'password: minimum length is 3 characters',
+            message: 'confirmationCode: must be 6 digits',
             code: 'BAD_REQUEST',
           },
         ],
@@ -186,12 +224,13 @@ describe(`login (GraphQL)`, () => {
           operation: 'login',
           fields: ['access_token'],
           variables: {
-            input: {
-              type: 'LoginInput!',
-              value: {
-                email: users[0].email,
-                password: '123',
-              },
+            email: {
+              type: 'String!',
+              value: users[0].email,
+            },
+            confirmationCode: {
+              type: 'Int!',
+              value: 123456,
             },
           },
         },
@@ -200,19 +239,20 @@ describe(`login (GraphQL)`, () => {
 
     it('Internal server error', () => {
       return gqlTestService.internalServerErrorTest({
-        serviceForMock: UsersService,
-        methodForMock: 'findOneByEmail',
+        serviceForMock: MailConfirmationService,
+        methodForMock: 'findOne',
         queryType: 'mutation',
         query: {
           operation: 'login',
           fields: ['access_token'],
           variables: {
-            input: {
-              type: 'LoginInput!',
-              value: {
-                email: users[0].email,
-                password: '123',
-              },
+            email: {
+              type: 'String!',
+              value: users[0].email,
+            },
+            confirmationCode: {
+              type: 'Int!',
+              value: 123456,
             },
           },
         },
@@ -228,42 +268,6 @@ describe(`login (GraphQL)`, () => {
   })
 
   describe('success', () => {
-    it('create new user', async () => {
-      const newUser = {email: 'test@test.test', password: '321'}
-      const result = await gqlTestService.sendRequest({
-        queryType: 'mutation',
-        query: {
-          operation: 'login',
-          fields: ['access_token', 'refresh_token'],
-          variables: {
-            input: {
-              type: 'LoginInput!',
-              value: newUser,
-            },
-          },
-        },
-      })
-
-      expect(result.body).toStrictEqual({
-        data: {
-          login: {
-            access_token: expect.any(String),
-            refresh_token: expect.any(String),
-          },
-        },
-      })
-      const allUsers = await usersService.usersRepository.find()
-      expect(allUsers).toEqual([
-        ...users,
-        {
-          id: expect.any(String),
-          email: newUser.email,
-          password: expect.not.stringMatching(newUser.password),
-          refreshToken: expect.any(String),
-        },
-      ])
-    })
-
     it('login existing user', async () => {
       const result = await gqlTestService.sendRequest({
         queryType: 'mutation',
@@ -271,12 +275,13 @@ describe(`login (GraphQL)`, () => {
           operation: 'login',
           fields: ['access_token', 'refresh_token'],
           variables: {
-            input: {
-              type: 'LoginInput!',
-              value: {
-                email: users[0].email,
-                password: '123',
-              },
+            email: {
+              type: 'String!',
+              value: users[0].email,
+            },
+            confirmationCode: {
+              type: 'Int!',
+              value: 123456,
             },
           },
         },
@@ -296,6 +301,17 @@ describe(`login (GraphQL)`, () => {
         {
           ...users[0],
           refreshToken: expect.any(String),
+          updatedAt: expect.any(Date),
+        },
+      ])
+
+      const allMailConfirmations = await mailConfirmationService.mailConfirmationsRepository.find({
+        relations: ['user'],
+      })
+      expect(allMailConfirmations).toEqual([
+        {
+          ...mailConfirmations[1],
+          user: users[1],
         },
       ])
     })

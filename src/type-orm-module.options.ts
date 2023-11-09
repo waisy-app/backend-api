@@ -1,4 +1,3 @@
-import {User} from './users/entities/user.entity'
 import {TypeOrmModuleAsyncOptions} from '@nestjs/typeorm'
 import {ConfigModule, ConfigService} from '@nestjs/config'
 import {
@@ -25,8 +24,8 @@ export const typeOrmModuleOptions: TypeOrmModuleAsyncOptions = {
       migrationsRun: configService.get(POSTGRES_MIGRATIONS_RUN.name),
       logging: EnvironmentConfigService.isDevelopment ? true : ['error', 'warn', 'schema'],
       type: 'postgres',
-      entities: [User],
-      cache: true,
+      autoLoadEntities: true,
+      cache: !EnvironmentConfigService.isTest,
     }
   },
   inject: [ConfigService],

@@ -3,7 +3,6 @@ import {INestApplication} from '@nestjs/common'
 import {AppModule} from '../../src/app.module'
 import {UsersService} from '../../src/users/users.service'
 import {AuthService} from '../../src/auth/auth.service'
-import {CryptService} from '../../src/crypt/crypt.service'
 import {User} from '../../src/users/entities/user.entity'
 import {GqlTestService} from '../gql-test.service'
 
@@ -23,17 +22,13 @@ describe(`logout (GraphQL)`, () => {
 
     usersService = app.get(UsersService)
 
-    const cryptService = app.get(CryptService)
-    const hashedPassword = await cryptService.hashText('123')
     users = await Promise.all([
       usersService.usersRepository.save({
         email: 'test4@test4.com',
-        password: hashedPassword,
         refreshToken: 'refresh_token',
       }),
       usersService.usersRepository.save({
         email: 'test3@test3.com',
-        password: hashedPassword,
         refreshToken: 'refresh-token',
       }),
     ])
@@ -43,7 +38,7 @@ describe(`logout (GraphQL)`, () => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    await usersService.usersRepository.clear()
+    await usersService.usersRepository.delete({})
     await app.close()
   })
 

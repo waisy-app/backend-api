@@ -3,6 +3,7 @@ import {AuthGuard} from '@nestjs/passport'
 import {LOCAL_STRATEGY_NAME} from '../strategies/strategies.constants'
 import {GqlExecutionContext} from '@nestjs/graphql'
 import {Request} from 'express'
+import {LoginArgs} from '../dto/login.args'
 
 @Injectable()
 export class LocalAuthGuard extends AuthGuard(LOCAL_STRATEGY_NAME) {
@@ -13,11 +14,9 @@ export class LocalAuthGuard extends AuthGuard(LOCAL_STRATEGY_NAME) {
 
     if (requestType !== 'graphql') return request
 
-    const {
-      input: {email, password},
-    } = ctx.getArgs()
+    const {email, confirmationCode} = ctx.getArgs<LoginArgs>()
     request.body.email = email
-    request.body.password = password
+    request.body.code = confirmationCode
     return request
   }
 }

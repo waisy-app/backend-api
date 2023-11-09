@@ -3,52 +3,35 @@ import {PassportStrategy} from '@nestjs/passport'
 import {Injectable, Logger, UnauthorizedException} from '@nestjs/common'
 import {LOCAL_STRATEGY_NAME} from './strategies.constants'
 import {ICurrentUser} from '../decorators/current-user.decorator'
-import {UsersService} from '../../users/users.service'
 import {validate} from 'class-validator'
-import {LoginInput} from '../dto/login.input'
 import {ValidationException} from '../../exceptions/validation.exception'
-import {CryptService} from '../../crypt/crypt.service'
+import {LoginArgs} from '../dto/login.args'
+import {MailConfirmationService} from '../../mail-confirmation/mail-confirmation.service'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_STRATEGY_NAME) {
   private readonly logger = new Logger(LocalStrategy.name)
 
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly cryptService: CryptService,
-  ) {
-    super({usernameField: 'email', passwordField: 'password'})
+  constructor(private readonly mailConfirmationService: MailConfirmationService) {
+    super({usernameField: 'email', passwordField: 'code'})
   }
 
-  async validate(email: string, password: string): Promise<ICurrentUser> {
-    const user = await this.validateUser(email, password)
-    if (!user) throw new UnauthorizedException('Wrong email or password')
-    return user
+  // TODO: сделать ограничения по количеству попыток ввода кода подтверждения
+  async validate(email: string, code: number): Promise<ICurrentUser> {
+    this.logger.debug(`Validating user with email ${email} and code ${code}`)
+    await this.validateLoginArgs(email, code)
+
+    const mailConfirmation = await this.mailConfirmationService.findOne({email}, code)
+    if (!mailConfirmation) throw new UnauthorizedException('Wrong email or confirmation code')
+    await this.mailConfirmationService.deleteByID(mailConfirmation.id)
+    return {id: mailConfirmation.user.id, email: mailConfirmation.user.email}
   }
 
-  private async validateUser(email: string, password: string): Promise<ICurrentUser | null> {
-    const user = await this.usersService.findOneByEmail(email)
-    if (!user) return this.validateNewUser(email, password)
-    if (!user.password) return null
-
-    const isPasswordMatch = await this.cryptService.compareHash(password, user.password)
-    return isPasswordMatch ? {id: user.id, email: user.email} : null
-  }
-
-  private async validateNewUser(email: string, password: string): Promise<ICurrentUser | null> {
-    const input = new LoginInput()
+  private async validateLoginArgs(email: string, code: number): Promise<void> {
+    const input = new LoginArgs()
     input.email = email
-    input.password = password
-
+    input.confirmationCode = code
     const validation = await validate(input)
     if (validation.length) throw new ValidationException(validation)
-
-    this.logger.debug(`User with email ${input.email} not found. Creating new user...`)
-    const hashedPassword = await this.cryptService.hashText(input.password)
-    const newUser = await this.usersService.createOrUpdate({
-      email: input.email,
-      password: hashedPassword,
-    })
-    return {id: newUser.id, email: newUser.email}
   }
 }

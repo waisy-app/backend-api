@@ -84,6 +84,8 @@ describe(RefreshTokenStrategy.name, () => {
         email: 'test@test.com',
         password: '123',
         refreshToken: 'refreshToken',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
       jest.spyOn(usersService, 'findOneByID').mockResolvedValueOnce(user)
       jest.spyOn(cryptService, 'compareHash').mockResolvedValueOnce(true)

@@ -6,16 +6,18 @@ import {LocalStrategy} from './local.strategy'
 import {CryptService} from '../../crypt/crypt.service'
 import {UnauthorizedException} from '@nestjs/common'
 import {ConfigModule} from '../../config/config.module'
+import {MailConfirmationService} from '../../mail-confirmation/mail-confirmation.service'
+import {MailConfirmation} from '../../mail-confirmation/entities/mail-confirmation.entity'
 
 describe(LocalStrategy.name, () => {
   let localStrategy: LocalStrategy
-  let usersService: UsersService
-  let cryptService: CryptService
+  let mailConfirmationService: MailConfirmationService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule],
       providers: [
+        MailConfirmationService,
         LocalStrategy,
         UsersService,
         CryptService,
@@ -29,12 +31,20 @@ describe(LocalStrategy.name, () => {
             delete: jest.fn(),
           },
         },
+        {
+          provide: getRepositoryToken(MailConfirmation),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
       ],
     }).compile()
 
     localStrategy = module.get(LocalStrategy)
-    usersService = module.get(UsersService)
-    cryptService = module.get(CryptService)
+
+    mailConfirmationService = module.get(MailConfirmationService)
+
+    jest.spyOn(mailConfirmationService, 'deleteByID').mockResolvedValueOnce(undefined)
   })
 
   afterEach(() => {
@@ -42,33 +52,38 @@ describe(LocalStrategy.name, () => {
   })
 
   describe(LocalStrategy.prototype.validate.name, () => {
-    const user = {id: '1', email: 'test@test.com', password: '123', refreshToken: null}
+    const currentDate = new Date()
+    const user = {
+      id: '1',
+      email: 'test@test.com',
+      refreshToken: null,
+      createdAt: currentDate,
+      updatedAt: currentDate,
+    }
+    const mailConfirmation = {id: '1', user, code: 123456, createdAt: currentDate}
 
-    it('should return user if user exists and password matches', async () => {
-      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
-      jest.spyOn(cryptService, 'compareHash').mockResolvedValueOnce(true)
+    it('should return user if code matches', async () => {
+      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(mailConfirmation)
 
-      const result = await localStrategy.validate(user.email, user.password)
+      const result = await localStrategy.validate(user.email, mailConfirmation.code)
 
       expect(result).toEqual({id: user.id, email: user.email})
     })
 
-    it('should throw UnauthorizedException if user exists and password does not match', async () => {
-      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
-      jest.spyOn(cryptService, 'compareHash').mockResolvedValueOnce(false)
+    it('should throw UnauthorizedException if code does not match', async () => {
+      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(null)
 
-      const result = localStrategy.validate(user.email, user.password)
-      const expectedError = new UnauthorizedException('Wrong email or password')
+      const result = localStrategy.validate(user.email, 321456)
+      const expectedError = new UnauthorizedException('Wrong email or confirmation code')
       await expect(() => result).rejects.toThrowError(expectedError)
     })
 
-    it('should return user if user does not exist', async () => {
-      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(null)
-      jest.spyOn(cryptService, 'hashText').mockResolvedValueOnce(user.password)
-      jest.spyOn(usersService, 'createOrUpdate').mockResolvedValueOnce(user)
+    it('should throw UnauthorizedException if email does not match', async () => {
+      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(null)
 
-      const result = await localStrategy.validate(user.email, user.password)
-      expect(result).toEqual({id: user.id, email: user.email})
+      const result = localStrategy.validate('test@test.testtt', 123456)
+      const expectedError = new UnauthorizedException('Wrong email or confirmation code')
+      await expect(() => result).rejects.toThrowError(expectedError)
     })
   })
 })
