@@ -29,3 +29,9 @@ export const HASH_ROUNDS = {
   name: 'HASH_ROUNDS',
   defaultValue: 10,
 }
+
+export type MaxSendingVerificationCodeAttemptsType = number
+export const MAX_SENDING_VERIFICATION_CODE_ATTEMPTS = {
+  name: 'MAX_SENDING_VERIFICATION_CODE_ATTEMPTS',
+  defaultValue: 3,
+}

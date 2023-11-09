@@ -6,6 +6,7 @@ import {getRepositoryToken} from '@nestjs/typeorm'
 import {VerificationCode} from './entities/verification-code.entity'
 import {User} from '../users/entities/user.entity'
 import {ForbiddenError} from '@nestjs/apollo'
+import {ConfigModule} from '../config/config.module'
 
 describe(VerificationCodesService.name, () => {
   let mailConfirmationService: VerificationCodesService
@@ -13,6 +14,7 @@ describe(VerificationCodesService.name, () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule],
       providers: [
         VerificationCodesResolver,
         VerificationCodesService,

@@ -5,6 +5,7 @@ import {Repository} from 'typeorm'
 import {VerificationCode} from './entities/verification-code.entity'
 import {UsersService} from '../users/users.service'
 import {ForbiddenError} from '@nestjs/apollo'
+import {AuthConfigService} from '../config/auth/auth.config.service'
 
 @Injectable()
 export class VerificationCodesService {
@@ -14,6 +15,7 @@ export class VerificationCodesService {
     @InjectRepository(VerificationCode)
     readonly verificationCodeRepository: Repository<VerificationCode>,
     private readonly usersService: UsersService,
+    private readonly authConfigService: AuthConfigService,
   ) {}
 
   // TODO: сделать автоматическую очистку таблицы verification_codes от записей с истекшим сроком
@@ -26,8 +28,10 @@ export class VerificationCodesService {
     }
 
     let verificationCode = await this.findOneByUserEmail(email)
-    // TODO: magic number
-    if (verificationCode && verificationCode.sendingAttempts >= 3) {
+    if (
+      verificationCode &&
+      verificationCode.sendingAttempts >= this.authConfigService.maxSendingVerificationCodeAttempts
+    ) {
       throw new ForbiddenError('Too many attempts')
     } else if (!verificationCode) {
       verificationCode = await this.create(user.id, this.generateCode(), 1)

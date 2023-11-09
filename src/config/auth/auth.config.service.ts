@@ -9,6 +9,8 @@ import {
   JWT_SECRET_TOKEN,
   JwtAccessTokenExpiresInType,
   JwtSecretTokenType,
+  MAX_SENDING_VERIFICATION_CODE_ATTEMPTS,
+  MaxSendingVerificationCodeAttemptsType,
 } from './auth.config.constants'
 
 @Injectable()
@@ -33,5 +35,11 @@ export class AuthConfigService {
 
   get hashRounds(): HashRoundsType {
     return this.configService.get(HASH_ROUNDS.name) as HashRoundsType
+  }
+
+  get maxSendingVerificationCodeAttempts(): MaxSendingVerificationCodeAttemptsType {
+    return this.configService.get(
+      MAX_SENDING_VERIFICATION_CODE_ATTEMPTS.name,
+    ) as MaxSendingVerificationCodeAttemptsType
   }
 }
