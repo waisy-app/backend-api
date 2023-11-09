@@ -5,15 +5,15 @@ import {UsersService} from '../../src/users/users.service'
 import {AuthService} from '../../src/auth/auth.service'
 import {User} from '../../src/users/entities/user.entity'
 import {GqlTestService} from '../gql-test.service'
-import {MailConfirmationService} from '../../src/mail-confirmation/mail-confirmation.service'
-import {MailConfirmation} from '../../src/mail-confirmation/entities/mail-confirmation.entity'
+import {VerificationCodesService} from '../../src/verification-codes/verification-codes.service'
+import {VerificationCode} from '../../src/verification-codes/entities/verification-code.entity'
 
 describe(`login (GraphQL)`, () => {
   let app: INestApplication
   let usersService: UsersService
-  let mailConfirmationService: MailConfirmationService
+  let mailConfirmationService: VerificationCodesService
   let users: User[] = []
-  let mailConfirmations: MailConfirmation[] = []
+  let mailConfirmations: VerificationCode[] = []
   let gqlTestService: GqlTestService
 
   beforeEach(async () => {
@@ -25,15 +25,15 @@ describe(`login (GraphQL)`, () => {
     await app.init()
 
     usersService = app.get(UsersService)
-    mailConfirmationService = app.get(MailConfirmationService)
+    mailConfirmationService = app.get(VerificationCodesService)
 
     users = await Promise.all([
       usersService.usersRepository.save({email: 'test@test.com'}),
       usersService.usersRepository.save({email: 'test2@test2.com'}),
     ])
     mailConfirmations = await Promise.all([
-      mailConfirmationService.mailConfirmationsRepository.save({user: users[0], code: 123456}),
-      mailConfirmationService.mailConfirmationsRepository.save({user: users[1], code: 654321}),
+      mailConfirmationService.verificationCodeRepository.save({user: users[0], code: 123456}),
+      mailConfirmationService.verificationCodeRepository.save({user: users[1], code: 654321}),
     ])
 
     gqlTestService = new GqlTestService(app, {userID: users[0].id})
@@ -41,7 +41,7 @@ describe(`login (GraphQL)`, () => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    await mailConfirmationService.mailConfirmationsRepository.delete({})
+    await mailConfirmationService.verificationCodeRepository.delete({})
     await usersService.usersRepository.delete({})
     await app.close()
   })
@@ -239,7 +239,7 @@ describe(`login (GraphQL)`, () => {
 
     it('Internal server error', () => {
       return gqlTestService.internalServerErrorTest({
-        serviceForMock: MailConfirmationService,
+        serviceForMock: VerificationCodesService,
         methodForMock: 'findOne',
         queryType: 'mutation',
         query: {
@@ -305,7 +305,7 @@ describe(`login (GraphQL)`, () => {
         },
       ])
 
-      const allMailConfirmations = await mailConfirmationService.mailConfirmationsRepository.find({
+      const allMailConfirmations = await mailConfirmationService.verificationCodeRepository.find({
         relations: ['user'],
       })
       expect(allMailConfirmations).toEqual([

@@ -4,12 +4,12 @@ import {AppModule} from '../../src/app.module'
 import {UsersService} from '../../src/users/users.service'
 import {User} from '../../src/users/entities/user.entity'
 import {GqlTestService} from '../gql-test.service'
-import {MailConfirmationService} from '../../src/mail-confirmation/mail-confirmation.service'
+import {VerificationCodesService} from '../../src/verification-codes/verification-codes.service'
 
-describe(`sendEmailConfirmationCode (GraphQL)`, () => {
+describe(`sendEmailVerificationCode (GraphQL)`, () => {
   let app: INestApplication
   let usersService: UsersService
-  let mailConfirmationService: MailConfirmationService
+  let mailConfirmationService: VerificationCodesService
   let users: User[] = []
   let gqlTestService: GqlTestService
 
@@ -22,7 +22,7 @@ describe(`sendEmailConfirmationCode (GraphQL)`, () => {
     await app.init()
 
     usersService = app.get(UsersService)
-    mailConfirmationService = app.get(MailConfirmationService)
+    mailConfirmationService = app.get(VerificationCodesService)
 
     users = await Promise.all([
       usersService.usersRepository.save({
@@ -40,7 +40,7 @@ describe(`sendEmailConfirmationCode (GraphQL)`, () => {
 
   afterEach(async () => {
     jest.restoreAllMocks()
-    await mailConfirmationService.mailConfirmationsRepository.delete({})
+    await mailConfirmationService.verificationCodeRepository.delete({})
     await usersService.usersRepository.delete({})
     await app.close()
   })
@@ -49,7 +49,7 @@ describe(`sendEmailConfirmationCode (GraphQL)`, () => {
     it('Request timeout', () => {
       return gqlTestService.requestTimeoutTest({
         methodForMock: 'sendConfirmationCode',
-        serviceForMock: MailConfirmationService,
+        serviceForMock: VerificationCodesService,
         queryType: 'mutation',
         query: {
           operation: 'sendEmailConfirmationCode',
@@ -76,7 +76,7 @@ describe(`sendEmailConfirmationCode (GraphQL)`, () => {
           },
         },
         methodForMock: 'sendConfirmationCode',
-        serviceForMock: MailConfirmationService,
+        serviceForMock: VerificationCodesService,
       })
     })
 
@@ -106,7 +106,7 @@ describe(`sendEmailConfirmationCode (GraphQL)`, () => {
         .expect(HttpStatus.OK)
 
       expect(result.body).toStrictEqual({data: {sendEmailConfirmationCode: true}})
-      const mailConfirmations = await mailConfirmationService.mailConfirmationsRepository.find({
+      const mailConfirmations = await mailConfirmationService.verificationCodeRepository.find({
         relations: ['user'],
       })
       expect(mailConfirmations).toHaveLength(1)
@@ -150,7 +150,7 @@ describe(`sendEmailConfirmationCode (GraphQL)`, () => {
         },
       ])
 
-      const mailConfirmations = await mailConfirmationService.mailConfirmationsRepository.find({
+      const mailConfirmations = await mailConfirmationService.verificationCodeRepository.find({
         relations: ['user'],
       })
       expect(mailConfirmations).toHaveLength(1)

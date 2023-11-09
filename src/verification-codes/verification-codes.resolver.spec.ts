@@ -1,23 +1,23 @@
 import {Test, TestingModule} from '@nestjs/testing'
-import {MailConfirmationService} from './mail-confirmation.service'
-import {MailConfirmationResolver} from './mail-confirmation.resolver'
+import {VerificationCodesService} from './verification-codes.service'
+import {VerificationCodesResolver} from './verification-codes.resolver'
 import {getRepositoryToken} from '@nestjs/typeorm'
-import {MailConfirmation} from './entities/mail-confirmation.entity'
+import {VerificationCode} from './entities/verification-code.entity'
 import {UsersService} from '../users/users.service'
 import {User} from '../users/entities/user.entity'
 
-describe(MailConfirmationResolver.name, () => {
-  let mailConfirmationService: MailConfirmationService
-  let mailConfirmationResolver: MailConfirmationResolver
+describe(VerificationCodesResolver.name, () => {
+  let mailConfirmationService: VerificationCodesService
+  let mailConfirmationResolver: VerificationCodesResolver
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MailConfirmationResolver,
-        MailConfirmationService,
+        VerificationCodesResolver,
+        VerificationCodesService,
         UsersService,
         {
-          provide: getRepositoryToken(MailConfirmation),
+          provide: getRepositoryToken(VerificationCode),
           useValue: {
             create: jest.fn(),
             save: jest.fn(),
@@ -39,17 +39,17 @@ describe(MailConfirmationResolver.name, () => {
       ],
     }).compile()
 
-    mailConfirmationService = module.get(MailConfirmationService)
-    mailConfirmationResolver = module.get(MailConfirmationResolver)
+    mailConfirmationService = module.get(VerificationCodesService)
+    mailConfirmationResolver = module.get(VerificationCodesResolver)
   })
 
   afterEach(() => {
     jest.restoreAllMocks()
   })
 
-  describe(MailConfirmationResolver.prototype.sendEmailConfirmationCode.name, () => {
+  describe(VerificationCodesResolver.prototype.sendEmailConfirmationCode.name, () => {
     it('should return true', async () => {
-      jest.spyOn(mailConfirmationService, 'sendConfirmationCode').mockImplementation(async () => {})
+      jest.spyOn(mailConfirmationService, 'sendVerificationCode').mockImplementation(async () => {})
 
       const result = await mailConfirmationResolver.sendEmailConfirmationCode({
         email: 'test-email@test.com',

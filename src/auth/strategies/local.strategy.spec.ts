@@ -6,18 +6,18 @@ import {LocalStrategy} from './local.strategy'
 import {CryptService} from '../../crypt/crypt.service'
 import {UnauthorizedException} from '@nestjs/common'
 import {ConfigModule} from '../../config/config.module'
-import {MailConfirmationService} from '../../mail-confirmation/mail-confirmation.service'
-import {MailConfirmation} from '../../mail-confirmation/entities/mail-confirmation.entity'
+import {VerificationCodesService} from '../../verification-codes/verification-codes.service'
+import {VerificationCode} from '../../verification-codes/entities/verification-code.entity'
 
 describe(LocalStrategy.name, () => {
   let localStrategy: LocalStrategy
-  let mailConfirmationService: MailConfirmationService
+  let mailConfirmationService: VerificationCodesService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule],
       providers: [
-        MailConfirmationService,
+        VerificationCodesService,
         LocalStrategy,
         UsersService,
         CryptService,
@@ -32,7 +32,7 @@ describe(LocalStrategy.name, () => {
           },
         },
         {
-          provide: getRepositoryToken(MailConfirmation),
+          provide: getRepositoryToken(VerificationCode),
           useValue: {
             findOne: jest.fn(),
           },
@@ -42,7 +42,7 @@ describe(LocalStrategy.name, () => {
 
     localStrategy = module.get(LocalStrategy)
 
-    mailConfirmationService = module.get(MailConfirmationService)
+    mailConfirmationService = module.get(VerificationCodesService)
 
     jest.spyOn(mailConfirmationService, 'deleteByID').mockResolvedValueOnce(undefined)
   })

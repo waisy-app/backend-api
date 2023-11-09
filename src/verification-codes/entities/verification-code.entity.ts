@@ -2,7 +2,7 @@ import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn} fro
 import {User} from '../../users/entities/user.entity'
 
 @Entity()
-export class MailConfirmation {
+export class VerificationCode {
   @PrimaryGeneratedColumn('uuid')
   id: string
 

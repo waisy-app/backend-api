@@ -6,13 +6,13 @@ import {ICurrentUser} from '../decorators/current-user.decorator'
 import {validate} from 'class-validator'
 import {ValidationException} from '../../exceptions/validation.exception'
 import {LoginArgs} from '../dto/login.args'
-import {MailConfirmationService} from '../../mail-confirmation/mail-confirmation.service'
+import {VerificationCodesService} from '../../verification-codes/verification-codes.service'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_STRATEGY_NAME) {
   private readonly logger = new Logger(LocalStrategy.name)
 
-  constructor(private readonly mailConfirmationService: MailConfirmationService) {
+  constructor(private readonly mailConfirmationService: VerificationCodesService) {
     super({usernameField: 'email', passwordField: 'code'})
   }
 

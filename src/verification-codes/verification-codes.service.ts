@@ -2,23 +2,23 @@ import {Injectable, Logger} from '@nestjs/common'
 import {InjectRepository} from '@nestjs/typeorm'
 import {User} from '../users/entities/user.entity'
 import {Repository} from 'typeorm'
-import {MailConfirmation} from './entities/mail-confirmation.entity'
+import {VerificationCode} from './entities/verification-code.entity'
 import {UsersService} from '../users/users.service'
 
 @Injectable()
-export class MailConfirmationService {
-  private readonly logger: Logger = new Logger(MailConfirmationService.name)
+export class VerificationCodesService {
+  private readonly logger: Logger = new Logger(VerificationCodesService.name)
 
   constructor(
-    @InjectRepository(MailConfirmation)
-    readonly mailConfirmationsRepository: Repository<MailConfirmation>,
+    @InjectRepository(VerificationCode)
+    readonly verificationCodeRepository: Repository<VerificationCode>,
     private readonly usersService: UsersService,
   ) {}
 
   // TODO: сделать ограничения по количеству отправок кода подтверждения на почту
   // TODO: изменить алгоритм регистрации. Во время подтверждения пользователь не создается,
   //  а создается только после подтверждения почты (на этапе auth/login)
-  async sendConfirmationCode(email: User['email']): Promise<void> {
+  async sendVerificationCode(email: User['email']): Promise<void> {
     let user = await this.usersService.findOneByEmail(email)
     if (!user) {
       this.logger.debug(`User with email ${email} not found. Creating new user...`)
@@ -26,7 +26,7 @@ export class MailConfirmationService {
     }
 
     const code = this.generateCode()
-    this.logger.debug(`Sending confirmation code ${code} to ${user.email}`)
+    this.logger.debug(`Sending verification code ${code} to ${user.email}`)
     await this.create(user.id, code)
 
     // TODO: отправка кода подтверждения на почту
@@ -35,15 +35,15 @@ export class MailConfirmationService {
   async findOne(
     user: {id: User['id']} | {email: User['email']},
     code: number,
-  ): Promise<MailConfirmation | null> {
-    return this.mailConfirmationsRepository.findOne({
+  ): Promise<VerificationCode | null> {
+    return this.verificationCodeRepository.findOne({
       where: {user, code},
       relations: ['user'],
     })
   }
 
-  async deleteByID(id: MailConfirmation['id']): Promise<void> {
-    await this.mailConfirmationsRepository.delete({id})
+  async deleteByID(id: VerificationCode['id']): Promise<void> {
+    await this.verificationCodeRepository.delete({id})
   }
 
   private generateCode(): number {
@@ -51,6 +51,6 @@ export class MailConfirmationService {
   }
 
   private async create(userID: User['id'], code: number): Promise<void> {
-    await this.mailConfirmationsRepository.save({user: {id: userID}, code})
+    await this.verificationCodeRepository.save({user: {id: userID}, code})
   }
 }

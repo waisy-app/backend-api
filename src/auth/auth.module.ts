@@ -13,13 +13,13 @@ import {RefreshTokenStrategy} from './strategies/refresh-token.strategy'
 import {AuthResolver} from './auth.resolver'
 import {jwtModuleConfig} from './config/jwt-module.config'
 import {CryptService} from '../crypt/crypt.service'
-import {MailConfirmationModule} from '../mail-confirmation/mail-confirmation.module'
+import {VerificationCodesModule} from '../verification-codes/verification-codes.module'
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    MailConfirmationModule,
+    VerificationCodesModule,
     JwtModule.registerAsync(jwtModuleConfig),
   ],
   providers: [
