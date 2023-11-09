@@ -47,11 +47,11 @@ describe(VerificationCodesResolver.name, () => {
     jest.restoreAllMocks()
   })
 
-  describe(VerificationCodesResolver.prototype.sendEmailConfirmationCode.name, () => {
+  describe(VerificationCodesResolver.prototype.sendEmailVerificationCode.name, () => {
     it('should return true', async () => {
       jest.spyOn(mailConfirmationService, 'sendVerificationCode').mockImplementation(async () => {})
 
-      const result = await mailConfirmationResolver.sendEmailConfirmationCode({
+      const result = await mailConfirmationResolver.sendEmailVerificationCode({
         email: 'test-email@test.com',
       })
       expect(result).toBe(true)

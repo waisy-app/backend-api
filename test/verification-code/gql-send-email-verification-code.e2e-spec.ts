@@ -46,13 +46,48 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
   })
 
   describe('errors', () => {
+    it('Forbidden: too many attempts', async () => {
+      await mailConfirmationService.verificationCodeRepository.save({
+        user: {id: users[0].id},
+        code: 123456,
+        sendingAttempts: 3,
+      })
+
+      const result = await gqlTestService
+        .sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'sendEmailVerificationCode',
+            variables: {
+              email: {
+                type: 'String!',
+                value: users[0].email,
+              },
+            },
+          },
+        })
+        .expect(HttpStatus.OK)
+
+      expect(result.body).toStrictEqual({
+        errors: [
+          {
+            path: ['sendEmailVerificationCode'],
+            locations: expect.any(Array),
+            message: 'Too many attempts',
+            code: 'FORBIDDEN',
+          },
+        ],
+        data: null,
+      })
+    })
+
     it('Request timeout', () => {
       return gqlTestService.requestTimeoutTest({
-        methodForMock: 'sendConfirmationCode',
+        methodForMock: 'sendVerificationCode',
         serviceForMock: VerificationCodesService,
         queryType: 'mutation',
         query: {
-          operation: 'sendEmailConfirmationCode',
+          operation: 'sendEmailVerificationCode',
           variables: {
             email: {
               type: 'String!',
@@ -67,7 +102,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
       return gqlTestService.internalServerErrorTest({
         queryType: 'mutation',
         query: {
-          operation: 'sendEmailConfirmationCode',
+          operation: 'sendEmailVerificationCode',
           variables: {
             email: {
               type: 'String!',
@@ -75,7 +110,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
             },
           },
         },
-        methodForMock: 'sendConfirmationCode',
+        methodForMock: 'sendVerificationCode',
         serviceForMock: VerificationCodesService,
       })
     })
@@ -83,7 +118,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
     it('GraphQL validation failed', () => {
       return gqlTestService.gqlValidationTest({
         queryType: 'mutation',
-        query: {operation: 'sendEmailConfirmationCode'},
+        query: {operation: 'sendEmailVerificationCode'},
       })
     })
   })
@@ -94,7 +129,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         .sendRequest({
           queryType: 'mutation',
           query: {
-            operation: 'sendEmailConfirmationCode',
+            operation: 'sendEmailVerificationCode',
             variables: {
               email: {
                 type: 'String!',
@@ -105,7 +140,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         })
         .expect(HttpStatus.OK)
 
-      expect(result.body).toStrictEqual({data: {sendEmailConfirmationCode: true}})
+      expect(result.body).toStrictEqual({data: {sendEmailVerificationCode: true}})
       const mailConfirmations = await mailConfirmationService.verificationCodeRepository.find({
         relations: ['user'],
       })
@@ -114,6 +149,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         id: expect.any(String),
         code: expect.any(Number),
         user: users[0],
+        sendingAttempts: 1,
         createdAt: expect.any(Date),
       })
     })
@@ -123,7 +159,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         .sendRequest({
           queryType: 'mutation',
           query: {
-            operation: 'sendEmailConfirmationCode',
+            operation: 'sendEmailVerificationCode',
             variables: {
               email: {
                 type: 'String!',
@@ -134,10 +170,9 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         })
         .expect(HttpStatus.OK)
 
-      expect(result.body).toStrictEqual({data: {sendEmailConfirmationCode: true}})
+      expect(result.body).toStrictEqual({data: {sendEmailVerificationCode: true}})
 
       const users = await usersService.usersRepository.find()
-      console.log(users)
       expect(users).toEqual([
         users[0],
         users[1],
@@ -158,6 +193,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         id: expect.any(String),
         code: expect.any(Number),
         user: users[2],
+        sendingAttempts: 1,
         createdAt: expect.any(Date),
       })
     })

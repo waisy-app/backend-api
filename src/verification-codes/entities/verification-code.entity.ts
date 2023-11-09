@@ -12,8 +12,9 @@ export class VerificationCode {
   @Column({comment: 'Confirmation code from email', type: 'int'})
   code: number
 
+  @Column({default: 0, comment: 'Number of sending attempts', type: 'int'})
+  sendingAttempts: number
+
   @CreateDateColumn({type: 'timestamp with time zone'})
   createdAt: Date
 }
-
-// TODO: автоматическое удаление записи из таблицы mail_confirmation после истечения срока действия кода подтверждения почты

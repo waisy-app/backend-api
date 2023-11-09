@@ -60,7 +60,13 @@ describe(LocalStrategy.name, () => {
       createdAt: currentDate,
       updatedAt: currentDate,
     }
-    const mailConfirmation = {id: '1', user, code: 123456, createdAt: currentDate}
+    const mailConfirmation = {
+      id: '1',
+      user,
+      code: 123456,
+      sendingAttempts: 1,
+      createdAt: currentDate,
+    }
 
     it('should return user if code matches', async () => {
       jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(mailConfirmation)

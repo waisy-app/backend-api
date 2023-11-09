@@ -12,7 +12,7 @@ import {VerificationCodesService} from '../../verification-codes/verification-co
 export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_STRATEGY_NAME) {
   private readonly logger = new Logger(LocalStrategy.name)
 
-  constructor(private readonly mailConfirmationService: VerificationCodesService) {
+  constructor(private readonly verificationCodesService: VerificationCodesService) {
     super({usernameField: 'email', passwordField: 'code'})
   }
 
@@ -21,9 +21,9 @@ export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_STRATEGY_NAM
     this.logger.debug(`Validating user with email ${email} and code ${code}`)
     await this.validateLoginArgs(email, code)
 
-    const mailConfirmation = await this.mailConfirmationService.findOne({email}, code)
+    const mailConfirmation = await this.verificationCodesService.findOne({email}, code)
     if (!mailConfirmation) throw new UnauthorizedException('Wrong email or confirmation code')
-    await this.mailConfirmationService.deleteByID(mailConfirmation.id)
+    await this.verificationCodesService.deleteByID(mailConfirmation.id)
     return {id: mailConfirmation.user.id, email: mailConfirmation.user.email}
   }
 
