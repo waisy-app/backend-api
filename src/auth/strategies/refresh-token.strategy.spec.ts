@@ -79,11 +79,11 @@ describe(RefreshTokenStrategy.name, () => {
     it('should return user', async () => {
       const req = {get: jest.fn()}
       req.get.mockReturnValue('Bearer token')
-      const user = {
+      const user: User = {
         id: '1',
         email: 'test@test.com',
-        password: '123',
         refreshToken: 'refreshToken',
+        isActivated: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

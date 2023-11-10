@@ -47,7 +47,7 @@ describe(LoginAttemptsService.name, () => {
     })
   })
 
-  describe(LoginAttemptsService.prototype.findWhereCreatedAtMoreThen.name, () => {
+  describe(LoginAttemptsService.prototype.findByIpWhereCreatedAtMoreThen.name, () => {
     it('should return login attempts', async () => {
       const expected: LoginAttempt[] = [
         {
@@ -60,7 +60,10 @@ describe(LoginAttemptsService.name, () => {
       ]
       jest.spyOn(loginAttemptsService.loginAttemptsRepository, 'findBy').mockResolvedValue(expected)
 
-      const loginAttempts = await loginAttemptsService.findWhereCreatedAtMoreThen(new Date())
+      const loginAttempts = await loginAttemptsService.findByIpWhereCreatedAtMoreThen(
+        new Date(),
+        'test-ip-address',
+      )
 
       expect(loginAttempts).toEqual(expected)
     })

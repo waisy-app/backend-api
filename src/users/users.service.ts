@@ -24,6 +24,10 @@ export class UsersService {
     return user ? {email: user.email, id: user.id} : null
   }
 
+  public async activateUser(id: User['id']): Promise<void> {
+    await this.usersRepository.update(id, {isActivated: true})
+  }
+
   public async updateRefreshToken(
     id: User['id'],
     refreshToken: User['refreshToken'],

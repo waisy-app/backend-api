@@ -14,12 +14,14 @@ import {AuthResolver} from './auth.resolver'
 import {jwtModuleConfig} from './config/jwt-module.config'
 import {CryptService} from '../crypt/crypt.service'
 import {VerificationCodesModule} from '../verification-codes/verification-codes.module'
+import {LoginAttemptsModule} from '../login-attempts/login-attempts.module'
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
     VerificationCodesModule,
+    LoginAttemptsModule,
     JwtModule.registerAsync(jwtModuleConfig),
   ],
   providers: [

@@ -12,7 +12,7 @@ export class LoginAttemptsService {
   ) {}
 
   public async create(loginAttempt: {
-    user: {id: User['id']}
+    user?: {id: User['id']} | null
     isSuccessful?: boolean
     ipAddress?: string
   }): Promise<LoginAttempt> {
@@ -20,7 +20,13 @@ export class LoginAttemptsService {
     return this.loginAttemptsRepository.save(newLoginAttempt)
   }
 
-  public async findWhereCreatedAtMoreThen(date: Date): Promise<LoginAttempt[]> {
-    return this.loginAttemptsRepository.findBy({createdAt: MoreThan(date)})
+  public async findByIpWhereCreatedAtMoreThen(
+    date: Date,
+    ipAddress: string,
+  ): Promise<LoginAttempt[]> {
+    return this.loginAttemptsRepository.findBy({
+      createdAt: MoreThan(date),
+      ipAddress,
+    })
   }
 }

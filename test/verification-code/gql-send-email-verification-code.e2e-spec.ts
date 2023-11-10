@@ -179,6 +179,7 @@ describe(`sendEmailVerificationCode (GraphQL)`, () => {
         {
           id: expect.any(String),
           email: 'test@test.testtt',
+          isActivated: false,
           refreshToken: null,
           createdAt: expect.any(Date),
           updatedAt: expect.any(Date),

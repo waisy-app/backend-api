@@ -6,8 +6,8 @@ export class LoginAttempt {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false})
-  user: User
+  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: true})
+  user: User | null
 
   @Column({type: 'inet', default: null, nullable: true})
   ipAddress: string | null

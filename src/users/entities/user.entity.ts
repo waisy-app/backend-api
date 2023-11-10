@@ -17,6 +17,9 @@ export class User {
   })
   refreshToken: string | null
 
+  @Column({type: 'boolean', default: false, comment: 'Is user activated and email confirmed'})
+  isActivated: boolean
+
   @CreateDateColumn({type: 'timestamp with time zone'})
   createdAt: Date
 

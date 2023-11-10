@@ -8,16 +8,22 @@ import {UnauthorizedException} from '@nestjs/common'
 import {ConfigModule} from '../../config/config.module'
 import {VerificationCodesService} from '../../verification-codes/verification-codes.service'
 import {VerificationCode} from '../../verification-codes/entities/verification-code.entity'
+import {Request} from 'express'
+import {LoginAttemptsService} from '../../login-attempts/login-attempts.service'
+import {LoginAttempt} from '../../login-attempts/entities/login-attempt.entity'
 
 describe(LocalStrategy.name, () => {
   let localStrategy: LocalStrategy
-  let mailConfirmationService: VerificationCodesService
+  let verificationCodesService: VerificationCodesService
+  let usersService: UsersService
+  let loginAttemptsService: LoginAttemptsService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule],
       providers: [
         VerificationCodesService,
+        LoginAttemptsService,
         LocalStrategy,
         UsersService,
         CryptService,
@@ -37,14 +43,24 @@ describe(LocalStrategy.name, () => {
             findOne: jest.fn(),
           },
         },
+        {
+          provide: getRepositoryToken(LoginAttempt),
+          useValue: {
+            findBy: jest.fn(),
+            create: jest.fn(),
+            save: jest.fn(),
+          },
+        },
       ],
     }).compile()
 
     localStrategy = module.get(LocalStrategy)
 
-    mailConfirmationService = module.get(VerificationCodesService)
+    verificationCodesService = module.get(VerificationCodesService)
+    usersService = module.get(UsersService)
+    loginAttemptsService = module.get(LoginAttemptsService)
 
-    jest.spyOn(mailConfirmationService, 'deleteByID').mockResolvedValueOnce(undefined)
+    jest.spyOn(verificationCodesService, 'deleteByID').mockResolvedValueOnce(undefined)
   })
 
   afterEach(() => {
@@ -53,54 +69,156 @@ describe(LocalStrategy.name, () => {
 
   describe(LocalStrategy.prototype.validate.name, () => {
     const currentDate = new Date()
-    const user = {
+    const user: User = {
       id: '1',
       email: 'test@test.com',
       refreshToken: null,
+      isActivated: false,
       createdAt: currentDate,
       updatedAt: currentDate,
     }
-    const mailConfirmation = {
+    const verificationCode = {
       id: '1',
       user,
       code: 123456,
       sendingAttempts: 1,
       createdAt: currentDate,
     }
+    const req = {socket: {remoteAddress: '123.123.123.123'}} as Request & {
+      socket: {remoteAddress: string}
+    }
 
     it('should return user if code matches', async () => {
-      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(mailConfirmation)
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest.spyOn(verificationCodesService, 'deleteByID').mockResolvedValueOnce(undefined)
+      jest.spyOn(usersService, 'activateUser').mockResolvedValueOnce(undefined)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
-      const result = await localStrategy.validate(user.email, mailConfirmation.code)
+      const result = await localStrategy.validate(req, user.email, verificationCode.code)
 
       expect(result).toEqual({id: user.id, email: user.email})
     })
 
     it('should throw UnauthorizedException if code does not match', async () => {
-      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(null)
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(null)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
-      const result = localStrategy.validate(user.email, 321456)
-      const expectedError = new UnauthorizedException('Wrong email or confirmation code')
+      const result = localStrategy.validate(req, user.email, 321456)
+      const expectedError = new UnauthorizedException('Wrong email or verification code')
       await expect(() => result).rejects.toThrowError(expectedError)
     })
 
     it('should throw UnauthorizedException if email does not match', async () => {
-      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce(null)
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(null)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(null)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
-      const result = localStrategy.validate('test@test.testtt', 123456)
-      const expectedError = new UnauthorizedException('Wrong email or confirmation code')
+      const result = localStrategy.validate(req, 'test@test.testtt', 123456)
+      const expectedError = new UnauthorizedException('Wrong email or verification code')
       await expect(() => result).rejects.toThrowError(expectedError)
     })
 
     it('should throw UnauthorizedException if code is expired', async () => {
-      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce({
-        ...mailConfirmation,
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce({
+        ...verificationCode,
         createdAt: new Date(currentDate.getTime() - 16 * 60 * 1000),
       })
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
-      const result = localStrategy.validate(user.email, 123456)
-      const expectedError = new UnauthorizedException('Wrong email or confirmation code')
+      const result = localStrategy.validate(req, user.email, 123456)
+      const expectedError = new UnauthorizedException('Wrong email or verification code')
       await expect(() => result).rejects.toThrowError(expectedError)
+    })
+
+    it('should throw UnauthorizedException if too many login attempts', async () => {
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([
+        {
+          id: '1',
+          ipAddress: req.socket.remoteAddress,
+          user,
+          isSuccessful: false,
+          createdAt: currentDate,
+        },
+        {
+          id: '2',
+          ipAddress: req.socket.remoteAddress,
+          user,
+          isSuccessful: false,
+          createdAt: currentDate,
+        },
+        {
+          id: '3',
+          ipAddress: req.socket.remoteAddress,
+          user,
+          isSuccessful: false,
+          createdAt: currentDate,
+        },
+        {
+          id: '4',
+          ipAddress: req.socket.remoteAddress,
+          user,
+          isSuccessful: false,
+          createdAt: currentDate,
+        },
+        {
+          id: '5',
+          ipAddress: req.socket.remoteAddress,
+          user,
+          isSuccessful: false,
+          createdAt: currentDate,
+        },
+      ])
+
+      const result = localStrategy.validate(req, user.email, 123456)
+      const expectedError = new UnauthorizedException('Too many login attempts')
+      await expect(() => result).rejects.toThrowError(expectedError)
+    })
+
+    it('should activate user if user is not activated', async () => {
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
+      jest.spyOn(usersService, 'activateUser').mockResolvedValueOnce(undefined)
+
+      await localStrategy.validate(req, user.email, 123456)
+
+      expect(usersService.activateUser).toBeCalledWith(user.id)
+    })
+
+    it('should create login attempt', async () => {
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
+      jest.spyOn(loginAttemptsService, 'create').mockResolvedValueOnce({
+        id: '1',
+        ipAddress: req.socket.remoteAddress,
+        user,
+        isSuccessful: true,
+        createdAt: currentDate,
+      })
+
+      await localStrategy.validate(req, user.email, 123456)
+
+      expect(loginAttemptsService.create).toBeCalledWith({
+        ipAddress: req.socket.remoteAddress,
+        user,
+        isSuccessful: true,
+      })
+    })
+
+    it('should delete verification code', async () => {
+      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
+      jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
+
+      await localStrategy.validate(req, user.email, 123456)
+
+      expect(verificationCodesService.deleteByID).toBeCalledWith(verificationCode.id)
     })
   })
 })

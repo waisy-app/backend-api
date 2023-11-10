@@ -39,6 +39,7 @@ describe(UsersService.name, () => {
         refreshToken: null,
         createdAt: currentDate,
         updatedAt: currentDate,
+        isActivated: false,
         ...userInput,
       }
 
@@ -57,6 +58,7 @@ describe(UsersService.name, () => {
         id: '1',
         email: 't@t.com',
         refreshToken: null,
+        isActivated: true,
         createdAt: currentDate,
         updatedAt: currentDate,
       }
@@ -83,6 +85,7 @@ describe(UsersService.name, () => {
         id: '1',
         email: 't@t.com',
         refreshToken: null,
+        isActivated: true,
         createdAt: currentDate,
         updatedAt: currentDate,
       }
@@ -117,6 +120,20 @@ describe(UsersService.name, () => {
       const refreshToken = '123'
       await usersService.updateRefreshToken(userID, refreshToken)
       expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {refreshToken})
+    })
+  })
+
+  describe(UsersService.prototype.activateUser.name, () => {
+    it('should update a user', async () => {
+      jest.spyOn(usersService.usersRepository, 'update').mockReturnValueOnce(
+        new Promise(resolve => {
+          resolve({affected: 1, raw: {}, generatedMaps: []})
+        }),
+      )
+
+      const userID = '1'
+      await usersService.activateUser(userID)
+      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {isActivated: true})
     })
   })
 })
