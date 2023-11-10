@@ -17,6 +17,7 @@ import {typeOrmModuleOptions} from './type-orm-module.options'
 import {graphqlModuleOptions} from './graphql-module.options'
 import {ConfigModule} from './config/config.module'
 import {VerificationCodesModule} from './verification-codes/verification-codes.module'
+import {LoginAttemptsModule} from './login-attempts/login-attempts.module'
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import {VerificationCodesModule} from './verification-codes/verification-codes.m
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     GraphQLModule.forRootAsync(graphqlModuleOptions),
     VerificationCodesModule,
+    LoginAttemptsModule,
   ],
   providers: [
     ComplexityPlugin,
@@ -54,7 +56,7 @@ import {VerificationCodesModule} from './verification-codes/verification-codes.m
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): void {
+  public configure(consumer: MiddlewareConsumer): void {
     consumer.apply(RequestLoggerMiddleware).forRoutes({path: '*', method: RequestMethod.ALL})
   }
 }

@@ -6,7 +6,7 @@ export class VerificationCode {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => User, {onDelete: 'CASCADE'})
+  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false})
   user: User
 
   @Column({comment: 'Confirmation code from email', type: 'int'})

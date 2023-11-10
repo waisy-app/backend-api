@@ -22,6 +22,19 @@ module.exports = {
         allowConciseArrowFunctionExpressionsStartingWithVoid: true,
       },
     ],
+    '@typescript-eslint/explicit-member-accessibility': [
+      'warn',
+      {
+        accessibility: 'explicit',
+        overrides: {
+          constructors: 'no-public',
+          properties: 'off',
+          parameterProperties: 'explicit',
+          methods: 'explicit',
+          accessors: 'explicit',
+        },
+      },
+    ],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': ['warn'],
