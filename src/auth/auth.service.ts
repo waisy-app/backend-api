@@ -17,17 +17,17 @@ export class AuthService {
     private readonly cryptService: CryptService,
   ) {}
 
-  async login(userID: User['id']): Promise<Auth> {
+  public async login(userID: User['id']): Promise<Auth> {
     const tokens = await this.getTokens(userID)
     await this.updateRefreshToken(userID, tokens.refresh_token)
     return tokens
   }
 
-  async logout(userID: User['id']): Promise<void> {
+  public async logout(userID: User['id']): Promise<void> {
     await this.usersService.updateRefreshToken(userID, null)
   }
 
-  async refreshTokens(userID: User['id']): Promise<Auth> {
+  public async refreshTokens(userID: User['id']): Promise<Auth> {
     const tokens = await this.getTokens(userID)
     await this.updateRefreshToken(userID, tokens.refresh_token)
     return tokens

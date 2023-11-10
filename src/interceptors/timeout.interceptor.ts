@@ -13,7 +13,7 @@ import {ServerConfigService} from '../config/server/server.config.service'
 export class TimeoutInterceptor implements NestInterceptor {
   constructor(private readonly serverConfigService: ServerConfigService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       timeout(this.serverConfigService.requestTimeoutMs),
       catchError(err => {

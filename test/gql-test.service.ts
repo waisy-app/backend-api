@@ -52,11 +52,11 @@ export class GqlTestService {
     })
   }
 
-  get bearerToken(): string {
+  private get bearerToken(): string {
     return `Bearer ${this.token}`
   }
 
-  async requestTimeoutTest(options: IErrorTestOptions): Promise<void> {
+  public async requestTimeoutTest(options: IErrorTestOptions): Promise<void> {
     const serverConfigService = this.app.get(ServerConfigService)
     jest
       .spyOn(this.app.get(options.serviceForMock), options.methodForMock)
@@ -81,7 +81,7 @@ export class GqlTestService {
     })
   }
 
-  async internalServerErrorTest(options: IErrorTestOptions): Promise<void> {
+  public async internalServerErrorTest(options: IErrorTestOptions): Promise<void> {
     jest
       .spyOn(this.app.get(options.serviceForMock), options.methodForMock)
       .mockImplementationOnce(() => {
@@ -103,7 +103,7 @@ export class GqlTestService {
     })
   }
 
-  async gqlValidationTest(options: IQueryOptions): Promise<void> {
+  public async gqlValidationTest(options: IQueryOptions): Promise<void> {
     const result = await this.sendRequest(options).expect(HttpStatus.BAD_REQUEST)
     expect(result.body.errors).toEqual(
       expect.arrayContaining([
@@ -116,7 +116,7 @@ export class GqlTestService {
     )
   }
 
-  async unauthorizedComplexTest(options: IQueryOptions): Promise<void> {
+  public async unauthorizedComplexTest(options: IQueryOptions): Promise<void> {
     await this.unauthorizedInvalidSecretTokenTest(options)
     await this.unauthorizedInvalidTokenTest(options)
     await this.unauthorizedTokenDoesNotExistsTest(options)
@@ -228,7 +228,7 @@ export class GqlTestService {
     })
   }
 
-  sendRequest(options: {
+  public sendRequest(options: {
     queryType: IErrorTestOptions['queryType']
     query: IQueryBuilderOptions
   }): request.Test {

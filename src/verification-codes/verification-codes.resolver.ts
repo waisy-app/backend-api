@@ -9,7 +9,7 @@ export class VerificationCodesResolver {
 
   @SkipJwtAuth()
   @Mutation(() => Boolean, {description: 'Send verification code to email'})
-  async sendEmailVerificationCode(@Args() {email}: SendVerificationCodeArgs): Promise<true> {
+  public async sendEmailVerificationCode(@Args() {email}: SendVerificationCodeArgs): Promise<true> {
     await this.mailConfirmationService.sendVerificationCode(email)
     return true
   }

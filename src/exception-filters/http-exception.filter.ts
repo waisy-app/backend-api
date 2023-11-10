@@ -11,7 +11,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
 
   constructor(private readonly errorFormatterService: ErrorFormatterService) {}
 
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  public catch(exception: HttpException, host: ArgumentsHost): void {
     const gqlHost = GqlArgumentsHost.create(host)
     const requestType = gqlHost.getType<GqlContextType>()
     this.logger.debug(`Request type: ${requestType}`)
@@ -25,7 +25,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
     })
   }
 
-  catchHttp(exception: HttpException, context: HttpArgumentsHost): void {
+  private catchHttp(exception: HttpException, context: HttpArgumentsHost): void {
     const response = context.getResponse<Response>()
     const status = exception.getStatus()
     const exceptionResponse = exception.getResponse() as HttpExceptionBody
@@ -40,7 +40,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
     response.status(status).json({message: exceptionResponse.message, error})
   }
 
-  catchGraphql(exception: HttpException): void {
+  private catchGraphql(exception: HttpException): void {
     const exceptionBody = exception.getResponse() as HttpExceptionBody
     let code: string
     if (exceptionBody.error) {

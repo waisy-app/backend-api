@@ -6,11 +6,11 @@ import {Injectable} from '@nestjs/common'
 export class ServerConfigService {
   constructor(private configService: ConfigService) {}
 
-  get port(): number {
+  public get port(): number {
     return this.configService.get(PORT.name) as PortType
   }
 
-  get requestTimeoutMs(): number {
+  public get requestTimeoutMs(): number {
     return this.configService.get(REQUEST_TIMEOUT_MS.name) as RequestTimeoutMsType
   }
 }

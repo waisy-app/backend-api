@@ -23,7 +23,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
     })
   }
 
-  async validate(req: Request, payload: JwtPayload): Promise<ICurrentUser> {
+  public async validate(req: Request, payload: JwtPayload): Promise<ICurrentUser> {
     const authRefreshToken = req.get('Authorization')?.replace('Bearer', '').trim()
     if (!authRefreshToken) throw new UnauthorizedException('Refresh token not found')
 

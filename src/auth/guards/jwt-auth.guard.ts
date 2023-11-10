@@ -12,7 +12,7 @@ export class JwtAuthGuard extends AuthGuard(JWT_STRATEGY_NAME) {
     super()
   }
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  public canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(SKIP_JWT_AUTH, [
       context.getHandler(),
       context.getClass(),
@@ -21,7 +21,7 @@ export class JwtAuthGuard extends AuthGuard(JWT_STRATEGY_NAME) {
     return super.canActivate(context)
   }
 
-  getRequest(context: ExecutionContext): Request {
+  public getRequest(context: ExecutionContext): Request {
     const ctx = GqlExecutionContext.create(context)
     return ctx.getContext().req
   }

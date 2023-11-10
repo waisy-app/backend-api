@@ -15,7 +15,7 @@ export class ComplexityPlugin implements ApolloServerPlugin {
     private readonly graphqlConfigService: GraphqlConfigService,
   ) {}
 
-  async requestDidStart(): Promise<GraphQLRequestListener<any>> {
+  public async requestDidStart(): Promise<GraphQLRequestListener<any>> {
     const logger = this.logger
     const maxComplexity = this.graphqlConfigService.complexityLimit
     const defaultComplexity = 1

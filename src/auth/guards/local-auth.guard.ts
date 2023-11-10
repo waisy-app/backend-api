@@ -7,7 +7,7 @@ import {LoginArgs} from '../dto/login.args'
 
 @Injectable()
 export class LocalAuthGuard extends AuthGuard(LOCAL_STRATEGY_NAME) {
-  getRequest(context: ExecutionContext): Request {
+  public getRequest(context: ExecutionContext): Request {
     const ctx = GqlExecutionContext.create(context)
     const request = ctx.getContext().req as Request
     const requestType = ctx.getType()
