@@ -13,14 +13,14 @@ export class VerificationCodesService {
 
   constructor(
     @InjectRepository(VerificationCode)
-    readonly verificationCodeRepository: Repository<VerificationCode>,
+    public readonly verificationCodeRepository: Repository<VerificationCode>,
     private readonly usersService: UsersService,
     private readonly authConfigService: AuthConfigService,
   ) {}
 
   // TODO: сделать автоматическую очистку таблицы verification_codes от записей с истекшим сроком
   //  действия кода подтверждения почты. Срок действия кода подтверждения почты - 15 минут.
-  async sendVerificationCode(email: User['email']): Promise<void> {
+  public async sendVerificationCode(email: User['email']): Promise<void> {
     let user = await this.usersService.findOneByEmail(email)
     if (!user) {
       this.logger.debug(`User with email ${email} not found. Creating new user...`)
@@ -44,7 +44,7 @@ export class VerificationCodesService {
     // TODO: отправка кода подтверждения на почту
   }
 
-  async findOne(
+  public async findOne(
     user: {id: User['id']} | {email: User['email']},
     code: number,
   ): Promise<VerificationCode | null> {
@@ -54,7 +54,7 @@ export class VerificationCodesService {
     })
   }
 
-  async deleteByID(id: VerificationCode['id']): Promise<void> {
+  public async deleteByID(id: VerificationCode['id']): Promise<void> {
     await this.verificationCodeRepository.delete({id})
   }
 

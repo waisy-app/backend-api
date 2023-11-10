@@ -91,5 +91,16 @@ describe(LocalStrategy.name, () => {
       const expectedError = new UnauthorizedException('Wrong email or confirmation code')
       await expect(() => result).rejects.toThrowError(expectedError)
     })
+
+    it('should throw UnauthorizedException if code is expired', async () => {
+      jest.spyOn(mailConfirmationService, 'findOne').mockResolvedValueOnce({
+        ...mailConfirmation,
+        createdAt: new Date(currentDate.getTime() - 16 * 60 * 1000),
+      })
+
+      const result = localStrategy.validate(user.email, 123456)
+      const expectedError = new UnauthorizedException('Wrong email or confirmation code')
+      await expect(() => result).rejects.toThrowError(expectedError)
+    })
   })
 })

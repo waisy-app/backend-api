@@ -17,14 +17,19 @@ export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_STRATEGY_NAM
   }
 
   // TODO: сделать ограничения по количеству попыток ввода кода подтверждения
-  async validate(email: string, code: number): Promise<ICurrentUser> {
+  public async validate(email: string, code: number): Promise<ICurrentUser> {
     this.logger.debug(`Validating user with email ${email} and code ${code}`)
     await this.validateLoginArgs(email, code)
 
-    const mailConfirmation = await this.verificationCodesService.findOne({email}, code)
-    if (!mailConfirmation) throw new UnauthorizedException('Wrong email or confirmation code')
-    await this.verificationCodesService.deleteByID(mailConfirmation.id)
-    return {id: mailConfirmation.user.id, email: mailConfirmation.user.email}
+    const verificationCode = await this.verificationCodesService.findOne({email}, code)
+    const currentDate = new Date()
+    // TODO: move this to config. Verification code is valid for 15 minutes
+    const validCreatedDate = new Date(currentDate.getTime() - 15 * 60 * 1000)
+    if (!verificationCode || verificationCode.createdAt < validCreatedDate) {
+      throw new UnauthorizedException('Wrong email or confirmation code')
+    }
+    await this.verificationCodesService.deleteByID(verificationCode.id)
+    return {id: verificationCode.user.id, email: verificationCode.user.email}
   }
 
   private async validateLoginArgs(email: string, code: number): Promise<void> {
