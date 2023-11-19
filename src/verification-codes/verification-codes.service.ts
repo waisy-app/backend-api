@@ -18,35 +18,34 @@ export class VerificationCodesService {
     private readonly authConfigService: AuthConfigService,
   ) {}
 
-  // TODO: сделать автоматическую очистку таблицы verification_codes от записей с истекшим сроком
-  //  действия кода подтверждения почты. Срок действия кода подтверждения почты - 15 минут.
-  public async sendVerificationCode(email: User['email']): Promise<void> {
-    let user = await this.usersService.findOneByEmail(email)
-    if (!user) {
-      this.logger.debug(`User with email ${email} not found. Creating new user...`)
-      user = await this.usersService.createOrUpdate({email})
-    }
+  // TODO: make automatic cleaning of verification_codes table
+  //  from records with expired email verification code.
+  //  Verification code expiration time - 15 minutes.
+  public async sendEmailVerificationCode(email: User['email']): Promise<void> {
+    const user =
+      (await this.usersService.findOneByEmail(email)) ||
+      (await this.usersService.createOrUpdate({email}))
 
+    const maxSendingAttempts = this.authConfigService.maxSendingVerificationCodeAttempts
     let verificationCode = await this.findOneByUserEmail(email)
-    if (
-      verificationCode &&
-      verificationCode.sendingAttempts >= this.authConfigService.maxSendingVerificationCodeAttempts
-    ) {
+    if (verificationCode && verificationCode.sendingAttempts >= maxSendingAttempts) {
       throw new ForbiddenError('Too many attempts')
     } else if (!verificationCode) {
-      verificationCode = await this.create(user.id, this.generateCode(), 1)
+      verificationCode = await this.create(user.id, {
+        code: this.generateRandomCode(),
+        sendingAttempts: 1,
+      })
     } else {
       await this.incrementSendingAttempts(verificationCode.id)
     }
 
-    this.logger.debug(`Sending verification code ${verificationCode.code} to ${user.email}`)
-
-    // TODO: отправка кода подтверждения на почту
+    this.logger.debug(`Sending the verification code "${verificationCode.code}" to "${user.email}"`)
+    // TODO: send email with verification code
   }
 
   public async findOne(
     user: {id: User['id']} | {email: User['email']},
-    code: number,
+    code: VerificationCode['code'],
   ): Promise<VerificationCode | null> {
     return this.verificationCodeRepository.findOne({
       where: {user, code},
@@ -69,15 +68,19 @@ export class VerificationCodesService {
     await this.verificationCodeRepository.increment({id}, 'sendingAttempts', 1)
   }
 
-  private generateCode(): number {
+  private generateRandomCode(): VerificationCode['code'] {
     return Math.floor(Math.random() * (999999 - 100000)) + 100000
   }
 
   private create(
     userID: User['id'],
-    code: number,
-    sendingAttempts?: number,
+    {code, sendingAttempts}: Pick<VerificationCode, 'code' | 'sendingAttempts'>,
   ): Promise<VerificationCode> {
-    return this.verificationCodeRepository.save({user: {id: userID}, code, sendingAttempts})
+    const newVerificationCode = this.verificationCodeRepository.create({
+      user: {id: userID},
+      code,
+      sendingAttempts,
+    })
+    return this.verificationCodeRepository.save(newVerificationCode)
   }
 }

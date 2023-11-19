@@ -68,7 +68,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
       isSuccessful: true,
     })
     if (!verificationCode.user.isActivated) {
-      await this.usersService.activateUser(verificationCode.user.id)
+      await this.usersService.activate(verificationCode.user.id)
     }
     return {id: verificationCode.user.id, email: verificationCode.user.email}
   }

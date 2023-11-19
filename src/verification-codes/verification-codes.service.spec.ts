@@ -9,7 +9,7 @@ import {ForbiddenError} from '@nestjs/apollo'
 import {ConfigModule} from '../config/config.module'
 
 describe(VerificationCodesService.name, () => {
-  let mailConfirmationService: VerificationCodesService
+  let verificationCodesService: VerificationCodesService
   let usersService: UsersService
 
   beforeEach(async () => {
@@ -22,6 +22,7 @@ describe(VerificationCodesService.name, () => {
         {
           provide: getRepositoryToken(VerificationCode),
           useValue: {
+            create: jest.fn(),
             save: jest.fn(),
             findOne: jest.fn(),
             delete: jest.fn(),
@@ -35,25 +36,25 @@ describe(VerificationCodesService.name, () => {
       ],
     }).compile()
 
-    mailConfirmationService = module.get(VerificationCodesService)
+    verificationCodesService = module.get(VerificationCodesService)
     usersService = module.get(UsersService)
   })
 
-  describe(VerificationCodesService.prototype.sendVerificationCode.name, () => {
+  describe(VerificationCodesService.prototype.sendEmailVerificationCode.name, () => {
     it('should create new user if user with given email not found', async () => {
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(null)
       jest
         .spyOn(usersService, 'createOrUpdate')
-        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'})
+        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'} as any)
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'save')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'save')
         .mockResolvedValueOnce({} as any)
 
-      await mailConfirmationService.sendVerificationCode('test@test.test')
+      await verificationCodesService.sendEmailVerificationCode('test@test.test')
 
       expect(usersService.findOneByEmail).toBeCalledWith('test@test.test')
       expect(usersService.createOrUpdate).toBeCalledWith({email: 'test@test.test'})
-      expect(mailConfirmationService.verificationCodeRepository.save).toBeCalledWith({
+      expect(verificationCodesService.verificationCodeRepository.save).toBeCalledWith({
         user: {id: 'test-id'},
         code: expect.any(Number),
         sendingAttempts: 1,
@@ -63,17 +64,17 @@ describe(VerificationCodesService.name, () => {
     it('should not create new user if user with given email found', async () => {
       jest
         .spyOn(usersService, 'findOneByEmail')
-        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'})
+        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'} as any)
       jest.spyOn(usersService, 'createOrUpdate').mockResolvedValueOnce({} as any)
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'save')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'save')
         .mockResolvedValueOnce({} as any)
 
-      await mailConfirmationService.sendVerificationCode('test@test.test')
+      await verificationCodesService.sendEmailVerificationCode('test@test.test')
 
       expect(usersService.findOneByEmail).toBeCalledWith('test@test.test')
       expect(usersService.createOrUpdate).not.toBeCalled()
-      expect(mailConfirmationService.verificationCodeRepository.save).toBeCalledWith({
+      expect(verificationCodesService.verificationCodeRepository.save).toBeCalledWith({
         user: {id: 'test-id'},
         code: expect.any(Number),
         sendingAttempts: 1,
@@ -83,25 +84,25 @@ describe(VerificationCodesService.name, () => {
     it('should increment sending attempts if verification code already exists', async () => {
       jest
         .spyOn(usersService, 'findOneByEmail')
-        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'})
+        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'} as any)
       jest.spyOn(usersService, 'createOrUpdate').mockResolvedValueOnce({} as any)
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'save')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'save')
         .mockResolvedValueOnce({} as any)
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'findOne')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'findOne')
         .mockResolvedValueOnce({id: 'test-id'} as any)
 
-      await mailConfirmationService.sendVerificationCode('test@test.test')
+      await verificationCodesService.sendEmailVerificationCode('test@test.test')
 
       expect(usersService.findOneByEmail).toBeCalledWith('test@test.test')
       expect(usersService.createOrUpdate).not.toBeCalled()
-      expect(mailConfirmationService.verificationCodeRepository.save).not.toBeCalled()
-      expect(mailConfirmationService.verificationCodeRepository.findOne).toBeCalledWith({
+      expect(verificationCodesService.verificationCodeRepository.save).not.toBeCalled()
+      expect(verificationCodesService.verificationCodeRepository.findOne).toBeCalledWith({
         where: {user: {email: 'test@test.test'}},
         relations: ['user'],
       })
-      expect(mailConfirmationService.verificationCodeRepository.increment).toBeCalledWith(
+      expect(verificationCodesService.verificationCodeRepository.increment).toBeCalledWith(
         {id: 'test-id'},
         'sendingAttempts',
         1,
@@ -111,19 +112,19 @@ describe(VerificationCodesService.name, () => {
     it('should throw ForbiddenError if verification code already exists and sending attempts >= 3', async () => {
       jest
         .spyOn(usersService, 'findOneByEmail')
-        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'})
+        .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'} as any)
       jest.spyOn(usersService, 'createOrUpdate').mockResolvedValueOnce({} as any)
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'save')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'save')
         .mockResolvedValueOnce({} as any)
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'findOne')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'findOne')
         .mockResolvedValueOnce({id: 'test-id', sendingAttempts: 3} as any)
 
       const error = new ForbiddenError('Too many attempts')
 
       await expect(
-        mailConfirmationService.sendVerificationCode('test@test.test'),
+        verificationCodesService.sendEmailVerificationCode('test@test.test'),
       ).rejects.toThrowError(error)
     })
   })
@@ -131,10 +132,10 @@ describe(VerificationCodesService.name, () => {
   describe(VerificationCodesService.prototype.findOne.name, () => {
     it('should return mail confirmation by user id and code', async () => {
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'findOne')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'findOne')
         .mockResolvedValueOnce({id: 'test-id'} as any)
 
-      const result = await mailConfirmationService.findOne({id: 'test-id'}, 123456)
+      const result = await verificationCodesService.findOne({id: 'test-id'}, 123456)
 
       expect(result).toEqual({id: 'test-id'})
     })
@@ -143,12 +144,12 @@ describe(VerificationCodesService.name, () => {
   describe(VerificationCodesService.prototype.deleteByID.name, () => {
     it('should delete mail confirmation by id', async () => {
       jest
-        .spyOn(mailConfirmationService.verificationCodeRepository, 'delete')
+        .spyOn(verificationCodesService.verificationCodeRepository, 'delete')
         .mockResolvedValueOnce({} as any)
 
-      await mailConfirmationService.deleteByID('test-id')
+      await verificationCodesService.deleteByID('test-id')
 
-      expect(mailConfirmationService.verificationCodeRepository.delete).toBeCalledWith({
+      expect(verificationCodesService.verificationCodeRepository.delete).toBeCalledWith({
         id: 'test-id',
       })
     })

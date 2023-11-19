@@ -6,12 +6,13 @@ import {VerificationCodesResolver} from './verification-codes.resolver'
 import {UsersModule} from '../users/users.module'
 import {AuthConfigService} from '../config/auth/auth.config.service'
 import {ConfigService} from '@nestjs/config'
-// TODO: refactor whole module
+
 @Module({
   imports: [TypeOrmModule.forFeature([VerificationCode]), UsersModule],
   providers: [
     VerificationCodesService,
     VerificationCodesResolver,
+    // TODO: collect all config services in one module
     ConfigService,
     AuthConfigService,
   ],

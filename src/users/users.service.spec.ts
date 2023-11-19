@@ -123,7 +123,7 @@ describe(UsersService.name, () => {
     })
   })
 
-  describe(UsersService.prototype.activateUser.name, () => {
+  describe(UsersService.prototype.activate.name, () => {
     it('should update a user', async () => {
       jest.spyOn(usersService.usersRepository, 'update').mockReturnValueOnce(
         new Promise(resolve => {
@@ -132,7 +132,7 @@ describe(UsersService.name, () => {
       )
 
       const userID = '1'
-      await usersService.activateUser(userID)
+      await usersService.activate(userID)
       expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {isActivated: true})
     })
   })
