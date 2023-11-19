@@ -2,7 +2,7 @@ import {UseGuards} from '@nestjs/common'
 import {Auth} from './models/auth.model'
 import {Args, Mutation, Query, Resolver} from '@nestjs/graphql'
 import {AuthService} from './auth.service'
-import {LocalAuthGuard} from './guards/local-auth.guard'
+import {EmailAuthGuard} from './guards/email-auth.guard'
 import {SkipJwtAuth} from './decorators/skip-jwt-auth.decorator'
 import {CurrentUser, ICurrentUser} from './decorators/current-user.decorator'
 import {JwtRefreshGuard} from './guards/jwt-refresh.guard'
@@ -13,7 +13,7 @@ export class AuthResolver {
   constructor(private authService: AuthService) {}
 
   @SkipJwtAuth()
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(EmailAuthGuard)
   @Mutation(() => Auth, {
     description: `Get access token and refresh token. 
     Find and login already existing user or create new user if email is not registered`,

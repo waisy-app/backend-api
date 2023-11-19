@@ -12,7 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
   private readonly logger = new Logger(JwtStrategy.name)
 
   constructor(
-    private readonly authConfigService: AuthConfigService,
+    authConfigService: AuthConfigService,
     private readonly usersService: UsersService,
   ) {
     super({

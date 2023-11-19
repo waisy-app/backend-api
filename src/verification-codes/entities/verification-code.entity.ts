@@ -9,7 +9,7 @@ export class VerificationCode {
   @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false})
   user: User
 
-  @Column({comment: 'Confirmation code from email', type: 'int'})
+  @Column({comment: 'The confirmation code received via email', type: 'int'})
   code: number
 
   @Column({default: 0, comment: 'Number of sending attempts', type: 'int'})

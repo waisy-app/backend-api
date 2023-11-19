@@ -1,7 +1,7 @@
 import {Strategy} from 'passport-local'
 import {PassportStrategy} from '@nestjs/passport'
 import {Injectable, Logger, UnauthorizedException} from '@nestjs/common'
-import {LOCAL_STRATEGY_NAME} from './strategies.constants'
+import {EMAIL_CODE_STRATEGY_NAME} from './strategies.constants'
 import {ICurrentUser} from '../decorators/current-user.decorator'
 import {validate} from 'class-validator'
 import {ValidationException} from '../../exceptions/validation.exception'
@@ -11,9 +11,9 @@ import {LoginAttemptsService} from '../../login-attempts/login-attempts.service'
 import {Request} from 'express'
 import * as requestIp from 'request-ip'
 import {UsersService} from '../../users/users.service'
-
+// TODO: refactor this
 @Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_STRATEGY_NAME) {
+export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEGY_NAME) {
   private readonly logger = new Logger(LocalStrategy.name)
 
   constructor(

@@ -6,7 +6,7 @@ import {AuthConfigService} from '../config/auth/auth.config.service'
 import {CryptService} from '../crypt/crypt.service'
 import {getRepositoryToken} from '@nestjs/typeorm'
 import {User} from '../users/entities/user.entity'
-import {jwtModuleConfig} from './config/jwt-module.config'
+import {jwtModuleConfig} from './jwt-module.config'
 import {ConfigModule} from '../config/config.module'
 
 describe(AuthService.name, () => {
