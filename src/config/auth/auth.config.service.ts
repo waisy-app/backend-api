@@ -11,6 +11,8 @@ import {
   JwtSecretTokenType,
   MAX_SENDING_VERIFICATION_CODE_ATTEMPTS,
   MaxSendingVerificationCodeAttemptsType,
+  VERIFICATION_CODE_LIFETIME_SECONDS,
+  VerificationCodeLifetimeSecondsType,
 } from './auth.config.constants'
 
 @Injectable()
@@ -41,5 +43,15 @@ export class AuthConfigService {
     return this.configService.get(
       MAX_SENDING_VERIFICATION_CODE_ATTEMPTS.name,
     ) as MaxSendingVerificationCodeAttemptsType
+  }
+
+  public get verificationCodeLifetimeSeconds(): VerificationCodeLifetimeSecondsType {
+    return this.configService.get(
+      VERIFICATION_CODE_LIFETIME_SECONDS.name,
+    ) as VerificationCodeLifetimeSecondsType
+  }
+
+  public get verificationCodeLifetimeMilliseconds(): number {
+    return this.verificationCodeLifetimeSeconds * 1000
   }
 }

@@ -34,12 +34,12 @@ describe(UsersService.name, () => {
     it('should return a created user', async () => {
       const currentDate = new Date()
       const userInput = {email: 't@t.com'}
-      const expected = {
+      const expected: User = {
         id: '1',
         refreshToken: null,
         createdAt: currentDate,
         updatedAt: currentDate,
-        isActivated: false,
+        status: 'active',
         ...userInput,
       }
 
@@ -54,11 +54,11 @@ describe(UsersService.name, () => {
   describe(UsersService.prototype.findOneByID.name, () => {
     it('should return a user', async () => {
       const currentDate = new Date()
-      const expected = {
+      const expected: User = {
         id: '1',
         email: 't@t.com',
         refreshToken: null,
-        isActivated: true,
+        status: 'active',
         createdAt: currentDate,
         updatedAt: currentDate,
       }
@@ -85,7 +85,7 @@ describe(UsersService.name, () => {
         id: '1',
         email: 't@t.com',
         refreshToken: null,
-        isActivated: true,
+        status: 'active',
         createdAt: currentDate,
         updatedAt: currentDate,
       }
@@ -96,6 +96,10 @@ describe(UsersService.name, () => {
       expect(user).toStrictEqual({
         id: expected.id,
         email: expected.email,
+        refreshToken: expected.refreshToken,
+        status: expected.status,
+        createdAt: expected.createdAt,
+        updatedAt: expected.updatedAt,
       })
     })
 
@@ -133,7 +137,7 @@ describe(UsersService.name, () => {
 
       const userID = '1'
       await usersService.activate(userID)
-      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {isActivated: true})
+      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {status: 'active'})
     })
   })
 })

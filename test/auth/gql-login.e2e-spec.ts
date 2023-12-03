@@ -31,8 +31,8 @@ describe(`login (GraphQL)`, () => {
     loginAttemptsService = app.get(LoginAttemptsService)
 
     users = await Promise.all([
-      usersService.usersRepository.save({email: 'test@test.com', isActivated: true}),
-      usersService.usersRepository.save({email: 'test2@test2.com', isActivated: false}),
+      usersService.usersRepository.save({email: 'test@test.com', status: 'active'}),
+      usersService.usersRepository.save({email: 'test2@test2.com', status: 'unconfirmed'}),
     ])
     verificationCodes = await Promise.all([
       verificationCodesService.verificationCodeRepository.save({user: users[0], code: 123456}),

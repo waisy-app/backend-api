@@ -35,3 +35,9 @@ export const MAX_SENDING_VERIFICATION_CODE_ATTEMPTS = {
   name: 'MAX_SENDING_VERIFICATION_CODE_ATTEMPTS',
   defaultValue: 3,
 }
+
+export type VerificationCodeLifetimeSecondsType = number
+export const VERIFICATION_CODE_LIFETIME_SECONDS = {
+  name: 'VERIFICATION_CODE_LIFETIME_SECONDS',
+  defaultValue: 60 * 10, // 10 minutes
+}

@@ -1,10 +1,13 @@
-import {HASH_ROUNDS, MAX_SENDING_VERIFICATION_CODE_ATTEMPTS} from './auth.config.constants'
-import {NODE_ENV} from '../environment/environment.config.constants'
-
-const isTest = process.env[NODE_ENV.name] === NODE_ENV.options.TEST
+import {
+  HASH_ROUNDS,
+  MAX_SENDING_VERIFICATION_CODE_ATTEMPTS,
+  VERIFICATION_CODE_LIFETIME_SECONDS,
+} from './auth.config.constants'
+import {EnvironmentConfigService} from '../environment/environment.config.service'
 
 export default (): Record<string, unknown> => ({
-  [HASH_ROUNDS.name]: isTest ? 1 : HASH_ROUNDS.defaultValue,
+  [HASH_ROUNDS.name]: EnvironmentConfigService.isTest ? 1 : HASH_ROUNDS.defaultValue,
   [MAX_SENDING_VERIFICATION_CODE_ATTEMPTS.name]:
     MAX_SENDING_VERIFICATION_CODE_ATTEMPTS.defaultValue,
+  [VERIFICATION_CODE_LIFETIME_SECONDS.name]: VERIFICATION_CODE_LIFETIME_SECONDS.defaultValue,
 })

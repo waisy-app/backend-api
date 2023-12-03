@@ -4,18 +4,11 @@ import {TypeOrmModule} from '@nestjs/typeorm'
 import {VerificationCode} from './entities/verification-code.entity'
 import {VerificationCodesResolver} from './verification-codes.resolver'
 import {UsersModule} from '../users/users.module'
-import {AuthConfigService} from '../config/auth/auth.config.service'
-import {ConfigService} from '@nestjs/config'
+import {ConfigModule} from '../config/config.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([VerificationCode]), UsersModule],
-  providers: [
-    VerificationCodesService,
-    VerificationCodesResolver,
-    // TODO: collect all config services in one module
-    ConfigService,
-    AuthConfigService,
-  ],
+  imports: [TypeOrmModule.forFeature([VerificationCode]), UsersModule, ConfigModule],
+  providers: [VerificationCodesService, VerificationCodesResolver],
   exports: [VerificationCodesService],
 })
 export class VerificationCodesModule {}

@@ -83,7 +83,7 @@ describe(RefreshTokenStrategy.name, () => {
         id: '1',
         email: 'test@test.com',
         refreshToken: 'refreshToken',
-        isActivated: true,
+        status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
       }

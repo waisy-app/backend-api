@@ -1,7 +1,7 @@
 import {Injectable, Logger} from '@nestjs/common'
 import {InjectRepository} from '@nestjs/typeorm'
 import {User} from '../users/entities/user.entity'
-import {Repository} from 'typeorm'
+import {MoreThan, Repository} from 'typeorm'
 import {VerificationCode} from './entities/verification-code.entity'
 import {UsersService} from '../users/users.service'
 import {ForbiddenError} from '@nestjs/apollo'
@@ -18,32 +18,21 @@ export class VerificationCodesService {
     private readonly authConfigService: AuthConfigService,
   ) {}
 
-  // TODO: make automatic cleaning of verification_codes table
-  //  from records with expired email verification code.
-  //  Verification code expiration time - 15 minutes.
   public async sendEmailVerificationCode(email: User['email']): Promise<void> {
-    const user =
-      (await this.usersService.findOneByEmail(email)) ||
-      (await this.usersService.createOrUpdate({email}))
-
     const maxSendingAttempts = this.authConfigService.maxSendingVerificationCodeAttempts
-    let verificationCode = await this.findOneByUserEmail(email)
-    if (verificationCode && verificationCode.sendingAttempts >= maxSendingAttempts) {
+    const verificationCode = await this.findOneOrCreateByUserEmail(email)
+    // TODO: check sending attempts with current ip address (max 3 attempts in 10 minutes from 1 ip address)
+    //  I need to create a new module and entity for this
+    if (verificationCode.sendingAttempts >= maxSendingAttempts) {
       throw new ForbiddenError('Too many attempts')
-    } else if (!verificationCode) {
-      verificationCode = await this.create(user.id, {
-        code: this.generateRandomCode(),
-        sendingAttempts: 1,
-      })
-    } else {
-      await this.incrementSendingAttempts(verificationCode.id)
     }
+    await this.incrementSendingAttempts(verificationCode.id)
 
-    this.logger.debug(`Sending the verification code "${verificationCode.code}" to "${user.email}"`)
+    this.logger.debug(`Sending the verification code "${verificationCode.code}" to "${email}"`)
     // TODO: send email with verification code
   }
 
-  public async findOne(
+  public async findOneByUserAndCode(
     user: {id: User['id']} | {email: User['email']},
     code: VerificationCode['code'],
   ): Promise<VerificationCode | null> {
@@ -53,13 +42,16 @@ export class VerificationCodesService {
     })
   }
 
-  public async deleteByID(id: VerificationCode['id']): Promise<void> {
-    await this.verificationCodeRepository.delete({id})
+  public async setStatusByID(
+    id: VerificationCode['id'],
+    status: VerificationCode['status'],
+  ): Promise<void> {
+    await this.verificationCodeRepository.update({id}, {status})
   }
 
   private async findOneByUserEmail(email: User['email']): Promise<VerificationCode | null> {
     return this.verificationCodeRepository.findOne({
-      where: {user: {email}},
+      where: {user: {email}, status: 'active', expirationDate: MoreThan(new Date())},
       relations: ['user'],
     })
   }
@@ -72,15 +64,23 @@ export class VerificationCodesService {
     return Math.floor(Math.random() * (999999 - 100000)) + 100000
   }
 
-  private create(
-    userID: User['id'],
-    {code, sendingAttempts}: Pick<VerificationCode, 'code' | 'sendingAttempts'>,
-  ): Promise<VerificationCode> {
+  private createOne(userID: User['id'], code: VerificationCode['code']): Promise<VerificationCode> {
+    const expirationDate = new Date(
+      Date.now() + this.authConfigService.verificationCodeLifetimeMilliseconds,
+    )
+    const user = {id: userID}
     const newVerificationCode = this.verificationCodeRepository.create({
-      user: {id: userID},
+      user,
       code,
-      sendingAttempts,
+      expirationDate,
     })
     return this.verificationCodeRepository.save(newVerificationCode)
+  }
+
+  private async findOneOrCreateByUserEmail(email: User['email']): Promise<VerificationCode> {
+    const user = await this.usersService.findOneOrCreateByEmail(email)
+    const verificationCode = await this.findOneByUserEmail(email)
+    if (verificationCode) return verificationCode
+    return this.createOne(user.id, this.generateRandomCode())
   }
 }

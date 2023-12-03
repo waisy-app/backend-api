@@ -18,6 +18,3 @@ export class LoginAttempt {
   @CreateDateColumn({type: 'timestamp with time zone'})
   createdAt: Date
 }
-
-// TODO: автоматическое удаление записей из таблицы login_attempts с истекшим сроком действия
-//  (createdAt более 30-ти дней)

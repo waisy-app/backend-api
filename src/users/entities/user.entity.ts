@@ -18,11 +18,12 @@ export class User {
   refreshToken: string | null
 
   @Column({
-    type: 'boolean',
-    default: false,
-    comment: 'Is the user activated and is the email confirmed?',
+    comment: 'Status of the user',
+    type: 'enum',
+    enum: ['active', 'unconfirmed'],
+    default: 'unconfirmed',
   })
-  isActivated: boolean
+  status: 'active' | 'unconfirmed'
 
   @CreateDateColumn({type: 'timestamp with time zone'})
   createdAt: Date

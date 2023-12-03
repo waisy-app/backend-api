@@ -36,9 +36,9 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
 
     const currentDate = new Date()
     // TODO: вынести логику loginAttempts в отдельный мидлвар (interceptor)
-    // TODO: вынести в конфиг. Пользователь может ввести код подтверждения не более 5 раз в 15 минут
+    // TODO: вынести в конфиг. Пользователь может ввести код подтверждения не более 3 раз в 10 минут
     const loginAttempts = await this.loginAttemptsService.findByIpWhereCreatedAtMoreThen(
-      new Date(currentDate.getTime() - 15 * 60 * 1000),
+      new Date(currentDate.getTime() - 10 * 60 * 1000),
       clientIp,
     )
     if (loginAttempts.length >= 5) {
@@ -50,7 +50,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
       throw new UnauthorizedException('Too many login attempts')
     }
 
-    const verificationCode = await this.verificationCodesService.findOne({email}, code)
+    const verificationCode = await this.verificationCodesService.findOneByUserAndCode({email}, code)
     // TODO: move this to config. Verification code is valid for 15 minutes
     const validCreatedDate = new Date(currentDate.getTime() - 15 * 60 * 1000)
     if (!verificationCode || verificationCode.createdAt < validCreatedDate) {
@@ -61,13 +61,13 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
       })
       throw new UnauthorizedException('Wrong email or verification code')
     }
-    await this.verificationCodesService.deleteByID(verificationCode.id)
+    await this.verificationCodesService.setStatusByID(verificationCode.id, 'used')
     await this.loginAttemptsService.create({
       user: verificationCode.user,
       ipAddress: clientIp,
       isSuccessful: true,
     })
-    if (!verificationCode.user.isActivated) {
+    if (verificationCode.user.status !== 'active') {
       await this.usersService.activate(verificationCode.user.id)
     }
     return {id: verificationCode.user.id, email: verificationCode.user.email}

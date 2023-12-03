@@ -60,7 +60,7 @@ describe(LocalStrategy.name, () => {
     usersService = module.get(UsersService)
     loginAttemptsService = module.get(LoginAttemptsService)
 
-    jest.spyOn(verificationCodesService, 'deleteByID').mockResolvedValueOnce(undefined)
+    jest.spyOn(verificationCodesService, 'setStatusByID').mockResolvedValueOnce(undefined)
   })
 
   afterEach(() => {
@@ -73,24 +73,29 @@ describe(LocalStrategy.name, () => {
       id: '1',
       email: 'test@test.com',
       refreshToken: null,
-      isActivated: false,
+      status: 'unconfirmed',
       createdAt: currentDate,
       updatedAt: currentDate,
     }
-    const verificationCode = {
+    const verificationCode: VerificationCode = {
       id: '1',
       user,
       code: 123456,
       sendingAttempts: 1,
+      status: 'active',
+      expirationDate: new Date(currentDate.getTime() + 10 * 60 * 1000),
       createdAt: currentDate,
+      updatedAt: currentDate,
     }
     const req = {socket: {remoteAddress: '123.123.123.123'}} as Request & {
       socket: {remoteAddress: string}
     }
 
     it('should return user if code matches', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
-      jest.spyOn(verificationCodesService, 'deleteByID').mockResolvedValueOnce(undefined)
+      jest
+        .spyOn(verificationCodesService, 'findOneByUserAndCode')
+        .mockResolvedValueOnce(verificationCode)
+      jest.spyOn(verificationCodesService, 'setStatusByID').mockResolvedValueOnce(undefined)
       jest.spyOn(usersService, 'activate').mockResolvedValueOnce(undefined)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
@@ -101,7 +106,7 @@ describe(LocalStrategy.name, () => {
     })
 
     it('should throw UnauthorizedException if code does not match', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(null)
+      jest.spyOn(verificationCodesService, 'findOneByUserAndCode').mockResolvedValueOnce(null)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
@@ -111,7 +116,7 @@ describe(LocalStrategy.name, () => {
     })
 
     it('should throw UnauthorizedException if email does not match', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(null)
+      jest.spyOn(verificationCodesService, 'findOneByUserAndCode').mockResolvedValueOnce(null)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(null)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
@@ -121,7 +126,7 @@ describe(LocalStrategy.name, () => {
     })
 
     it('should throw UnauthorizedException if code is expired', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce({
+      jest.spyOn(verificationCodesService, 'findOneByUserAndCode').mockResolvedValueOnce({
         ...verificationCode,
         createdAt: new Date(currentDate.getTime() - 16 * 60 * 1000),
       })
@@ -134,7 +139,9 @@ describe(LocalStrategy.name, () => {
     })
 
     it('should throw UnauthorizedException if too many login attempts', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest
+        .spyOn(verificationCodesService, 'findOneByUserAndCode')
+        .mockResolvedValueOnce(verificationCode)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([
         {
@@ -180,7 +187,9 @@ describe(LocalStrategy.name, () => {
     })
 
     it('should activate user if user is not activated', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest
+        .spyOn(verificationCodesService, 'findOneByUserAndCode')
+        .mockResolvedValueOnce(verificationCode)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
       jest.spyOn(usersService, 'activate').mockResolvedValueOnce(undefined)
@@ -191,7 +200,9 @@ describe(LocalStrategy.name, () => {
     })
 
     it('should create login attempt', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+      jest
+        .spyOn(verificationCodesService, 'findOneByUserAndCode')
+        .mockResolvedValueOnce(verificationCode)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
       jest.spyOn(loginAttemptsService, 'create').mockResolvedValueOnce({
@@ -211,14 +222,16 @@ describe(LocalStrategy.name, () => {
       })
     })
 
-    it('should delete verification code', async () => {
-      jest.spyOn(verificationCodesService, 'findOne').mockResolvedValueOnce(verificationCode)
+    it('should set "used" status for the verification code', async () => {
+      jest
+        .spyOn(verificationCodesService, 'findOneByUserAndCode')
+        .mockResolvedValueOnce(verificationCode)
       jest.spyOn(usersService, 'findOneByEmail').mockResolvedValueOnce(user)
       jest.spyOn(loginAttemptsService, 'findByIpWhereCreatedAtMoreThen').mockResolvedValueOnce([])
 
       await localStrategy.validate(req, user.email, 123456)
 
-      expect(verificationCodesService.deleteByID).toBeCalledWith(verificationCode.id)
+      expect(verificationCodesService.setStatusByID).toBeCalledWith(verificationCode.id, 'used')
     })
   })
 })

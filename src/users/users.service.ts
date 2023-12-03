@@ -15,6 +15,12 @@ export class UsersService {
     return this.usersRepository.save(newUser)
   }
 
+  public async findOneOrCreateByEmail(email: User['email']): Promise<User> {
+    const user = await this.findOneByEmail(email)
+    if (user) return user
+    return this.createOrUpdate({email})
+  }
+
   public findOneByID(id: User['id']): Promise<User | null> {
     return this.usersRepository.findOneBy({id})
   }
@@ -24,7 +30,7 @@ export class UsersService {
   }
 
   public async activate(id: User['id']): Promise<void> {
-    await this.usersRepository.update(id, {isActivated: true})
+    await this.usersRepository.update(id, {status: 'active'})
   }
 
   public async updateRefreshToken(
