@@ -1,49 +1,56 @@
 name: Node.js CI
+
 on: push
+
 env:
   NODE_ENV: test
-  HOST_OS: ubuntu-20.04
-  GH_VERSION: v4
-  CACHE: 'npm'
-  POSTGRES_PASSWORD: 1234
-  POSTGRES_USER: waisy
 
 jobs:
   build:
-    runs-on: ${{ env.HOST_OS }}
+    runs-on: ubuntu-20.04
+
     strategy:
       matrix:
-        node-version: [ 18.18 ]
-        postgres-version: [ 16.0 ]
+        node-version: [18.18]
+        postgres-version: [16.0]
+
     services:
       postgres:
         image: postgres:${{ matrix.postgres-version }}
         ports:
           - 5431:5432
         env:
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: 1234
+          POSTGRES_USER: waisy
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
-      - uses: actions/checkout@${{ env.GH_VERSION }}
-      - name: Set up Node.js environment with matrix version
-        uses: actions/setup-node@${{ env.GH_VERSION }}
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: ${{ env.CACHE }}
-      - name: Resolve dependencies
+          cache: 'npm'
+
+      - name: Install dependencies
         run: npm ci
-      - name: Confirm formatting complies with standard
+
+      - name: Check for formatting
         run: npm run format:check
-      - name: Regulate code for linting errors
+
+      - name: Check for linting
         run: npm run lint:check
-      - name: Generate schema for GraphQL
+
+      - name: GraphQL generate schema
         run: npm run graphql:generate-schema
-      - name: Run normal testing coverage
+
+      - name: Run tests
         run: npm test
-      - name: Execute end-to-end testing suite
+
+      - name: Runt e2e tests
         run: npm run test:e2e
