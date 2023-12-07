@@ -5,9 +5,8 @@ env:
   HOST_OS: ubuntu-20.04
   GH_VERSION: v4
   CACHE: 'npm'
-  postgres_env:
-    POSTGRES_PASSWORD: 1234
-    POSTGRES_USER: waisy
+  POSTGRES_PASSWORD: 1234
+  POSTGRES_USER: waisy
 
 jobs:
   build:
@@ -21,7 +20,9 @@ jobs:
         image: postgres:${{ matrix.postgres-version }}
         ports:
           - 5431:5432
-        env: ${{ env.postgres_env }}
+        env:
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSGRES_USER: ${{ env.POSTGRES_USER }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
