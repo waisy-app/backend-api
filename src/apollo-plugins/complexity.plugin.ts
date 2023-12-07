@@ -1,7 +1,11 @@
-import {GraphQLSchemaHost} from '@nestjs/graphql'
 import {Plugin} from '@nestjs/apollo'
+import {GraphQLSchemaHost} from '@nestjs/graphql'
 import {fieldExtensionsEstimator, getComplexity, simpleEstimator} from 'graphql-query-complexity'
-import {ApolloServerPlugin, GraphQLRequestListener} from '@apollo/server'
+import {
+  ApolloServerPlugin,
+  GraphQLRequestContextDidResolveOperation,
+  GraphQLRequestListener,
+} from '@apollo/server'
 import {Logger} from '@nestjs/common'
 import {GraphqlConfigService} from '../config/graphql/graphql.config.service'
 import {GraphqlComplexityLimitException} from '../exceptions/graphql-complexity-limit.exception'
@@ -18,17 +22,11 @@ export class ComplexityPlugin implements ApolloServerPlugin {
   public async requestDidStart(): Promise<GraphQLRequestListener<any>> {
     const logger = this.logger
     const maxComplexity = this.graphqlConfigService.complexityLimit
-    const defaultComplexity = 1
-    const {schema} = this.gqlSchemaHost
+
     return {
-      async didResolveOperation({request, document}) {
-        const complexity = getComplexity({
-          schema,
-          operationName: request.operationName,
-          query: document,
-          variables: request.variables,
-          estimators: [fieldExtensionsEstimator(), simpleEstimator({defaultComplexity})],
-        })
+      async didResolveOperation(context): Promise<void> {
+        const complexity = this.calculateComplexity(context)
+
         if (complexity > maxComplexity) {
           const errorText = `Query is too complex: ${complexity}. Maximum allowed complexity: ${maxComplexity}`
           throw new GraphqlComplexityLimitException(errorText)
@@ -36,5 +34,21 @@ export class ComplexityPlugin implements ApolloServerPlugin {
         logger.debug(`Query complexity: ${complexity}`)
       },
     }
+  }
+
+  private calculateComplexity({
+    request,
+    document,
+  }: GraphQLRequestContextDidResolveOperation<any>): number {
+    const defaultComplexity = 1
+    const {schema} = this.gqlSchemaHost
+
+    return getComplexity({
+      schema,
+      operationName: request.operationName,
+      query: document,
+      variables: request.variables,
+      estimators: [fieldExtensionsEstimator(), simpleEstimator({defaultComplexity})],
+    })
   }
 }
