@@ -8,18 +8,25 @@ import {loggerInstance} from './logger/logger.instance'
 import {EnvironmentConfigService} from './config/environment/environment.config.service'
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+  const app = await createApplication()
+  const serverConfigService = app.get(ServerConfigService)
+  await app.listen(serverConfigService.port)
+}
+
+function createApplication(): Promise<NestExpressApplication> {
+  return NestFactory.create<NestExpressApplication>(AppModule, {
     snapshot: EnvironmentConfigService.isDevelopment,
     abortOnError: !EnvironmentConfigService.isDevelopment,
     logger: WinstonModule.createLogger({instance: loggerInstance}),
   })
-  const serverConfigService = app.get(ServerConfigService)
-  await app.listen(serverConfigService.port)
 }
-void bootstrap().catch(error => {
+
+function handleBootstrapError(error: Error): void {
   loggerInstance.error({message: error.message, stack: error.stack})
   if (EnvironmentConfigService.isDevelopment) {
     writeFileSync('error-graph.json', PartialGraphHost.toString() ?? '')
   }
   process.exit(1)
-})
+}
+
+void bootstrap().catch(handleBootstrapError)
