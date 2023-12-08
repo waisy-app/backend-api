@@ -1,11 +1,11 @@
-import {Injectable, Logger} from '@nestjs/common'
+import {Injectable, Logger, UnauthorizedException} from '@nestjs/common'
 import {InjectRepository} from '@nestjs/typeorm'
 import {User} from '../users/entities/user.entity'
 import {MoreThan, Repository} from 'typeorm'
 import {VerificationCode} from './entities/verification-code.entity'
 import {UsersService} from '../users/users.service'
-import {ForbiddenError} from '@nestjs/apollo'
 import {AuthConfigService} from '../config/auth/auth.config.service'
+import {SendingVerificationCodeAttemptsService} from '../sending-verification-code-attempts/sending-verification-code-attempts.service'
 
 @Injectable()
 export class VerificationCodesService {
@@ -14,19 +14,34 @@ export class VerificationCodesService {
   constructor(
     @InjectRepository(VerificationCode)
     public readonly verificationCodeRepository: Repository<VerificationCode>,
+    public readonly sendingVerificationCodeAttemptsService: SendingVerificationCodeAttemptsService,
     private readonly usersService: UsersService,
     private readonly authConfigService: AuthConfigService,
   ) {}
 
-  public async sendEmailVerificationCode(email: User['email']): Promise<void> {
+  public async sendEmailVerificationCode(email: User['email'], clientIP: string): Promise<void> {
     const maxSendingAttempts = this.authConfigService.maxSendingVerificationCodeAttempts
     const verificationCode = await this.findOneOrCreateByUserEmail(email)
-    // TODO: check sending attempts with current ip address (max 3 attempts in 10 minutes from 1 ip address)
-    //  I need to create a new module and entity for this
+
+    const currentDate = new Date()
+    // TODO: вынести в конфиг. Пользователь может отправить код подтверждения не более 3 раз в 10 минут
+    const sendingVerificationCodeAttempts =
+      await this.sendingVerificationCodeAttemptsService.findByIpWhereCreatedAtMoreThen(
+        new Date(currentDate.getTime() - 10 * 60 * 1000),
+        clientIP,
+      )
+    if (sendingVerificationCodeAttempts.length >= 3) {
+      throw new UnauthorizedException('Too many sending attempts')
+    }
+
     if (verificationCode.sendingAttempts >= maxSendingAttempts) {
-      throw new ForbiddenError('Too many attempts')
+      throw new UnauthorizedException('Too many attempts')
     }
     await this.incrementSendingAttempts(verificationCode.id)
+    await this.sendingVerificationCodeAttemptsService.create({
+      ipAddress: clientIP,
+      targetEmail: email,
+    })
 
     this.logger.debug(`Sending the verification code "${verificationCode.code}" to "${email}"`)
     // TODO: send email with verification code

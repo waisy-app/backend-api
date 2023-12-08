@@ -41,7 +41,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
       new Date(currentDate.getTime() - 10 * 60 * 1000),
       clientIp,
     )
-    if (loginAttempts.length >= 5) {
+    if (loginAttempts.length >= 3) {
       await this.loginAttemptsService.create({
         ipAddress: clientIp,
         user,
@@ -51,8 +51,8 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
     }
 
     const verificationCode = await this.verificationCodesService.findOneByUserAndCode({email}, code)
-    // TODO: move this to config. Verification code is valid for 15 minutes
-    const validCreatedDate = new Date(currentDate.getTime() - 15 * 60 * 1000)
+    // TODO: use expiration date from verificationCode
+    const validCreatedDate = new Date(currentDate.getTime() - 10 * 60 * 1000)
     if (!verificationCode || verificationCode.createdAt < validCreatedDate) {
       await this.loginAttemptsService.create({
         ipAddress: clientIp,
@@ -70,6 +70,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
     if (verificationCode.user.status !== 'active') {
       await this.usersService.activate(verificationCode.user.id)
     }
+
     return {id: verificationCode.user.id, email: verificationCode.user.email}
   }
 
