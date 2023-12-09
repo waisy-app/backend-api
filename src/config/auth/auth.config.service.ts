@@ -1,57 +1,40 @@
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {
-  HASH_ROUNDS,
-  HashRoundsType,
-  JWT_ACCESS_TOKEN_EXPIRES_IN,
-  JWT_REFRESH_SECRET_TOKEN,
-  JWT_REFRESH_TOKEN_EXPIRES_IN,
-  JWT_SECRET_TOKEN,
-  JwtAccessTokenExpiresInType,
-  JwtSecretTokenType,
-  MAX_SENDING_VERIFICATION_CODE_ATTEMPTS,
-  MaxSendingVerificationCodeAttemptsType,
-  VERIFICATION_CODE_LIFETIME_SECONDS,
-  VerificationCodeLifetimeSecondsType,
-} from './auth.config.constants'
+import {EnvironmentConfigService} from '../environment/environment.config.service'
 
 @Injectable()
 export class AuthConfigService {
   constructor(private configService: ConfigService) {}
 
-  public get jwtSecretToken(): JwtSecretTokenType {
-    return this.configService.get(JWT_SECRET_TOKEN.name) as JwtSecretTokenType
+  public get jwtAccessSecretToken(): string {
+    return this.configService.get('JWT_ACCESS_SECRET_TOKEN')!
   }
 
-  public get jwtAccessTokenExpiresIn(): JwtAccessTokenExpiresInType {
-    return this.configService.get(JWT_ACCESS_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
+  public get jwtAccessTokenExpiresIn(): string {
+    return this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN')!
   }
 
-  public get jwtRefreshSecretToken(): JwtSecretTokenType {
-    return this.configService.get(JWT_REFRESH_SECRET_TOKEN.name) as JwtSecretTokenType
+  public get jwtRefreshSecretToken(): string {
+    return this.configService.get('JWT_REFRESH_SECRET_TOKEN')!
   }
 
-  public get jwtRefreshTokenExpiresIn(): JwtAccessTokenExpiresInType {
-    return this.configService.get(JWT_REFRESH_TOKEN_EXPIRES_IN.name) as JwtAccessTokenExpiresInType
+  public get jwtRefreshTokenExpiresIn(): string {
+    return this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN')!
   }
 
-  public get hashRounds(): HashRoundsType {
-    return this.configService.get(HASH_ROUNDS.name) as HashRoundsType
+  public static get hashRounds(): number {
+    return EnvironmentConfigService.isTest ? 1 : 10
   }
 
-  public get maxSendingVerificationCodeAttempts(): MaxSendingVerificationCodeAttemptsType {
-    return this.configService.get(
-      MAX_SENDING_VERIFICATION_CODE_ATTEMPTS.name,
-    ) as MaxSendingVerificationCodeAttemptsType
+  public static get maxSendingVerificationCodeAttempts(): number {
+    return 3
   }
 
-  public get verificationCodeLifetimeSeconds(): VerificationCodeLifetimeSecondsType {
-    return this.configService.get(
-      VERIFICATION_CODE_LIFETIME_SECONDS.name,
-    ) as VerificationCodeLifetimeSecondsType
+  public static get verificationCodeLifetimeSeconds(): number {
+    return 60 * 10 // 10 minutes
   }
 
-  public get verificationCodeLifetimeMilliseconds(): number {
+  public static get verificationCodeLifetimeMilliseconds(): number {
     return this.verificationCodeLifetimeSeconds * 1000
   }
 }

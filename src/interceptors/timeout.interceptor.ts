@@ -11,11 +11,9 @@ import {ServerConfigService} from '../config/server/server.config.service'
 
 @Injectable()
 export class TimeoutInterceptor implements NestInterceptor {
-  constructor(private readonly serverConfigService: ServerConfigService) {}
-
-  public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  public intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      timeout(this.serverConfigService.requestTimeoutMs),
+      timeout(ServerConfigService.requestTimeoutMs),
       catchError(err => {
         if (err instanceof TimeoutError) {
           return throwError(() => new RequestTimeoutException())

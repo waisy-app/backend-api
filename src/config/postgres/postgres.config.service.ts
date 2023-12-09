@@ -1,51 +1,35 @@
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {
-  POSTGRES_DATABASE,
-  POSTGRES_HOST,
-  POSTGRES_MIGRATIONS_RUN,
-  POSTGRES_PASSWORD,
-  POSTGRES_PORT,
-  POSTGRES_SYNCHRONIZE,
-  POSTGRES_USERNAME,
-  PostgresDatabaseType,
-  PostgresHostType,
-  PostgresMigrationsRunType,
-  PostgresPasswordType,
-  PostgresPortType,
-  PostgresSynchronizeType,
-  PostgresUsernameType,
-} from './postgres.config.constants'
 
 @Injectable()
 export class PostgresConfigService {
   constructor(private configService: ConfigService) {}
 
-  public get postgresUsername(): PostgresUsernameType {
-    return this.configService.get(POSTGRES_USERNAME.name) as PostgresUsernameType
+  public get postgresUsername(): string {
+    return this.configService.get('POSTGRES_USERNAME')!
   }
 
-  public get postgresPassword(): PostgresPasswordType {
-    return this.configService.get(POSTGRES_PASSWORD.name) as PostgresPasswordType
+  public get postgresPassword(): string {
+    return this.configService.get('POSTGRES_PASSWORD')!
   }
 
-  public get postgresHost(): PostgresHostType {
-    return this.configService.get(POSTGRES_HOST.name) as PostgresHostType
+  public get postgresHost(): string {
+    return this.configService.get('POSTGRES_HOST')!
   }
 
-  public get postgresPort(): PostgresPortType {
-    return this.configService.get(POSTGRES_PORT.name) as PostgresPortType
+  public get postgresPort(): number {
+    return this.configService.get('POSTGRES_PORT')!
   }
 
-  public get postgresDatabase(): PostgresDatabaseType {
-    return this.configService.get(POSTGRES_DATABASE.name) as PostgresDatabaseType
+  public get postgresDatabase(): string {
+    return this.configService.get('POSTGRES_DATABASE')!
   }
 
-  public get postgresSynchronize(): PostgresSynchronizeType {
-    return this.configService.get(POSTGRES_SYNCHRONIZE.name) as PostgresSynchronizeType
+  public get postgresSynchronize(): boolean {
+    return !!this.configService.get('POSTGRES_SYNCHRONIZE')
   }
 
-  public get postgresMigrationsRun(): PostgresMigrationsRunType {
-    return this.configService.get(POSTGRES_MIGRATIONS_RUN.name) as PostgresMigrationsRunType
+  public get postgresMigrationsRun(): boolean {
+    return !!this.configService.get('POSTGRES_MIGRATIONS_RUN')
   }
 }

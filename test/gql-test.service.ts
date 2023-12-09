@@ -48,7 +48,7 @@ export class GqlTestService {
     this.token = jwtService.sign(payload, {
       secret: options.isRefreshToken
         ? authConfigService.jwtRefreshSecretToken
-        : authConfigService.jwtSecretToken,
+        : authConfigService.jwtAccessSecretToken,
     })
   }
 
@@ -57,12 +57,11 @@ export class GqlTestService {
   }
 
   public async requestTimeoutTest(options: IErrorTestOptions): Promise<void> {
-    const serverConfigService = this.app.get(ServerConfigService)
     jest
       .spyOn(this.app.get(options.serviceForMock), options.methodForMock)
       .mockImplementationOnce(() => {
         return new Promise(resolve => {
-          setTimeout(() => resolve({} as any), serverConfigService.requestTimeoutMs + 5)
+          setTimeout(() => resolve({} as any), ServerConfigService.requestTimeoutMs + 5)
         })
       })
 
@@ -182,7 +181,7 @@ export class GqlTestService {
       {
         secret: this.isRefreshToken
           ? authConfigService.jwtRefreshSecretToken
-          : authConfigService.jwtSecretToken,
+          : authConfigService.jwtAccessSecretToken,
         expiresIn: '0s',
       },
     )
@@ -210,7 +209,7 @@ export class GqlTestService {
       {
         secret: this.isRefreshToken
           ? authConfigService.jwtRefreshSecretToken
-          : authConfigService.jwtSecretToken,
+          : authConfigService.jwtAccessSecretToken,
       },
     )
 

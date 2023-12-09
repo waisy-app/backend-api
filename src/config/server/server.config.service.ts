@@ -1,16 +1,16 @@
 import {ConfigService} from '@nestjs/config'
-import {PORT, PortType, REQUEST_TIMEOUT_MS, RequestTimeoutMsType} from './server.config.constants'
 import {Injectable} from '@nestjs/common'
+import {EnvironmentConfigService} from '../environment/environment.config.service'
 
 @Injectable()
 export class ServerConfigService {
   constructor(private configService: ConfigService) {}
 
   public get port(): number {
-    return this.configService.get(PORT.name) as PortType
+    return this.configService.get('PORT')!
   }
 
-  public get requestTimeoutMs(): number {
-    return this.configService.get(REQUEST_TIMEOUT_MS.name) as RequestTimeoutMsType
+  public static get requestTimeoutMs(): number {
+    return EnvironmentConfigService.isTest ? 20 : 10000
   }
 }

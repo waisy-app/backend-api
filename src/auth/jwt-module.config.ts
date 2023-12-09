@@ -1,14 +1,13 @@
 import {JwtModuleAsyncOptions} from '@nestjs/jwt'
-import {ConfigModule, ConfigService} from '@nestjs/config'
-import {JWT_ACCESS_TOKEN_EXPIRES_IN, JWT_SECRET_TOKEN} from '../config/auth/auth.config.constants'
-import {configModuleOptions} from '../config/config-module.options'
+import {ConfigModule} from '../config/config.module'
+import {AuthConfigService} from '../config/auth/auth.config.service'
 
 export const jwtModuleConfig: JwtModuleAsyncOptions = {
   global: true,
-  imports: [ConfigModule.forRoot(configModuleOptions)],
-  useFactory: (configService: ConfigService) => ({
-    secret: configService.get(JWT_SECRET_TOKEN.name),
-    signOptions: {expiresIn: configService.get(JWT_ACCESS_TOKEN_EXPIRES_IN.name)},
+  imports: [ConfigModule],
+  useFactory: (configService: AuthConfigService) => ({
+    secret: configService.jwtAccessSecretToken,
+    signOptions: {expiresIn: configService.jwtAccessTokenExpiresIn},
   }),
-  inject: [ConfigService],
+  inject: [AuthConfigService],
 }

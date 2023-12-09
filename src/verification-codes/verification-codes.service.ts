@@ -20,7 +20,7 @@ export class VerificationCodesService {
   ) {}
 
   public async sendEmailVerificationCode(email: User['email'], clientIP: string): Promise<void> {
-    const maxSendingAttempts = this.authConfigService.maxSendingVerificationCodeAttempts
+    const maxSendingAttempts = AuthConfigService.maxSendingVerificationCodeAttempts
     const verificationCode = await this.findOneOrCreateByUserEmail(email)
 
     const currentDate = new Date()
@@ -81,7 +81,7 @@ export class VerificationCodesService {
 
   private createOne(userID: User['id'], code: VerificationCode['code']): Promise<VerificationCode> {
     const expirationDate = new Date(
-      Date.now() + this.authConfigService.verificationCodeLifetimeMilliseconds,
+      Date.now() + AuthConfigService.verificationCodeLifetimeMilliseconds,
     )
     const user = {id: userID}
     const newVerificationCode = this.verificationCodeRepository.create({
