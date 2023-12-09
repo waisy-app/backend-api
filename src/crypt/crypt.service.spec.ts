@@ -1,43 +1,25 @@
-import {Test, TestingModule} from '@nestjs/testing'
 import {CryptService} from './crypt.service'
-import {ConfigModule} from '../config/config.module'
+import * as bcrypt from 'bcrypt'
 
 describe(CryptService.name, () => {
   let cryptService: CryptService
+  const password: string = 'password123'
+  const hashedPassword: string = bcrypt.hashSync(password, 10)
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CryptService],
-      imports: [ConfigModule],
-    }).compile()
-
-    cryptService = module.get(CryptService)
+  beforeEach(() => {
+    cryptService = new CryptService()
   })
 
-  describe(CryptService.prototype.hashText.name, () => {
-    it('should return a hash', async () => {
-      const text = 'test'
-      const hash = await cryptService.hashText(text)
-      expect(hash).toStrictEqual(expect.any(String))
-    })
+  it('Successfully Hashes Password', async () => {
+    const hashedText: string = await cryptService.hashText(password)
+    expect(await bcrypt.compare(password, hashedText)).toBe(true)
   })
 
-  describe(CryptService.prototype.compareHash.name, () => {
-    const text = 'test'
-    let hash: string
+  it('Successfully Compares Password with Hashed Password', async () => {
+    expect(await cryptService.compareHash(password, hashedPassword)).toBe(true)
+  })
 
-    beforeEach(async () => {
-      hash = await cryptService.hashText(text)
-    })
-
-    it('should return true if the text matches the hash', async () => {
-      const result = await cryptService.compareHash(text, hash)
-      expect(result).toBe(true)
-    })
-
-    it('should return false if the text does not match the hash', async () => {
-      const result = await cryptService.compareHash('test2', hash)
-      expect(result).toBe(false)
-    })
+  it('Successfully Detects Wrong Password on Comparison with Hashed Password', async () => {
+    expect(await cryptService.compareHash('wrongpassword123', hashedPassword)).toBe(false)
   })
 })

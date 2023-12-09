@@ -4,7 +4,7 @@ import {EnvironmentConfigService} from '../environment/environment.config.servic
 
 @Injectable()
 export class AuthConfigService {
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
   public get jwtAccessSecretToken(): string {
     return this.configService.get('JWT_ACCESS_SECRET_TOKEN')!

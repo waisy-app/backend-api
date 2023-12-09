@@ -4,7 +4,7 @@ import {EnvironmentConfigService} from '../environment/environment.config.servic
 
 @Injectable()
 export class ServerConfigService {
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
   public get port(): number {
     return this.configService.get('PORT')!

@@ -3,7 +3,7 @@ import {ConfigService} from '@nestjs/config'
 
 @Injectable()
 export class GraphqlConfigService {
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
   public get autoSchemaBuild(): boolean {
     return !!this.configService.get('GRAPHQL_AUTO_SCHEMA_BUILD')

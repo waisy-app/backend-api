@@ -3,7 +3,7 @@ import {ConfigService} from '@nestjs/config'
 
 @Injectable()
 export class PostgresConfigService {
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
   public get postgresUsername(): string {
     return this.configService.get('POSTGRES_USERNAME')!
