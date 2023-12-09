@@ -35,6 +35,7 @@ export class AuthResolver {
     return this.authService.refreshTokens(user.id)
   }
 
+  @SkipJwtAuth()
   @Query(() => String, {description: 'Just for testing'})
   public test(): string {
     return 'test'
