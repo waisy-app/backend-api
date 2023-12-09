@@ -16,7 +16,6 @@ export class VerificationCodesService {
     public readonly verificationCodeRepository: Repository<VerificationCode>,
     public readonly sendingVerificationCodeAttemptsService: SendingVerificationCodeAttemptsService,
     private readonly usersService: UsersService,
-    private readonly authConfigService: AuthConfigService,
   ) {}
 
   public async sendEmailVerificationCode(email: User['email'], clientIP: string): Promise<void> {
