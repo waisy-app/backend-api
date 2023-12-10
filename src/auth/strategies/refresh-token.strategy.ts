@@ -6,13 +6,13 @@ import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {JWT_REFRESH_STRATEGY_NAME} from './strategies.constants'
 import {UsersService} from '../../users/users.service'
 import {JwtPayload} from '../auth.service'
-import {ICurrentUser} from '../decorators/current-user.decorator'
 import {CryptService} from '../../crypt/crypt.service'
+import {User} from '../../users/entities/user.entity'
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH_STRATEGY_NAME) {
   constructor(
-    private readonly authConfigService: AuthConfigService,
+    authConfigService: AuthConfigService,
     private readonly usersService: UsersService,
     private readonly cryptService: CryptService,
   ) {
@@ -23,7 +23,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
     })
   }
 
-  public async validate(req: Request, payload: JwtPayload): Promise<ICurrentUser> {
+  public async validate(req: Request, payload: JwtPayload): Promise<User> {
     const authRefreshToken = req.get('Authorization')?.replace('Bearer', '').trim()
     if (!authRefreshToken) throw new UnauthorizedException('Refresh token not found')
 
@@ -34,6 +34,6 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
       `${user?.refreshToken}`,
     )
     if (!user || !isTokenMatch) throw new UnauthorizedException()
-    return {id: user.id, email: user.email}
+    return user
   }
 }

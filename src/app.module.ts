@@ -16,8 +16,6 @@ import {CryptService} from './crypt/crypt.service'
 import {typeOrmModuleOptions} from './type-orm-module.options'
 import {graphqlModuleOptions} from './graphql-module.options'
 import {ConfigModule} from './config/config.module'
-import {LoginAttemptsModule} from './login-attempts/login-attempts.module'
-import {SendingVerificationCodeAttemptsModule} from './sending-verification-code-attempts/sending-verification-code-attempts.module'
 import {EmailVerificationModule} from './email-verification/email-verification.module'
 
 @Module({
@@ -28,8 +26,6 @@ import {EmailVerificationModule} from './email-verification/email-verification.m
     ConfigModule,
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     GraphQLModule.forRootAsync(graphqlModuleOptions),
-    LoginAttemptsModule,
-    SendingVerificationCodeAttemptsModule,
     EmailVerificationModule,
   ],
   providers: [

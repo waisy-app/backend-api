@@ -5,7 +5,7 @@ import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {UsersService} from '../../users/users.service'
 import {JWT_STRATEGY_NAME} from './strategies.constants'
 import {JwtPayload} from '../auth.service'
-import {ICurrentUser} from '../decorators/current-user.decorator'
+import {User} from '../../users/entities/user.entity'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
@@ -22,10 +22,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY_NAME) {
     })
   }
 
-  public async validate(payload: JwtPayload): Promise<ICurrentUser> {
+  public async validate(payload: JwtPayload): Promise<User> {
     this.logger.debug({message: 'Validating JWT payload', payload})
     const user = await this.usersService.getUserById(payload.sub)
     if (!user) throw new UnauthorizedException()
-    return {id: user.id, email: user.email}
+    return user
   }
 }

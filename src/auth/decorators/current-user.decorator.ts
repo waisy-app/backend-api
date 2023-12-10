@@ -1,14 +1,9 @@
 import {createParamDecorator, ExecutionContext} from '@nestjs/common'
 import {GqlExecutionContext} from '@nestjs/graphql'
+import {User} from '../../users/entities/user.entity'
 
-export interface ICurrentUser {
-  id: string
-  email: string
-}
-
-export const CurrentUser = createParamDecorator(
-  (_data: unknown, context: ExecutionContext): ICurrentUser => {
-    const ctx = GqlExecutionContext.create(context)
-    return ctx.getContext().req.user
-  },
-)
+export const CurrentUser = createParamDecorator((_: unknown, context: ExecutionContext): User => {
+  const ctx = GqlExecutionContext.create(context)
+  // req.user is set by JwtStrategy
+  return ctx.getContext().req.user
+})
