@@ -25,16 +25,4 @@ export class AuthConfigService {
   public static get hashRounds(): number {
     return EnvironmentConfigService.isTest ? 1 : 10
   }
-
-  public static get maxSendingVerificationCodeAttempts(): number {
-    return 3
-  }
-
-  public static get verificationCodeLifetimeSeconds(): number {
-    return 60 * 10 // 10 minutes
-  }
-
-  public static get verificationCodeLifetimeMilliseconds(): number {
-    return this.verificationCodeLifetimeSeconds * 1000
-  }
 }

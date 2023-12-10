@@ -7,6 +7,7 @@ import {GraphqlConfigService} from './graphql/graphql.config.service'
 import {LoggerConfigService} from './logger/logger.config.service'
 import {PostgresConfigService} from './postgres/postgres.config.service'
 import {ServerConfigService} from './server/server.config.service'
+import {EmailVerificationConfigService} from './email-verification/email-verification.config.service'
 
 const providers = [
   AuthConfigService,
@@ -15,6 +16,7 @@ const providers = [
   LoggerConfigService,
   PostgresConfigService,
   ServerConfigService,
+  EmailVerificationConfigService,
 ]
 
 @Module({
