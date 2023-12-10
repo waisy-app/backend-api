@@ -8,8 +8,9 @@ export class UsersService {
   constructor(@InjectRepository(User) public readonly usersRepository: Repository<User>) {}
 
   public async getOrCreateUserByEmail(email: string): Promise<User> {
-    const newUser = this.usersRepository.create({email})
-    return this.usersRepository.save(newUser)
+    const user = await this.getUserByEmail(email)
+    if (user) return user
+    return this.createUserByEmail(email)
   }
 
   public getUserById(id: string): Promise<User | null> {
@@ -28,8 +29,17 @@ export class UsersService {
     await this.updateUserById(id, {refreshToken})
   }
 
+  public async createUserByEmail(email: string): Promise<User> {
+    return this.createUser({email})
+  }
+
   private updateUserById(id: string, data: Partial<User>): Promise<void> {
     return this.updateUser('id', id, data)
+  }
+
+  private async createUser(data: Partial<User>): Promise<User> {
+    const newUser = this.usersRepository.create(data)
+    return this.usersRepository.save(newUser)
   }
 
   private async updateUser(field: keyof User, value: unknown, data: Partial<User>): Promise<void> {
@@ -37,6 +47,6 @@ export class UsersService {
   }
 
   private getUser(field: keyof User, value: unknown): Promise<User | null> {
-    return this.usersRepository.findOne({[field]: value})
+    return this.usersRepository.findOne({where: {[field]: value}})
   }
 }

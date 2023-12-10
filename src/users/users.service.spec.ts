@@ -23,14 +23,26 @@ describe('UsersService', () => {
     repo = module.get<Repository<User>>(getRepositoryToken(User))
   })
 
-  it('should get or create a user by email', async () => {
+  it('should create a user by email', async () => {
     const testUser = new User()
     testUser.email = 'test@example.com'
 
     jest.spyOn(repo, 'create').mockReturnValueOnce(testUser)
     jest.spyOn(repo, 'save').mockResolvedValueOnce(testUser)
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(null)
 
     expect(await service.getOrCreateUserByEmail('test@example.com')).toEqual(testUser)
+  })
+
+  it('should not create a user by email if it already exists', async () => {
+    const testUser = new User()
+    testUser.email = 'test@example.com'
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
+    jest.spyOn(repo, 'create')
+    jest.spyOn(repo, 'save')
+    expect(await service.getOrCreateUserByEmail(testUser.email)).toEqual(testUser)
+    expect(repo.create).not.toHaveBeenCalled()
+    expect(repo.save).not.toHaveBeenCalled()
   })
 
   it('should get a user by id', async () => {
