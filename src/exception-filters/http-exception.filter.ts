@@ -15,10 +15,8 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
     const gqlHost = GqlArgumentsHost.create(host)
     const requestType = gqlHost.getType<GqlContextType>()
     this.logger.debug(`Request type: ${requestType}`)
-
     if (requestType === 'http') return this.catchHttp(exception, host.switchToHttp())
     else if (requestType === 'graphql') return this.catchGraphql(exception)
-
     this.logger.warn({
       message: 'Unknown request type',
       requestType,
@@ -29,25 +27,31 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
     const response = context.getResponse<Response>()
     const status = exception.getStatus()
     const exceptionResponse = exception.getResponse() as HttpExceptionBody
-
-    let error: string
-    if (exceptionResponse.error) {
-      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.error)
-    } else if (typeof exceptionResponse.message === 'string') {
-      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.message)
-    } else error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.message[0])
-
+    const error = this.formatError(exceptionResponse)
     response.status(status).json({message: exceptionResponse.message, error})
   }
 
   private catchGraphql(exception: HttpException): void {
     const exceptionBody = exception.getResponse() as HttpExceptionBody
-    let code: string
-    if (exceptionBody.error) {
-      code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.error)
-    } else if (typeof exceptionBody.message === 'string') {
-      code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.message)
-    } else code = this.errorFormatterService.formatHttpErrorCode(exceptionBody.message[0])
+    const code = this.formatError(exceptionBody)
     throw new GraphQLError(exceptionBody.message.toString(), {extensions: {code}})
+  }
+
+  private formatError(exceptionResponse: HttpExceptionBody): string {
+    let error: string
+    if (exceptionResponse.error) {
+      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.error)
+    } else if (typeof exceptionResponse.message === 'string') {
+      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.message)
+    } else if (Array.isArray(exceptionResponse.message) && exceptionResponse.message.length > 0) {
+      error = this.errorFormatterService.formatHttpErrorCode(exceptionResponse.message[0])
+    } else {
+      error = 'INTERNAL_SERVER_ERROR'
+      this.logger.error({
+        message: 'Unknown error',
+        exceptionResponse,
+      })
+    }
+    return error
   }
 }
