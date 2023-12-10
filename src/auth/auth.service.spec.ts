@@ -51,7 +51,7 @@ describe(AuthService.name, () => {
     it('should return a token', async () => {
       const testHash = 'test-hash'
 
-      jest.spyOn(usersService, 'updateRefreshToken').mockImplementation(async () => {})
+      jest.spyOn(usersService, 'updateUserRefreshToken').mockImplementation(async () => {})
       jest.spyOn(cryptService, 'hashText').mockImplementation(async () => testHash)
 
       const userID = '1'
@@ -67,16 +67,16 @@ describe(AuthService.name, () => {
         ),
       ])
       expect(tokens).toStrictEqual({access_token, refresh_token})
-      expect(usersService.updateRefreshToken).toHaveBeenCalledWith(userID, testHash)
+      expect(usersService.updateUserRefreshToken).toHaveBeenCalledWith(userID, testHash)
     })
   })
 
   describe(AuthService.prototype.logout.name, () => {
     it('should remove refresh token', async () => {
-      jest.spyOn(usersService, 'updateRefreshToken').mockImplementation(async () => {})
+      jest.spyOn(usersService, 'updateUserRefreshToken').mockImplementation(async () => {})
       const userID = '1'
       await authService.logout(userID)
-      expect(usersService.updateRefreshToken).toHaveBeenCalledWith(userID, null)
+      expect(usersService.updateUserRefreshToken).toHaveBeenCalledWith(userID, null)
     })
   })
 
@@ -84,7 +84,7 @@ describe(AuthService.name, () => {
     it('should return a token', async () => {
       const testHash = 'test-hash'
 
-      jest.spyOn(usersService, 'updateRefreshToken').mockImplementation(async () => {})
+      jest.spyOn(usersService, 'updateUserRefreshToken').mockImplementation(async () => {})
       jest.spyOn(cryptService, 'hashText').mockImplementation(async () => testHash)
 
       const userID = '1'
@@ -101,7 +101,7 @@ describe(AuthService.name, () => {
       ])
 
       expect(tokens).toStrictEqual({access_token, refresh_token})
-      expect(usersService.updateRefreshToken).toHaveBeenCalledWith(userID, testHash)
+      expect(usersService.updateUserRefreshToken).toHaveBeenCalledWith(userID, testHash)
     })
   })
 })

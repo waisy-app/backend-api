@@ -28,7 +28,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, JWT_REFRESH
     if (!authRefreshToken) throw new UnauthorizedException('Refresh token not found')
 
     const userID = payload.sub
-    const user = await this.usersService.findOneByID(userID)
+    const user = await this.usersService.getUserById(userID)
     const isTokenMatch = await this.cryptService.compareHash(
       authRefreshToken,
       `${user?.refreshToken}`,

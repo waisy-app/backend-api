@@ -32,7 +32,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
 
     await this.validateLoginArgs(email, code)
 
-    const user = await this.usersService.findOneByEmail(email)
+    const user = await this.usersService.getUserByEmail(email)
 
     const currentDate = new Date()
     // TODO: вынести логику loginAttempts в отдельный мидлвар (interceptor)
@@ -68,7 +68,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, EMAIL_CODE_STRATEG
       isSuccessful: true,
     })
     if (verificationCode.user.status !== 'active') {
-      await this.usersService.activate(verificationCode.user.id)
+      await this.usersService.activateUserById(verificationCode.user.id)
     }
 
     return {id: verificationCode.user.id, email: verificationCode.user.email}

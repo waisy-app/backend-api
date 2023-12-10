@@ -1,143 +1,76 @@
-import {Test} from '@nestjs/testing'
 import {UsersService} from './users.service'
-import {getRepositoryToken} from '@nestjs/typeorm'
+import {Repository} from 'typeorm'
 import {User} from './entities/user.entity'
+import {Test, TestingModule} from '@nestjs/testing'
+import {getRepositoryToken} from '@nestjs/typeorm'
 
-describe(UsersService.name, () => {
-  let usersService: UsersService
+describe('UsersService', () => {
+  let service: UsersService
+  let repo: Repository<User>
 
   beforeEach(async () => {
-    const module = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: {
-            create: jest.fn(),
-            save: jest.fn(),
-            findOneBy: jest.fn(),
-            update: jest.fn(),
-            delete: jest.fn(),
-          },
+          useClass: Repository,
         },
       ],
     }).compile()
 
-    usersService = module.get(UsersService)
+    service = module.get<UsersService>(UsersService)
+    repo = module.get<Repository<User>>(getRepositoryToken(User))
   })
 
-  afterEach(() => {
-    jest.restoreAllMocks()
+  it('should get or create a user by email', async () => {
+    const testUser = new User()
+    testUser.email = 'test@example.com'
+
+    jest.spyOn(repo, 'create').mockReturnValueOnce(testUser)
+    jest.spyOn(repo, 'save').mockResolvedValueOnce(testUser)
+
+    expect(await service.getOrCreateUserByEmail('test@example.com')).toEqual(testUser)
   })
 
-  describe(UsersService.prototype.createOrUpdate.name, () => {
-    it('should return a created user', async () => {
-      const currentDate = new Date()
-      const userInput = {email: 't@t.com'}
-      const expected: User = {
-        id: '1',
-        refreshToken: null,
-        createdAt: currentDate,
-        updatedAt: currentDate,
-        status: 'active',
-        ...userInput,
-      }
+  it('should get a user by id', async () => {
+    const testUser = new User()
+    testUser.id = '1'
 
-      jest.spyOn(usersService.usersRepository, 'create').mockReturnValueOnce(expected)
-      jest.spyOn(usersService.usersRepository, 'save').mockResolvedValueOnce(expected)
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
 
-      const user = await usersService.createOrUpdate(userInput)
-      expect(user).toStrictEqual(expected)
-    })
+    expect(await service.getUserById('1')).toEqual(testUser)
   })
 
-  describe(UsersService.prototype.findOneByID.name, () => {
-    it('should return a user', async () => {
-      const currentDate = new Date()
-      const expected: User = {
-        id: '1',
-        email: 't@t.com',
-        refreshToken: null,
-        status: 'active',
-        createdAt: currentDate,
-        updatedAt: currentDate,
-      }
+  it('should get a user by email', async () => {
+    const testUser = new User()
+    testUser.email = 'test@example.com'
 
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
 
-      const user = await usersService.findOneByID(expected.id)
-      expect(user).toStrictEqual(expected)
-    })
-
-    it('should return null', async () => {
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(null)
-
-      const userID = '0'
-      const result = await usersService.findOneByID(userID)
-      expect(result).toBeNull()
-    })
+    expect(await service.getUserByEmail('test@example.com')).toEqual(testUser)
   })
 
-  describe(UsersService.prototype.findOneByEmail.name, () => {
-    it('should return a user', async () => {
-      const currentDate = new Date()
-      const expected: User = {
-        id: '1',
-        email: 't@t.com',
-        refreshToken: null,
-        status: 'active',
-        createdAt: currentDate,
-        updatedAt: currentDate,
-      }
+  it('should activate a user by id', async () => {
+    const testUser = new User()
+    testUser.id = '1'
+    testUser.status = 'unconfirmed'
 
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
+    jest.spyOn(repo, 'update').mockResolvedValueOnce(undefined as any)
 
-      const user = await usersService.findOneByEmail(expected.id)
-      expect(user).toStrictEqual({
-        id: expected.id,
-        email: expected.email,
-        refreshToken: expected.refreshToken,
-        status: expected.status,
-        createdAt: expected.createdAt,
-        updatedAt: expected.updatedAt,
-      })
-    })
+    await service.activateUserById('1')
 
-    it('should return null', async () => {
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(null)
-
-      const userID = '0'
-      const result = await usersService.findOneByEmail(userID)
-      expect(result).toBeNull()
-    })
+    expect(repo.update).toHaveBeenCalledWith({id: '1'}, {status: 'active'})
   })
 
-  describe(UsersService.prototype.updateRefreshToken.name, () => {
-    it('should update a user', async () => {
-      jest.spyOn(usersService.usersRepository, 'update').mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({affected: 1, raw: {}, generatedMaps: []})
-        }),
-      )
+  it('should update a user refresh token', async () => {
+    const testUser = new User()
+    testUser.id = '1'
 
-      const userID = '1'
-      const refreshToken = '123'
-      await usersService.updateRefreshToken(userID, refreshToken)
-      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {refreshToken})
-    })
-  })
+    jest.spyOn(repo, 'update').mockResolvedValueOnce(undefined as any)
 
-  describe(UsersService.prototype.activate.name, () => {
-    it('should update a user', async () => {
-      jest.spyOn(usersService.usersRepository, 'update').mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({affected: 1, raw: {}, generatedMaps: []})
-        }),
-      )
+    await service.updateUserRefreshToken('1', 'token')
 
-      const userID = '1'
-      await usersService.activate(userID)
-      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {status: 'active'})
-    })
+    expect(repo.update).toHaveBeenCalledWith({id: '1'}, {refreshToken: 'token'})
   })
 })

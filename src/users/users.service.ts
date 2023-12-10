@@ -1,42 +1,42 @@
-import {Injectable, Logger} from '@nestjs/common'
+import {Injectable} from '@nestjs/common'
 import {User} from './entities/user.entity'
 import {InjectRepository} from '@nestjs/typeorm'
 import {Repository} from 'typeorm'
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name)
-
   constructor(@InjectRepository(User) public readonly usersRepository: Repository<User>) {}
 
-  public createOrUpdate(userInput: Pick<User, 'email'>): Promise<User> {
-    this.logger.debug(`Creating or updating user with email "${userInput.email}"`)
-    const newUser = this.usersRepository.create(userInput)
+  public async getOrCreateUserByEmail(email: string): Promise<User> {
+    const newUser = this.usersRepository.create({email})
     return this.usersRepository.save(newUser)
   }
 
-  public async findOneOrCreateByEmail(email: User['email']): Promise<User> {
-    const user = await this.findOneByEmail(email)
-    if (user) return user
-    return this.createOrUpdate({email})
+  public getUserById(id: string): Promise<User | null> {
+    return this.getUser('id', id)
   }
 
-  public findOneByID(id: User['id']): Promise<User | null> {
-    return this.usersRepository.findOneBy({id})
+  public getUserByEmail(email: string): Promise<User | null> {
+    return this.getUser('email', email)
   }
 
-  public findOneByEmail(email: User['email']): Promise<User | null> {
-    return this.usersRepository.findOneBy({email})
+  public async activateUserById(id: string): Promise<void> {
+    await this.updateUserById(id, {status: 'active'})
   }
 
-  public async activate(id: User['id']): Promise<void> {
-    await this.usersRepository.update(id, {status: 'active'})
+  public async updateUserRefreshToken(id: string, refreshToken: string | null): Promise<void> {
+    await this.updateUserById(id, {refreshToken})
   }
 
-  public async updateRefreshToken(
-    id: User['id'],
-    refreshToken: User['refreshToken'],
-  ): Promise<void> {
-    await this.usersRepository.update(id, {refreshToken})
+  private updateUserById(id: string, data: Partial<User>): Promise<void> {
+    return this.updateUser('id', id, data)
+  }
+
+  private async updateUser(field: keyof User, value: unknown, data: Partial<User>): Promise<void> {
+    await this.usersRepository.update({[field]: value}, data)
+  }
+
+  private getUser(field: keyof User, value: unknown): Promise<User | null> {
+    return this.usersRepository.findOne({[field]: value})
   }
 }

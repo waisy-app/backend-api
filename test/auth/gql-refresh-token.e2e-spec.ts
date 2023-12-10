@@ -46,7 +46,7 @@ describe(`refreshToken (GraphQL)`, () => {
     )
 
     const hashedRefreshToken = await cryptService.hashText(refreshToken)
-    await usersService.updateRefreshToken(users[0].id, hashedRefreshToken)
+    await usersService.updateUserRefreshToken(users[0].id, hashedRefreshToken)
 
     gqlTestService = new GqlTestService(app, {
       userID: users[0].id,
@@ -72,7 +72,7 @@ describe(`refreshToken (GraphQL)`, () => {
     })
 
     it('Unauthorized: refresh token does not match', async () => {
-      await usersService.updateRefreshToken(users[0].id, 'invalid refresh token')
+      await usersService.updateUserRefreshToken(users[0].id, 'invalid refresh token')
       const result = await gqlTestService
         .sendRequest({
           queryType: 'mutation',

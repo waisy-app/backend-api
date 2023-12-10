@@ -68,7 +68,7 @@ describe(RefreshTokenStrategy.name, () => {
       const userID = '1'
       const user = new User()
       user.refreshToken = 'refreshToken'
-      jest.spyOn(usersService, 'findOneByID').mockResolvedValueOnce(user)
+      jest.spyOn(usersService, 'getUserById').mockResolvedValueOnce(user)
       jest.spyOn(cryptService, 'compareHash').mockResolvedValueOnce(false)
       const expectedError = new UnauthorizedException()
       await expect(refreshTokenStrategy.validate(req as any, {sub: userID})).rejects.toThrow(
@@ -87,7 +87,7 @@ describe(RefreshTokenStrategy.name, () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }
-      jest.spyOn(usersService, 'findOneByID').mockResolvedValueOnce(user)
+      jest.spyOn(usersService, 'getUserById').mockResolvedValueOnce(user)
       jest.spyOn(cryptService, 'compareHash').mockResolvedValueOnce(true)
       const expected = {id: user.id, email: user.email}
       await expect(refreshTokenStrategy.validate(req as any, {sub: user.id})).resolves.toEqual(

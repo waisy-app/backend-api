@@ -43,7 +43,7 @@ describe(VerificationCodesService.name, () => {
   describe(VerificationCodesService.prototype.sendEmailVerificationCode.name, () => {
     it('should throw ForbiddenError if verification code already exists and sending attempts >= 3', async () => {
       jest
-        .spyOn(usersService, 'findOneOrCreateByEmail')
+        .spyOn(usersService, 'getOrCreateUserByEmail')
         .mockResolvedValueOnce({id: 'test-id', email: 'test@test.test'} as any)
       jest
         .spyOn(verificationCodesService.verificationCodeRepository, 'findOne')

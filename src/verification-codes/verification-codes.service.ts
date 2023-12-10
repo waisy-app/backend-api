@@ -92,7 +92,7 @@ export class VerificationCodesService {
   }
 
   private async findOneOrCreateByUserEmail(email: User['email']): Promise<VerificationCode> {
-    const user = await this.usersService.findOneOrCreateByEmail(email)
+    const user = await this.usersService.getOrCreateUserByEmail(email)
     const verificationCode = await this.findOneByUserEmail(email)
     if (verificationCode) return verificationCode
     return this.createOne(user.id, this.generateRandomCode())
