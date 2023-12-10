@@ -16,9 +16,9 @@ import {CryptService} from './crypt/crypt.service'
 import {typeOrmModuleOptions} from './type-orm-module.options'
 import {graphqlModuleOptions} from './graphql-module.options'
 import {ConfigModule} from './config/config.module'
-import {VerificationCodesModule} from './verification-codes/verification-codes.module'
 import {LoginAttemptsModule} from './login-attempts/login-attempts.module'
 import {SendingVerificationCodeAttemptsModule} from './sending-verification-code-attempts/sending-verification-code-attempts.module'
+import {EmailVerificationModule} from './email-verification/email-verification.module'
 
 @Module({
   imports: [
@@ -28,9 +28,9 @@ import {SendingVerificationCodeAttemptsModule} from './sending-verification-code
     ConfigModule,
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     GraphQLModule.forRootAsync(graphqlModuleOptions),
-    VerificationCodesModule,
     LoginAttemptsModule,
     SendingVerificationCodeAttemptsModule,
+    EmailVerificationModule,
   ],
   providers: [
     ComplexityPlugin,
