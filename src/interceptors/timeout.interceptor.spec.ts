@@ -8,7 +8,6 @@ import {configModuleOptions} from '../config/config-module.options'
 
 describe('TimeoutInterceptor', () => {
   let interceptor: TimeoutInterceptor
-  let serverConfigService: ServerConfigService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -17,7 +16,6 @@ describe('TimeoutInterceptor', () => {
     }).compile()
 
     interceptor = module.get(TimeoutInterceptor)
-    serverConfigService = module.get(ServerConfigService)
   })
 
   it('should handle the request without timing out', done => {
@@ -58,7 +56,7 @@ describe('TimeoutInterceptor', () => {
         return new Observable(observer => {
           setTimeout(() => {
             observer.error(new Error('Timeout occurred'))
-          }, serverConfigService.requestTimeoutMs + 5)
+          }, ServerConfigService.requestTimeoutMs + 5)
         })
       },
     }
