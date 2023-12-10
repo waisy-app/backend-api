@@ -8,14 +8,11 @@ import {VerificationCodesResolver} from '../verification-codes/verification-code
 async function schemaGenerator(): Promise<void> {
   const app = await NestFactory.create(GraphQLSchemaBuilderModule)
   await app.init()
-
   const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
-
-  // Here we pass the resolvers that we want to include in the schema
   const schema = await gqlSchemaFactory.create([AuthResolver, VerificationCodesResolver])
-
   const schemaString = printSchema(schema)
-  fs.writeFileSync('schema.gql', schemaString)
+  const schemaFilePath = 'schema.gql'
+  fs.writeFileSync(schemaFilePath, schemaString)
 }
 
 void schemaGenerator()
