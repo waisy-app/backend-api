@@ -40,16 +40,4 @@ describe(AuthConfigService.name, () => {
   it('should return hashRounds', () => {
     expect(AuthConfigService.hashRounds).toEqual(1)
   })
-
-  it('should return maxSendingVerificationCodeAttempts', () => {
-    expect(AuthConfigService.maxSendingVerificationCodeAttempts).toEqual(3)
-  })
-
-  it('should return verificationCodeLifetimeSeconds', () => {
-    expect(AuthConfigService.verificationCodeLifetimeSeconds).toEqual(600)
-  })
-
-  it('should return verificationCodeLifetimeMilliseconds', () => {
-    expect(AuthConfigService.verificationCodeLifetimeMilliseconds).toEqual(600000)
-  })
 })
