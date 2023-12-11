@@ -26,6 +26,13 @@ describe('EmailVerificationConfigService', () => {
     expect(service.maxSendingVerificationCodeAttempts).toBe(mockAttempts)
   })
 
+  it('should get max input verification code attempts', () => {
+    const mockAttempts = 5
+    jest.spyOn(mockConfigService, 'get').mockReturnValue(mockAttempts)
+
+    expect(service.maxInputVerificationCodeAttempts).toBe(mockAttempts)
+  })
+
   it('should get verification code lifetime in minutes', () => {
     const mockLifetime = 60
     jest.spyOn(mockConfigService, 'get').mockReturnValue(mockLifetime)

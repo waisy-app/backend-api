@@ -6,7 +6,11 @@ export class EmailVerificationConfigService {
   constructor(private readonly configService: ConfigService) {}
 
   public get maxSendingVerificationCodeAttempts(): number {
-    return this.configService.get('EMAIL_VERIFICATION_CODE_MAX_ATTEMPTS')!
+    return this.configService.get('EMAIL_VERIFICATION_CODE_MAX_SENDING_ATTEMPTS')!
+  }
+
+  public get maxInputVerificationCodeAttempts(): number {
+    return this.configService.get('EMAIL_VERIFICATION_CODE_MAX_INPUT_ATTEMPTS')!
   }
 
   public get verificationCodeLifetimeMinutes(): number {

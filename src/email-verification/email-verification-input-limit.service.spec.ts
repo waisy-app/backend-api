@@ -1,0 +1,50 @@
+import {Test, TestingModule} from '@nestjs/testing'
+import {getRepositoryToken} from '@nestjs/typeorm'
+import {Repository} from 'typeorm'
+import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
+import {ForbiddenException} from '@nestjs/common'
+import {EmailVerificationCodeInputAttempt} from './entities/email-verification-code-input-attempt.entity'
+import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
+import {ConfigModule} from '../config/config.module'
+import {ConfigService} from '@nestjs/config'
+
+describe('EmailVerificationInputLimitService', () => {
+  let service: EmailVerificationInputLimitService
+  let repo: Repository<EmailVerificationCodeInputAttempt>
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule],
+      providers: [
+        ConfigService,
+        EmailVerificationInputLimitService,
+        EmailVerificationConfigService,
+        {
+          provide: getRepositoryToken(EmailVerificationCodeInputAttempt),
+          useValue: {
+            count: jest.fn().mockResolvedValue(0),
+            create: jest.fn().mockResolvedValue(undefined),
+            save: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      ],
+    }).compile()
+
+    service = module.get(EmailVerificationInputLimitService)
+    repo = module.get(getRepositoryToken(EmailVerificationCodeInputAttempt))
+  })
+
+  it('should limit the attempts per IP', async () => {
+    jest.spyOn(repo, 'count').mockResolvedValue(10)
+    await expect(
+      service.enforceEmailVerificationInputLimit('1.1.1.1', 'test@mail.com'),
+    ).rejects.toThrow(ForbiddenException)
+  })
+
+  it('should save an attempt and not throw an exception', async () => {
+    jest.spyOn(repo, 'count').mockResolvedValue(0)
+    expect(() =>
+      service.enforceEmailVerificationInputLimit('1.1.1.1', 'test@mail.com'),
+    ).not.toThrow()
+  })
+})
