@@ -36,15 +36,13 @@ describe('EmailVerificationInputLimitService', () => {
 
   it('should limit the attempts per IP', async () => {
     jest.spyOn(repo, 'count').mockResolvedValue(10)
-    await expect(
-      service.enforceEmailVerificationInputLimit('1.1.1.1', 'test@mail.com'),
-    ).rejects.toThrow(ForbiddenException)
+    await expect(service.enforceEmailVerificationInputLimit('1.1.1.1')).rejects.toThrow(
+      ForbiddenException,
+    )
   })
 
   it('should save an attempt and not throw an exception', async () => {
     jest.spyOn(repo, 'count').mockResolvedValue(0)
-    expect(() =>
-      service.enforceEmailVerificationInputLimit('1.1.1.1', 'test@mail.com'),
-    ).not.toThrow()
+    expect(() => service.enforceEmailVerificationInputLimit('1.1.1.1')).not.toThrow()
   })
 })

@@ -18,12 +18,11 @@ export class EmailVerificationInputLimitService {
     this.maxAttempts = emailVerificationConfigService.maxInputVerificationCodeAttempts
   }
 
-  public async enforceEmailVerificationInputLimit(senderIp: string, email: string): Promise<void> {
+  public async enforceEmailVerificationInputLimit(senderIp: string): Promise<void> {
     const attemptsCount = await this.getAttemptsCount(senderIp)
     if (attemptsCount >= this.maxAttempts) {
       throw new ForbiddenException('Max input attempts exceeded')
     }
-    await this.createInputAttempt({senderIp, email})
   }
 
   private getAttemptsCount(senderIp: string): Promise<number> {
@@ -34,8 +33,8 @@ export class EmailVerificationInputLimitService {
     })
   }
 
-  private createInputAttempt(
-    data: Pick<InputAttempt, 'senderIp' | 'email'>,
+  public createInputAttempt(
+    data: Pick<InputAttempt, 'senderIp' | 'email' | 'status'>,
   ): Promise<InputAttempt> {
     const sendingAttempt = this.inputAttemptRepository.create(data)
     return this.inputAttemptRepository.save(sendingAttempt)
