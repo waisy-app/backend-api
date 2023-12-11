@@ -29,5 +29,6 @@ import {CryptService} from '../crypt/crypt.service'
       useClass: JwtAuthGuard,
     },
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

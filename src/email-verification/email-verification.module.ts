@@ -9,6 +9,7 @@ import {EmailVerificationCodeSendingAttempt} from './entities/email-verification
 import {UsersModule} from '../users/users.module'
 import {EmailVerificationSendingLimitService} from './email-verification-sending-limit.service'
 import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
+import {AuthModule} from '../auth/auth.module'
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import {EmailVerificationInputLimitService} from './email-verification-input-lim
     ]),
     UsersModule,
     ConfigModule,
+    AuthModule,
   ],
   providers: [
     EmailVerificationService,
