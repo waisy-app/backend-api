@@ -1,5 +1,5 @@
 import {ForbiddenException, Injectable} from '@nestjs/common'
-import {Repository} from 'typeorm'
+import {MoreThan, Repository} from 'typeorm'
 import {EmailVerificationCodeInputAttempt as InputAttempt} from './entities/email-verification-code-input-attempt.entity'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
 import {InjectRepository} from '@nestjs/typeorm'
@@ -27,7 +27,7 @@ export class EmailVerificationInputLimitService {
 
   private getAttemptsCount(senderIp: string): Promise<number> {
     return this.inputAttemptRepository.count({
-      where: {senderIp, createdAt: new Date(new Date().getTime() - this.codeLifetimeMs)},
+      where: {senderIp, createdAt: MoreThan(new Date(Date.now() - this.codeLifetimeMs))},
       cache: false,
       take: this.maxAttempts,
     })

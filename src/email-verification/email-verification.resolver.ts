@@ -35,7 +35,7 @@ export class EmailVerificationResolver {
   ): Promise<Auth> {
     await this.inputLimitService.enforceEmailVerificationInputLimit(senderIp)
     try {
-      const result = this.emailVerificationService.verifyEmail(email, code)
+      const result = await this.emailVerificationService.verifyEmail(email, code)
       await this.inputLimitService.createInputAttempt({senderIp, email, status: 'success'})
       return result
     } catch (error: unknown) {
