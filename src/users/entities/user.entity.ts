@@ -9,15 +9,6 @@ export class User {
   email: string
 
   @Column({
-    type: String,
-    default: null,
-    nullable: true,
-    unique: true,
-    comment: 'Hashed refresh token',
-  })
-  refreshToken: string | null
-
-  @Column({
     comment: 'Status of the user',
     type: 'enum',
     enum: ['active', 'unconfirmed'],

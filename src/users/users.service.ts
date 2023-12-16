@@ -10,7 +10,7 @@ export class UsersService {
   public async getOrCreateUserByEmail(email: string): Promise<User> {
     const user = await this.getUserByEmail(email)
     if (user) return user
-    return this.createUserByEmail(email)
+    return this.createUser({email})
   }
 
   public getUserById(id: string): Promise<User | null> {
@@ -22,19 +22,7 @@ export class UsersService {
   }
 
   public async activateUserById(id: string): Promise<void> {
-    await this.updateUserById(id, {status: 'active'})
-  }
-
-  public async updateUserRefreshToken(id: string, refreshToken: string | null): Promise<void> {
-    await this.updateUserById(id, {refreshToken})
-  }
-
-  public async createUserByEmail(email: string): Promise<User> {
-    return this.createUser({email})
-  }
-
-  private updateUserById(id: string, data: Partial<User>): Promise<void> {
-    return this.updateUser('id', id, data)
+    await this.updateUser('id', id, {status: 'active'})
   }
 
   private async createUser(data: Partial<User>): Promise<User> {
@@ -42,11 +30,15 @@ export class UsersService {
     return this.usersRepository.save(newUser)
   }
 
-  private async updateUser(field: keyof User, value: unknown, data: Partial<User>): Promise<void> {
+  private async updateUser(
+    field: keyof User,
+    value: User[keyof User],
+    data: Partial<User>,
+  ): Promise<void> {
     await this.usersRepository.update({[field]: value}, data)
   }
 
-  private getUser(field: keyof User, value: unknown): Promise<User | null> {
+  private getUser(field: keyof User, value: User[keyof User]): Promise<User | null> {
     return this.usersRepository.findOne({where: {[field]: value}})
   }
 }

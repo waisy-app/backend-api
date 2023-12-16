@@ -74,15 +74,4 @@ describe('UsersService', () => {
 
     expect(repo.update).toHaveBeenCalledWith({id: '1'}, {status: 'active'})
   })
-
-  it('should update a user refresh token', async () => {
-    const testUser = new User()
-    testUser.id = '1'
-
-    jest.spyOn(repo, 'update').mockResolvedValueOnce(undefined as any)
-
-    await service.updateUserRefreshToken('1', 'token')
-
-    expect(repo.update).toHaveBeenCalledWith({id: '1'}, {refreshToken: 'token'})
-  })
 })
