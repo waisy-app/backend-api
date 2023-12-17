@@ -17,7 +17,6 @@ import {graphqlModuleOptions} from './graphql-module.options'
 import {ConfigModule} from './config/config.module'
 import {EmailVerificationModule} from './email-verification/email-verification.module'
 import {RefreshTokenModule} from './refresh-token/refresh-token.module'
-import {EmailsModule} from './emails/emails.module'
 
 @Module({
   imports: [
@@ -28,7 +27,6 @@ import {EmailsModule} from './emails/emails.module'
     GraphQLModule.forRootAsync(graphqlModuleOptions),
     EmailVerificationModule,
     RefreshTokenModule,
-    EmailsModule,
   ],
   providers: [
     ComplexityPlugin,
