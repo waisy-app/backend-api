@@ -12,6 +12,7 @@ describe('RefreshTokenResolver', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        RefreshTokenResolver,
         {
           provide: RefreshTokenService,
           useValue: {
