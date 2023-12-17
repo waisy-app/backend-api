@@ -5,8 +5,8 @@ import {EmailVerificationCode as VerificationCode} from './entities/email-verifi
 import {UsersService} from '../users/users.service'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
 import {User} from '../users/entities/user.entity'
-import {Auth} from '../auth/models/auth.model'
-import {AuthService} from '../auth/auth.service'
+import {RefreshTokenService} from '../refresh-token/refresh-token.service'
+import {Tokens} from '../refresh-token/models/tokens.model'
 
 @Injectable()
 export class EmailVerificationService {
@@ -17,7 +17,7 @@ export class EmailVerificationService {
     @InjectRepository(VerificationCode)
     private readonly verificationCodeRepository: Repository<VerificationCode>,
     private readonly usersService: UsersService,
-    private readonly authService: AuthService,
+    private readonly tokenService: RefreshTokenService,
     emailVerificationConfig: EmailVerificationConfigService,
   ) {
     this.verificationCodeLifetimeMs = emailVerificationConfig.verificationCodeLifetimeMilliseconds
@@ -31,20 +31,27 @@ export class EmailVerificationService {
     this.logger.debug(`Sending the verification code "${verificationCode.code}" to "${email}"`)
   }
 
-  public async verifyEmail(email: string, code: number): Promise<Auth> {
+  public async verifyEmail(email: string, code: number, deviceInfo: string): Promise<Tokens> {
     const user = await this.usersService.getUserByEmail(email)
     if (!user) {
+      this.logger.debug(`User with email "${email}" not found`)
       throw new UnauthorizedException('Invalid verification code')
     }
 
     const verificationCode = await this.getActiveVerificationCodeByUser(user)
     if (verificationCode?.code !== code) {
+      this.logger.debug(`Invalid verification code "${code}"`)
       throw new UnauthorizedException('Invalid verification code')
+    }
+
+    if (user.status === 'unconfirmed') {
+      this.logger.debug(`Activating user "${user.id}"`)
+      await this.usersService.activateUserById(user.id)
     }
 
     verificationCode.status = 'used'
     await this.verificationCodeRepository.save(verificationCode)
-    return this.authService.login(user.id)
+    return this.tokenService.generateAndSaveTokens(user, deviceInfo)
   }
 
   private generateRandomCode(): number {
@@ -52,15 +59,13 @@ export class EmailVerificationService {
   }
 
   private async getOrCreateVerificationCodeByUser(user: User): Promise<VerificationCode> {
-    const verificationCode = await this.getActiveVerificationCodeByUser(user)
-    if (verificationCode) return verificationCode
-    return this.createVerificationCodeByUser(user)
-  }
-
-  private createVerificationCodeByUser(user: User): Promise<VerificationCode> {
-    const code = this.generateRandomCode()
-    const expirationDate = new Date(Date.now() + this.verificationCodeLifetimeMs)
-    return this.createVerificationCode({user, code, expirationDate})
+    let verificationCode = await this.getActiveVerificationCodeByUser(user)
+    if (!verificationCode) {
+      const code = this.generateRandomCode()
+      const expirationDate = new Date(Date.now() + this.verificationCodeLifetimeMs)
+      verificationCode = await this.createVerificationCode({user, code, expirationDate})
+    }
+    return verificationCode
   }
 
   private getActiveVerificationCodeByUser(user: User): Promise<VerificationCode | null> {

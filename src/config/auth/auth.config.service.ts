@@ -25,4 +25,8 @@ export class AuthConfigService {
   public static get hashRounds(): number {
     return EnvironmentConfigService.isTest ? 1 : 10
   }
+
+  public static get maxDeviceInfoLength(): number {
+    return 255
+  }
 }

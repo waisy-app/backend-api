@@ -5,7 +5,6 @@ import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core'
 import {HttpExceptionFilter} from './exception-filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
 import {TimeoutInterceptor} from './interceptors/timeout.interceptor'
-import {AuthModule} from './auth/auth.module'
 import {GraphQLModule} from '@nestjs/graphql'
 import {ComplexityPlugin} from './apollo-plugins/complexity.plugin'
 import {AllExceptionsFilter} from './exception-filters/all-exception.filter'
@@ -17,16 +16,17 @@ import {typeOrmModuleOptions} from './type-orm-module.options'
 import {graphqlModuleOptions} from './graphql-module.options'
 import {ConfigModule} from './config/config.module'
 import {EmailVerificationModule} from './email-verification/email-verification.module'
+import {RefreshTokenModule} from './refresh-token/refresh-token.module'
 
 @Module({
   imports: [
     UsersModule,
-    AuthModule,
     ErrorFormatterModule,
     ConfigModule,
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
     GraphQLModule.forRootAsync(graphqlModuleOptions),
     EmailVerificationModule,
+    RefreshTokenModule,
   ],
   providers: [
     ComplexityPlugin,

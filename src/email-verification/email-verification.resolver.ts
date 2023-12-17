@@ -1,12 +1,13 @@
 import {Args, Mutation, Resolver} from '@nestjs/graphql'
 import {SendVerificationCodeToEmailArgs} from './dto/send-verification-code-to-email.args'
 import {ClientIp} from '../utils/client-ip.decorator'
-import {SkipJwtAuth} from '../auth/decorators/skip-jwt-auth.decorator'
+import {SkipJwtAccessTokenGuard} from '../refresh-token/decorators/skip-jwt-access-token-guard.decorator'
 import {EmailVerificationService} from './email-verification.service'
 import {EmailVerificationSendingLimitService} from './email-verification-sending-limit.service'
 import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
 import {VerifyEmailCodeArgs} from './dto/verify-email-code.args'
-import {Auth} from '../auth/models/auth.model'
+import {UnauthorizedException} from '@nestjs/common'
+import {Tokens} from '../refresh-token/models/tokens.model'
 
 @Resolver()
 export class EmailVerificationResolver {
@@ -16,8 +17,8 @@ export class EmailVerificationResolver {
     private readonly inputLimitService: EmailVerificationInputLimitService,
   ) {}
 
-  @SkipJwtAuth()
-  @Mutation(() => Boolean, {description: 'Send verification code to email'})
+  @SkipJwtAccessTokenGuard()
+  @Mutation(() => Boolean)
   public async sendVerificationCodeToEmail(
     @Args() {email}: SendVerificationCodeToEmailArgs,
     @ClientIp() clientIp: string,
@@ -27,19 +28,21 @@ export class EmailVerificationResolver {
     return true
   }
 
-  @SkipJwtAuth()
-  @Mutation(() => Auth, {description: 'Verify email code'})
+  @SkipJwtAccessTokenGuard()
+  @Mutation(() => Tokens)
   public async verifyEmailCode(
     @ClientIp() senderIp: string,
-    @Args() {email, code}: VerifyEmailCodeArgs,
-  ): Promise<Auth> {
+    @Args() {email, code, deviceInfo}: VerifyEmailCodeArgs,
+  ): Promise<Tokens> {
     await this.inputLimitService.enforceEmailVerificationInputLimit(senderIp)
     try {
-      const result = await this.emailVerificationService.verifyEmail(email, code)
+      const result = await this.emailVerificationService.verifyEmail(email, code, deviceInfo)
       await this.inputLimitService.createInputAttempt({senderIp, email, status: 'success'})
       return result
     } catch (error: unknown) {
-      await this.inputLimitService.createInputAttempt({senderIp, email, status: 'failure'})
+      if (error instanceof UnauthorizedException) {
+        await this.inputLimitService.createInputAttempt({senderIp, email, status: 'failure'})
+      }
       throw error
     }
   }

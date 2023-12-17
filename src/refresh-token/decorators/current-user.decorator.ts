@@ -4,6 +4,6 @@ import {User} from '../../users/entities/user.entity'
 
 export const CurrentUser = createParamDecorator((_: unknown, context: ExecutionContext): User => {
   const ctx = GqlExecutionContext.create(context)
-  // req.user is set by JwtStrategy
+  // req.user is set by JwtAccessTokenStrategy
   return ctx.getContext().req.user
 })

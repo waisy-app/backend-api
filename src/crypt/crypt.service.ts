@@ -1,16 +1,13 @@
 import {Injectable} from '@nestjs/common'
-import * as bcrypt from 'bcrypt'
-import {AuthConfigService} from '../config/auth/auth.config.service'
+import * as argon2 from 'argon2'
 
 @Injectable()
 export class CryptService {
-  private readonly hashRounds: number = AuthConfigService.hashRounds
-
   public hashText(text: string): Promise<string> {
-    return bcrypt.hash(text, this.hashRounds)
+    return argon2.hash(text)
   }
 
   public compareHash(text: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(text, hash)
+    return argon2.verify(hash, text)
   }
 }

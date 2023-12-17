@@ -37,6 +37,10 @@ describe(AuthConfigService.name, () => {
     expect(service.jwtRefreshTokenExpiresIn).toEqual('JWT_REFRESH_TOKEN_EXPIRES_IN')
   })
 
+  it('should return maxDeviceInfoLength', () => {
+    expect(AuthConfigService.maxDeviceInfoLength).toEqual(255)
+  })
+
   it('should return hashRounds', () => {
     expect(AuthConfigService.hashRounds).toEqual(1)
   })
