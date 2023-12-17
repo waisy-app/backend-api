@@ -99,23 +99,5 @@ describe('EmailVerificationService', () => {
     ).resolves.toBeDefined()
 
     expect(verificationCode.status).toBe('used')
-    expect(usersService.activateUserById).not.toHaveBeenCalled()
-  })
-
-  it('should activate user when verifying email', async () => {
-    const user = new User()
-    user.status = 'unconfirmed'
-    const verificationCode = new EmailVerificationCode()
-    verificationCode.code = 123456
-
-    jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(user)
-    jest.spyOn(verificationCodeRepository, 'findOne').mockResolvedValue(verificationCode)
-    jest.spyOn(usersService, 'activateUserById').mockResolvedValue(undefined as any)
-    jest.spyOn(tokenService, 'generateAndSaveTokens').mockResolvedValue(new Tokens())
-    jest.spyOn(verificationCodeRepository, 'save').mockResolvedValue(undefined as any)
-
-    await service.verifyEmail('test@example.com', 123456, 'deviceInfo')
-
-    expect(usersService.activateUserById).toHaveBeenCalledWith(user.id)
   })
 })

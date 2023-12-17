@@ -44,11 +44,6 @@ export class EmailVerificationService {
       throw new UnauthorizedException('Invalid verification code')
     }
 
-    if (user.status === 'unconfirmed') {
-      this.logger.debug(`Activating user "${user.id}"`)
-      await this.usersService.activateUserById(user.id)
-    }
-
     verificationCode.status = 'used'
     await this.verificationCodeRepository.save(verificationCode)
     return this.tokenService.generateAndSaveTokens(user, deviceInfo)

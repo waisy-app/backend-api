@@ -1,20 +1,21 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm'
+import {
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm'
+import {Email} from '../../emails/entities/email.entity'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column({unique: true})
-  email: string
-
-  @Column({
-    comment: 'Status of the user',
-    type: 'enum',
-    enum: ['active', 'unconfirmed'],
-    default: 'unconfirmed',
-  })
-  status: 'active' | 'unconfirmed'
+  @OneToOne(() => Email, {nullable: true})
+  @JoinColumn()
+  email: Email | null
 
   @CreateDateColumn({type: 'timestamp with time zone'})
   createdAt: Date

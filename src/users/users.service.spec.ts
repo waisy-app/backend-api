@@ -1,8 +1,9 @@
+import {User} from './entities/user.entity'
 import {UsersService} from './users.service'
 import {Repository} from 'typeorm'
-import {User} from './entities/user.entity'
 import {Test, TestingModule} from '@nestjs/testing'
 import {getRepositoryToken} from '@nestjs/typeorm'
+import {Email} from '../emails/entities/email.entity'
 
 describe('UsersService', () => {
   let service: UsersService
@@ -25,7 +26,9 @@ describe('UsersService', () => {
 
   it('should create a user by email', async () => {
     const testUser = new User()
-    testUser.email = 'test@example.com'
+    const email = new Email()
+    email.email = 'test@example.com'
+    testUser.email = email
 
     jest.spyOn(repo, 'create').mockReturnValueOnce(testUser)
     jest.spyOn(repo, 'save').mockResolvedValueOnce(testUser)
@@ -36,11 +39,13 @@ describe('UsersService', () => {
 
   it('should not create a user by email if it already exists', async () => {
     const testUser = new User()
-    testUser.email = 'test@example.com'
+    const email = new Email()
+    email.email = 'test@example.com'
+    testUser.email = email
     jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
     jest.spyOn(repo, 'create')
     jest.spyOn(repo, 'save')
-    expect(await service.getOrCreateUserByEmail(testUser.email)).toEqual(testUser)
+    expect(await service.getOrCreateUserByEmail(testUser.email.email)).toEqual(testUser)
     expect(repo.create).not.toHaveBeenCalled()
     expect(repo.save).not.toHaveBeenCalled()
   })
@@ -56,22 +61,12 @@ describe('UsersService', () => {
 
   it('should get a user by email', async () => {
     const testUser = new User()
-    testUser.email = 'test@example.com'
+    const email = new Email()
+    email.email = 'test@example.com'
+    testUser.email = email
 
     jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
 
     expect(await service.getUserByEmail('test@example.com')).toEqual(testUser)
-  })
-
-  it('should activate a user by id', async () => {
-    const testUser = new User()
-    testUser.id = '1'
-    testUser.status = 'unconfirmed'
-
-    jest.spyOn(repo, 'update').mockResolvedValueOnce(undefined as any)
-
-    await service.activateUserById('1')
-
-    expect(repo.update).toHaveBeenCalledWith({id: '1'}, {status: 'active'})
   })
 })
