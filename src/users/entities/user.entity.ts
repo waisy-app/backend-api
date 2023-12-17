@@ -1,21 +1,12 @@
-import {
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm'
-import {Email} from '../../emails/entities/email.entity'
+import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @OneToOne(() => Email, {nullable: true})
-  @JoinColumn()
-  email: Email | null
+  @Column({unique: true})
+  email: string
 
   @CreateDateColumn({type: 'timestamp with time zone'})
   createdAt: Date

@@ -5,7 +5,6 @@ import {getRepositoryToken} from '@nestjs/typeorm'
 import {User} from '../../users/entities/user.entity'
 import {ConfigModule} from '../../config/config.module'
 import {UnauthorizedException} from '@nestjs/common'
-import {Email} from '../../emails/entities/email.entity'
 
 describe(JwtAccessTokenStrategy.name, () => {
   let jwtStrategy: JwtAccessTokenStrategy
@@ -38,9 +37,7 @@ describe(JwtAccessTokenStrategy.name, () => {
     it('should return a user when user exists', async () => {
       const expected = new User()
       expected.id = 'test-id'
-      const email = new Email()
-      email.email = 'test-email'
-      expected.email = email
+      expected.email = 'test-email'
 
       jest.spyOn(usersService, 'getUserById').mockResolvedValue(expected)
 

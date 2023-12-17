@@ -40,7 +40,7 @@ describe(ServerConfigService.name, () => {
 
     it('should return 20 if NODE_ENV is in test mode', () => {
       process.env.NODE_ENV = 'test'
-      expect(ServerConfigService.requestTimeoutMs).toEqual(20)
+      expect(ServerConfigService.requestTimeoutMs).toEqual(100)
     })
 
     it('should return 10000 if NODE_ENV is not in test mode', () => {

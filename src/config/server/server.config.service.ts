@@ -11,6 +11,6 @@ export class ServerConfigService {
   }
 
   public static get requestTimeoutMs(): number {
-    return EnvironmentConfigService.isTest ? 20 : 10000
+    return EnvironmentConfigService.isTest ? 100 : 10000
   }
 }

@@ -18,11 +18,11 @@ export class UsersService {
   }
 
   public getUserByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({where: {email: {email}}})
+    return this.usersRepository.findOne({where: {email}})
   }
 
   private async createUserByEmail(email: string): Promise<User> {
-    const newUser = this.usersRepository.create({email: {email}})
+    const newUser = this.usersRepository.create({email})
     return this.usersRepository.save(newUser)
   }
 }
