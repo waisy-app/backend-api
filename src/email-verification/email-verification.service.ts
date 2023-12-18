@@ -1,6 +1,6 @@
 import {Injectable, Logger, UnauthorizedException} from '@nestjs/common'
 import {InjectRepository} from '@nestjs/typeorm'
-import {Repository} from 'typeorm'
+import {MoreThan, Repository} from 'typeorm'
 import {EmailVerificationCode as VerificationCode} from './entities/email-verification-code.entity'
 import {UsersService} from '../users/users.service'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
@@ -65,7 +65,7 @@ export class EmailVerificationService {
 
   private getActiveVerificationCodeByUser(user: User): Promise<VerificationCode | null> {
     return this.verificationCodeRepository.findOne({
-      where: {user: {id: user.id}, status: 'active'},
+      where: {user: {id: user.id}, status: 'active', expirationDate: MoreThan(new Date())},
     })
   }
 
