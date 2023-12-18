@@ -14,7 +14,7 @@ export class EmailVerificationCode {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false})
+  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false, eager: true})
   @JoinColumn()
   user: User
 

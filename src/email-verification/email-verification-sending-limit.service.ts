@@ -9,6 +9,7 @@ export class EmailVerificationSendingLimitService {
   private readonly logger = new Logger(EmailVerificationSendingLimitService.name)
   private readonly maxSendingAttempts: number
   private readonly lifetimeMilliseconds: number
+  private readonly lifetimeMinutes: number
 
   constructor(
     @InjectRepository(SendingAttempt)
@@ -17,6 +18,7 @@ export class EmailVerificationSendingLimitService {
   ) {
     this.maxSendingAttempts = emailVerificationConfig.maxSendingVerificationCodeAttempts
     this.lifetimeMilliseconds = emailVerificationConfig.verificationCodeLifetimeMilliseconds
+    this.lifetimeMinutes = emailVerificationConfig.verificationCodeLifetimeMinutes
   }
 
   public async enforceEmailVerificationSendingLimit(
@@ -25,9 +27,8 @@ export class EmailVerificationSendingLimitService {
   ): Promise<void> {
     const sendingAttemptsCount = await this.getSendingAttemptsCount(senderIp, email)
     if (sendingAttemptsCount >= this.maxSendingAttempts) {
-      this.logger.debug(`Sending attempts limit exceeded for ${senderIp}`)
       throw new ForbiddenException(
-        'You have exceeded the limit of email verification requests for the last 10 minutes.',
+        `You have exceeded the limit of email verification requests for the last ${this.lifetimeMinutes} minutes.`,
       )
     }
     await this.createSendingAttempt({senderIp, email})

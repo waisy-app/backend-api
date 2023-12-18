@@ -1,6 +1,5 @@
 import {ConfigService} from '@nestjs/config'
 import {Injectable} from '@nestjs/common'
-import {EnvironmentConfigService} from '../environment/environment.config.service'
 
 @Injectable()
 export class ServerConfigService {
@@ -10,7 +9,7 @@ export class ServerConfigService {
     return this.configService.get('PORT')!
   }
 
-  public static get requestTimeoutMs(): number {
-    return EnvironmentConfigService.isTest ? 100 : 10000
+  public get requestTimeoutMs(): number {
+    return 10000
   }
 }

@@ -1,7 +1,7 @@
-import {MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common'
+import {MiddlewareConsumer, Module, NestModule, RequestMethod, ValidationPipe} from '@nestjs/common'
 import {UsersModule} from './users/users.module'
 import {RequestLoggerMiddleware} from './middlewares/request-logger.middleware'
-import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core'
+import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core'
 import {HttpExceptionFilter} from './exception-filters/http-exception.filter'
 import {LoggingInterceptor} from './interceptors/logging.interceptor'
 import {TimeoutInterceptor} from './interceptors/timeout.interceptor'
@@ -50,6 +50,10 @@ import {RefreshTokenModule} from './refresh-token/refresh-token.module'
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
     },
   ],
 })

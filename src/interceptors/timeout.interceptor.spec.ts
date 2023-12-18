@@ -8,9 +8,10 @@ import {configModuleOptions} from '../config/config-module.options'
 
 describe('TimeoutInterceptor', () => {
   let interceptor: TimeoutInterceptor
+  let module: TestingModule
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [ConfigModule.forRoot(configModuleOptions)],
       providers: [TimeoutInterceptor, ServerConfigService],
     }).compile()
@@ -51,12 +52,14 @@ describe('TimeoutInterceptor', () => {
   })
 
   it('should handle a timeout in the controller', done => {
+    const serverConfigService = module.get(ServerConfigService)
+    jest.spyOn(serverConfigService, 'requestTimeoutMs', 'get').mockReturnValue(1)
     const mockCallHandler = {
       handle: () => {
         return new Observable(observer => {
           setTimeout(() => {
             observer.error(new Error('Timeout occurred'))
-          }, ServerConfigService.requestTimeoutMs + 5)
+          }, serverConfigService.requestTimeoutMs + 1)
         })
       },
     }

@@ -27,25 +27,9 @@ describe(ServerConfigService.name, () => {
     })
   })
 
-  describe('::get RequestTimeoutMs()', () => {
-    let origNodeEnv: string
-
-    beforeEach(() => {
-      origNodeEnv = process.env.NODE_ENV!
-    })
-
-    afterEach(() => {
-      process.env.NODE_ENV = origNodeEnv
-    })
-
-    it('should return 20 if NODE_ENV is in test mode', () => {
-      process.env.NODE_ENV = 'test'
-      expect(ServerConfigService.requestTimeoutMs).toEqual(100)
-    })
-
-    it('should return 10000 if NODE_ENV is not in test mode', () => {
-      process.env.NODE_ENV = 'production'
-      expect(ServerConfigService.requestTimeoutMs).toEqual(10000)
+  describe('#get RequestTimeoutMs()', () => {
+    it('should return 10000', () => {
+      expect(serverConfigService.requestTimeoutMs).toEqual(10000)
     })
   })
 })
