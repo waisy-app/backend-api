@@ -11,7 +11,7 @@ import {EmailVerificationSendingLimitService} from '../../src/email-verification
 import {GraphqlConfigService} from '../../src/config/graphql/graphql.config.service'
 import {ServerConfigService} from '../../src/config/server/server.config.service'
 
-describe('sendVerificationCodeToEmail (GraphQL)', () => {
+describe('sendVerificationCodeToEmail', () => {
   let app: INestApplication
   let gqlService: GqlTestService
 
@@ -351,6 +351,8 @@ describe('sendVerificationCodeToEmail (GraphQL)', () => {
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
 
+      // TODO: проверка на отправку email после реализации логики
+
       const users = await userRepository.find()
       expect(users).toHaveLength(1)
       expect(users).toEqual([
@@ -414,6 +416,8 @@ describe('sendVerificationCodeToEmail (GraphQL)', () => {
         },
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
+
+      // TODO: проверка на отправку email после реализации логики
 
       const users = await userRepository.find()
       expect(users).toHaveLength(1)
@@ -489,6 +493,8 @@ describe('sendVerificationCodeToEmail (GraphQL)', () => {
         },
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
+
+      // TODO: проверка на отправку email после реализации логики
 
       const users = await userRepository.find()
       expect(users).toHaveLength(1)

@@ -37,7 +37,7 @@ export class RefreshTokenResolver {
   @Mutation(() => Boolean, {
     description: 'Logout user by deactivating all refresh tokens',
   })
-  public async deactivateAllRefreshToken(@CurrentUser() user: User): Promise<true> {
+  public async deactivateAllRefreshTokens(@CurrentUser() user: User): Promise<true> {
     await this.tokenService.deactivateTokensByUser(user)
     return true
   }
