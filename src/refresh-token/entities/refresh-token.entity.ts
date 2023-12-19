@@ -37,7 +37,7 @@ export class RefreshToken {
   })
   deviceInfo: string
 
-  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false})
+  @ManyToOne(() => User, {onDelete: 'CASCADE', nullable: false, eager: true})
   @JoinColumn()
   user: User
 

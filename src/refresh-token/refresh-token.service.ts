@@ -37,7 +37,7 @@ export class RefreshTokenService {
 
   public async generateAndSaveTokens(user: User, deviceInfo: string): Promise<Tokens> {
     const tokens = await this.generateTokens(user.id, deviceInfo)
-    await this.createAuthToken({
+    await this.createRefreshToken({
       user,
       refreshToken: tokens.refresh_token,
       deviceInfo,
@@ -45,7 +45,7 @@ export class RefreshTokenService {
     return tokens
   }
 
-  private async createAuthToken(data: {
+  private async createRefreshToken(data: {
     user: User
     refreshToken: string
     deviceInfo: string

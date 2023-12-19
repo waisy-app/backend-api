@@ -15,7 +15,7 @@ export class RefreshTokenResolver {
   @SkipJwtAccessTokenGuard()
   @UseGuards(JwtRefreshTokenGuard)
   @Mutation(() => Tokens, {description: 'Refresh access token and refresh token'})
-  public async refreshAccessToken(
+  public async refreshTokens(
     @CurrentUser() user: User,
     @Args() {deviceInfo}: DeviceInfoArgs,
   ): Promise<Tokens> {

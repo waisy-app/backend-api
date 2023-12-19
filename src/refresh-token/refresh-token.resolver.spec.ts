@@ -39,7 +39,7 @@ describe('RefreshTokenResolver', () => {
     jest.spyOn(tokenService, 'deactivateTokenByUserAndDeviceInfo').mockResolvedValue(undefined)
     jest.spyOn(tokenService, 'generateAndSaveTokens').mockResolvedValue(tokens)
 
-    expect(await resolver.refreshAccessToken(user, deviceInfoArgs)).toEqual(tokens)
+    expect(await resolver.refreshTokens(user, deviceInfoArgs)).toEqual(tokens)
   })
 
   it('should deactivate refresh token', async () => {
