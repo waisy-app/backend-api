@@ -590,7 +590,7 @@ describe('refreshTokens', () => {
       const refreshTokensRepository: Repository<RefreshToken> = app.get(
         getRepositoryToken(RefreshToken),
       )
-      const refreshTokens = await refreshTokensRepository.find()
+      const refreshTokens = await refreshTokensRepository.find({order: {createdAt: 'ASC'}})
       expect(refreshTokens.length).toBe(2)
       expect(refreshTokens).toEqual([
         {
