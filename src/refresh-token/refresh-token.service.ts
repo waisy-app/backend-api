@@ -18,6 +18,11 @@ export class RefreshTokenService {
     private readonly cryptService: CryptService,
   ) {}
 
+  public async getActiveDevicesByUser(user: User): Promise<string[]> {
+    const tokens = await this.tokenRepository.find({where: {user: {id: user.id}, status: 'active'}})
+    return tokens.map(token => token.deviceInfo)
+  }
+
   public getActiveTokenByUserAndDeviceInfo(
     user: User,
     deviceInfo: string,

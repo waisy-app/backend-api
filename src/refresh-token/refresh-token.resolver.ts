@@ -42,9 +42,10 @@ export class RefreshTokenResolver {
     return true
   }
 
-  @SkipJwtAccessTokenGuard()
-  @Query(() => String, {description: 'Just for testing'})
-  public test(): string {
-    return 'test'
+  @Query(() => [String], {
+    description: 'Get all active devices for user',
+  })
+  public async getActiveDevices(@CurrentUser() user: User): Promise<string[]> {
+    return this.tokenService.getActiveDevicesByUser(user)
   }
 }

@@ -19,6 +19,7 @@ describe('RefreshTokenResolver', () => {
             deactivateTokenByUserAndDeviceInfo: jest.fn(),
             generateAndSaveTokens: jest.fn(),
             deactivateTokensByUser: jest.fn(),
+            getActiveDevicesByUser: jest.fn(),
           },
         },
       ],
@@ -58,5 +59,14 @@ describe('RefreshTokenResolver', () => {
     jest.spyOn(tokenService, 'deactivateTokensByUser').mockResolvedValue(undefined)
 
     expect(await resolver.deactivateAllRefreshTokens(user)).toEqual(true)
+  })
+
+  it('should get active devices', async () => {
+    const user = new User()
+    const devices = ['device1', 'device2']
+
+    jest.spyOn(tokenService, 'getActiveDevicesByUser').mockResolvedValue(devices)
+
+    expect(await resolver.getActiveDevices(user)).toEqual(devices)
   })
 })

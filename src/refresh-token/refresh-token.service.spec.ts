@@ -97,4 +97,18 @@ describe('RefreshTokenService', () => {
 
     expect(await service.generateAndSaveTokens(user, deviceInfo)).toEqual(tokens)
   })
+
+  it('should get active devices by user', async () => {
+    const user = new User()
+    user.id = '1'
+    const deviceInfo = 'deviceInfo'
+    const authToken = new RefreshToken()
+    authToken.user = user
+    authToken.deviceInfo = deviceInfo
+    authToken.status = 'active'
+
+    jest.spyOn(tokenRepository, 'find').mockResolvedValue([authToken])
+
+    expect(await service.getActiveDevicesByUser(user)).toEqual([deviceInfo])
+  })
 })
