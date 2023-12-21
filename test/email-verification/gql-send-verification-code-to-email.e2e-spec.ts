@@ -130,7 +130,7 @@ describe('sendVerificationCodeToEmail', () => {
       })
     })
 
-    it('should throw an error if sending attempts limit exceeded', async () => {
+    it('should throw an error if sending attempts limit exceeded with same ip', async () => {
       const emailVerificationCodeSendingAttemptRepository = app.get(
         getRepositoryToken(EmailVerificationCodeSendingAttempt),
       )
@@ -156,6 +156,96 @@ describe('sendVerificationCodeToEmail', () => {
           },
         },
       })
+      expect(result.body).toEqual({
+        errors: [
+          {
+            message:
+              'You have exceeded the limit of email verification requests for the last 10 minutes.',
+            locations: [{line: 2, column: 7}],
+            path: ['sendVerificationCodeToEmail'],
+            code: 'FORBIDDEN',
+          },
+        ],
+        data: null,
+      })
+
+      const emailVerificationCodeSendingAttempts =
+        await emailVerificationCodeSendingAttemptRepository.find({order: {createdAt: 'ASC'}})
+      expect(emailVerificationCodeSendingAttempts).toHaveLength(3)
+      expect(emailVerificationCodeSendingAttempts).toEqual([attempt1, attempt2, attempt3])
+    })
+
+    it('should throw an error if sending attempts limit exceeded with same email', async () => {
+      const email = 'test@test.com'
+
+      const emailVerificationCodeSendingAttemptRepository = app.get(
+        getRepositoryToken(EmailVerificationCodeSendingAttempt),
+      )
+      const attempt1 = await emailVerificationCodeSendingAttemptRepository.save({
+        email,
+        senderIp: '::ffff:127.0.0.2',
+      })
+      const attempt2 = await emailVerificationCodeSendingAttemptRepository.save({
+        email,
+        senderIp: '::ffff:127.0.0.3',
+      })
+      const attempt3 = await emailVerificationCodeSendingAttemptRepository.save({
+        email,
+        senderIp: '::ffff:127.0.0.4',
+      })
+
+      const result = await gqlService.sendRequest({
+        queryType: 'mutation',
+        query: {
+          operation: 'sendVerificationCodeToEmail',
+          variables: {email: {type: 'String!', value: email}},
+        },
+      })
+
+      expect(result.body).toEqual({
+        errors: [
+          {
+            message:
+              'You have exceeded the limit of email verification requests for the last 10 minutes.',
+            locations: [{line: 2, column: 7}],
+            path: ['sendVerificationCodeToEmail'],
+            code: 'FORBIDDEN',
+          },
+        ],
+        data: null,
+      })
+
+      const emailVerificationCodeSendingAttempts =
+        await emailVerificationCodeSendingAttemptRepository.find({order: {createdAt: 'ASC'}})
+      expect(emailVerificationCodeSendingAttempts).toHaveLength(3)
+      expect(emailVerificationCodeSendingAttempts).toEqual([attempt1, attempt2, attempt3])
+    })
+
+    it('should throw an error if sending attempts limit exceeded with same email and ip', async () => {
+      const emailVerificationCodeSendingAttemptRepository = app.get(
+        getRepositoryToken(EmailVerificationCodeSendingAttempt),
+      )
+      const attempt1 = await emailVerificationCodeSendingAttemptRepository.save({
+        email: 'test@test.com',
+        senderIp: '::ffff:127.0.0.1',
+      })
+      const attempt2 = await emailVerificationCodeSendingAttemptRepository.save({
+        email: 'test@test.com',
+        senderIp: '::ffff:127.0.0.2',
+      })
+      const attempt3 = await emailVerificationCodeSendingAttemptRepository.save({
+        email: 'test2@test2.com',
+        senderIp: '::ffff:127.0.0.1',
+      })
+
+      const result = await gqlService.sendRequest({
+        queryType: 'mutation',
+        query: {
+          operation: 'sendVerificationCodeToEmail',
+          variables: {email: {type: 'String!', value: 'test@test.com'}},
+        },
+      })
+
       expect(result.body).toEqual({
         errors: [
           {

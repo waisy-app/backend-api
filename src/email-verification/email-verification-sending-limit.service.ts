@@ -37,7 +37,10 @@ export class EmailVerificationSendingLimitService {
   private async getSendingAttemptsCount(senderIp: string, email: string): Promise<number> {
     const timeThreshold = new Date(Date.now() - this.lifetimeMilliseconds)
     const sendingAttemptsCount = await this.sendingAttemptRepository.count({
-      where: {senderIp, createdAt: MoreThan(timeThreshold)},
+      where: [
+        {senderIp, createdAt: MoreThan(timeThreshold)},
+        {email, createdAt: MoreThan(timeThreshold)},
+      ],
       take: this.maxSendingAttempts,
       cache: false,
     })

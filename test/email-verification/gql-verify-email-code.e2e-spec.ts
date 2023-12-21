@@ -890,11 +890,6 @@ describe('VerifyEmailCode', () => {
         )
         jest
           .spyOn(inputLimitService, 'enforceEmailVerificationInputLimit')
-          .mockImplementation(async () => {})
-
-        const emailVerificationService = app.get(EmailVerificationService)
-        jest
-          .spyOn(emailVerificationService, 'verifyEmail')
           .mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
 
         const result = await gqlService.sendRequest({
@@ -1018,6 +1013,7 @@ describe('VerifyEmailCode', () => {
         app.get(getRepositoryToken(EmailVerificationCodeInputAttempt))
       const emailVerificationCodeInputAttempts =
         await emailVerificationCodeInputAttemptRepository.find()
+      expect(emailVerificationCodeInputAttempts.length).toEqual(1)
       expect(emailVerificationCodeInputAttempts).toEqual([
         {
           id: expect.any(String),
