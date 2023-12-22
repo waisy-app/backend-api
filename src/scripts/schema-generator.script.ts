@@ -2,19 +2,18 @@ import {GraphQLSchemaBuilderModule, GraphQLSchemaFactory} from '@nestjs/graphql'
 import {NestFactory} from '@nestjs/core'
 import {printSchema} from 'graphql/utilities'
 import * as fs from 'fs'
-import {AuthResolver} from '../auth/auth.resolver'
+import {EmailVerificationResolver} from '../email-verification/email-verification.resolver'
+import {RefreshTokenResolver} from '../refresh-token/refresh-token.resolver'
 
 async function schemaGenerator(): Promise<void> {
   const app = await NestFactory.create(GraphQLSchemaBuilderModule)
   await app.init()
-
   const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
-
-  // Here we pass the resolvers that we want to include in the schema
-  const schema = await gqlSchemaFactory.create([AuthResolver])
-
+  // Put all resolvers here
+  const schema = await gqlSchemaFactory.create([RefreshTokenResolver, EmailVerificationResolver])
   const schemaString = printSchema(schema)
-  fs.writeFileSync('schema.gql', schemaString)
+  const schemaFilePath = 'schema.gql'
+  fs.writeFileSync(schemaFilePath, schemaString)
 }
 
 void schemaGenerator()

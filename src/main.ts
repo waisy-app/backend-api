@@ -4,22 +4,33 @@ import {writeFileSync} from 'fs'
 import {NestExpressApplication} from '@nestjs/platform-express'
 import {ServerConfigService} from './config/server/server.config.service'
 import {WinstonModule} from 'nest-winston'
-import {loggerInstance} from './logger/logger.instance'
-import {EnvironmentConfigService} from './config/environment/environment.config.service'
+import {buildLoggerInstance} from './logger'
+import {EnvironmentConfigService as Env} from './config/environment/environment.config.service'
+import {LoggerConfigService} from './config/logger/logger.config.service'
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    snapshot: EnvironmentConfigService.isDevelopment,
-    abortOnError: !EnvironmentConfigService.isDevelopment,
-    logger: WinstonModule.createLogger({instance: loggerInstance}),
-  })
+  const app = await createApplication()
+  const loggerConfigService = app.get(LoggerConfigService)
+  const loggerInstance = buildLoggerInstance(loggerConfigService.loggerLevel)
+  app.useLogger(WinstonModule.createLogger({instance: loggerInstance}))
+
   const serverConfigService = app.get(ServerConfigService)
   await app.listen(serverConfigService.port)
 }
-void bootstrap().catch(error => {
+
+function createApplication(): Promise<NestExpressApplication> {
+  return NestFactory.create<NestExpressApplication>(AppModule, {
+    snapshot: Env.isDevelopment,
+    abortOnError: !Env.isDevelopment,
+    bufferLogs: true,
+  })
+}
+
+function handleBootstrapError(error: Error): void {
+  const loggerInstance = buildLoggerInstance('error')
   loggerInstance.error({message: error.message, stack: error.stack})
-  if (EnvironmentConfigService.isDevelopment) {
-    writeFileSync('error-graph.json', PartialGraphHost.toString() ?? '')
-  }
+  if (Env.isDevelopment) writeFileSync('error-graph.json', PartialGraphHost.toString() ?? '')
   process.exit(1)
-})
+}
+
+void bootstrap().catch(handleBootstrapError)

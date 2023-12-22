@@ -9,7 +9,7 @@ import {EnvironmentConfigService} from '../config/environment/environment.config
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name)
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (EnvironmentConfigService.isDevelopment) return next.handle()
     const startRequestTime = Date.now()
     const otherInfo = this.getOtherInfo(context)

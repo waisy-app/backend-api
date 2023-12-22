@@ -1,126 +1,65 @@
-import {Test} from '@nestjs/testing'
-import {UsersService} from './users.service'
-import {getRepositoryToken} from '@nestjs/typeorm'
 import {User} from './entities/user.entity'
+import {UsersService} from './users.service'
+import {Repository} from 'typeorm'
+import {Test, TestingModule} from '@nestjs/testing'
+import {getRepositoryToken} from '@nestjs/typeorm'
 
-describe(UsersService.name, () => {
-  let usersService: UsersService
+describe('UsersService', () => {
+  let service: UsersService
+  let repo: Repository<User>
 
   beforeEach(async () => {
-    const module = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: {
-            create: jest.fn(),
-            save: jest.fn(),
-            findOneBy: jest.fn(),
-            update: jest.fn(),
-            delete: jest.fn(),
-          },
+          useClass: Repository,
         },
       ],
     }).compile()
 
-    usersService = module.get(UsersService)
+    service = module.get<UsersService>(UsersService)
+    repo = module.get<Repository<User>>(getRepositoryToken(User))
   })
 
-  afterEach(() => {
-    jest.restoreAllMocks()
+  it('should create a user by email', async () => {
+    const testUser = new User()
+    testUser.email = 'test@example.com'
+
+    jest.spyOn(repo, 'create').mockReturnValueOnce(testUser)
+    jest.spyOn(repo, 'save').mockResolvedValueOnce(testUser)
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(null)
+
+    expect(await service.getOrCreateUserByEmail('test@example.com')).toEqual(testUser)
   })
 
-  describe(UsersService.prototype.createOrUpdate.name, () => {
-    it('should return a created user', async () => {
-      const userInput = {email: 't@t.com', password: '123'}
-      const expected = {
-        id: '1',
-        refreshToken: null,
-        ...userInput,
-      }
-
-      jest.spyOn(usersService.usersRepository, 'create').mockReturnValueOnce(expected)
-      jest.spyOn(usersService.usersRepository, 'save').mockResolvedValueOnce(expected)
-
-      const user = await usersService.createOrUpdate(userInput)
-      expect(user).toStrictEqual(expected)
-    })
+  it('should not create a user by email if it already exists', async () => {
+    const testUser = new User()
+    testUser.email = 'test@example.com'
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
+    jest.spyOn(repo, 'create')
+    jest.spyOn(repo, 'save')
+    expect(await service.getOrCreateUserByEmail(testUser.email)).toEqual(testUser)
+    expect(repo.create).not.toHaveBeenCalled()
+    expect(repo.save).not.toHaveBeenCalled()
   })
 
-  describe(UsersService.prototype.findOneByID.name, () => {
-    it('should return a user', async () => {
-      const expected = {
-        id: '1',
-        email: 't@t.com',
-        password: '123',
-        refreshToken: null,
-      }
+  it('should get a user by id', async () => {
+    const testUser = new User()
+    testUser.id = '1'
 
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
 
-      const user = await usersService.findOneByID(expected.id)
-      expect(user).toStrictEqual(expected)
-    })
-
-    it('should return null', async () => {
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(null)
-
-      const userID = '0'
-      const result = await usersService.findOneByID(userID)
-      expect(result).toBeNull()
-    })
+    expect(await service.getUserById('1')).toEqual(testUser)
   })
 
-  describe(UsersService.prototype.findOneByEmail.name, () => {
-    it('should return a user', async () => {
-      const expected = {
-        id: '1',
-        email: 't@t.com',
-        password: '123',
-        refreshToken: null,
-      }
+  it('should get a user by email', async () => {
+    const testUser = new User()
+    testUser.email = 'test@example.com'
 
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(expected)
+    jest.spyOn(repo, 'findOne').mockResolvedValueOnce(testUser)
 
-      const user = await usersService.findOneByEmail(expected.id)
-      expect(user).toStrictEqual(expected)
-    })
-
-    it('should return null', async () => {
-      jest.spyOn(usersService.usersRepository, 'findOneBy').mockResolvedValueOnce(null)
-
-      const userID = '0'
-      const result = await usersService.findOneByEmail(userID)
-      expect(result).toBeNull()
-    })
-  })
-
-  describe(UsersService.prototype.updateRefreshToken.name, () => {
-    it('should update a user', async () => {
-      jest.spyOn(usersService.usersRepository, 'update').mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({affected: 1, raw: {}, generatedMaps: []})
-        }),
-      )
-
-      const userID = '1'
-      const refreshToken = '123'
-      await usersService.updateRefreshToken(userID, refreshToken)
-      expect(usersService.usersRepository.update).toHaveBeenCalledWith(userID, {refreshToken})
-    })
-  })
-
-  describe(UsersService.prototype.remove.name, () => {
-    it('should remove a user', async () => {
-      jest.spyOn(usersService.usersRepository, 'delete').mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({affected: 1, raw: {}})
-        }),
-      )
-
-      const userID = '1'
-      await usersService.remove(userID)
-      expect(usersService.usersRepository.delete).toHaveBeenCalledWith(userID)
-    })
+    expect(await service.getUserByEmail('test@example.com')).toEqual(testUser)
   })
 })

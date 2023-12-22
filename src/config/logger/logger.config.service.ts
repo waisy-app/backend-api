@@ -1,29 +1,15 @@
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {
-  LOGGER_FORMAT,
-  LOGGER_LEVEL,
-  LoggerFormatType,
-  LoggerLevelType,
-} from './logger.config.constants'
 
 @Injectable()
 export class LoggerConfigService {
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  get loggerLevel(): LoggerLevelType {
-    return this.configService.get(LOGGER_LEVEL.name) as LoggerLevelType
+  public get loggerLevel(): 'debug' | 'info' | 'warn' | 'error' | 'fatal' {
+    return this.configService.get('LOGGER_LEVEL')!
   }
 
-  get loggerFormat(): LoggerFormatType {
-    return this.configService.get(LOGGER_FORMAT.name) as LoggerFormatType
-  }
-
-  static get isPrettyFormat(): boolean {
-    return process.env[LOGGER_FORMAT.name] === LOGGER_FORMAT.options.PRETTY
-  }
-
-  static get isJsonFormat(): boolean {
-    return process.env[LOGGER_FORMAT.name] === LOGGER_FORMAT.options.JSON
+  public static get isJsonFormat(): boolean {
+    return process.env['LOGGER_FORMAT'] === 'json'
   }
 }

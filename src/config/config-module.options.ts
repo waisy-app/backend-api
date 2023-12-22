@@ -1,41 +1,30 @@
 import * as Joi from 'joi'
 import {ConfigModuleOptions} from '@nestjs/config'
-import serverConfigEnvValidation from './server/server.config.env-validation'
-import environmentConfigEnvValidation from './environment/environment.config.env-validation'
-import {NODE_ENV} from './environment/environment.config.constants'
-import loggerConfigEnvValidation from './logger/logger.config.env-validation'
-import authConfigEnvValidation from './auth/auth.config.env-validation'
-import authConfig from './auth/auth.config'
-import serverConfig from './server/server.config'
-import graphqlConfigEnvValidation from './graphql/graphql.config.env-validation'
-import postgresConfigEnvValidation from './postgres/postgres.config.env-validation'
+import {EnvironmentConfigService as Env} from './environment/environment.config.service'
+import {envValidationSchemas} from './env-validation-schemas'
+import {ValidationSchema} from './config.types'
 
-// Add all custom config here
-const configsForLoad = [authConfig, serverConfig]
+export const configModuleOptions = buildConfigModuleOptions(envValidationSchemas)
 
-// Add all config validation here
-const validationSchema = Joi.object({
-  ...serverConfigEnvValidation,
-  ...environmentConfigEnvValidation,
-  ...loggerConfigEnvValidation,
-  ...authConfigEnvValidation,
-  ...graphqlConfigEnvValidation,
-  ...postgresConfigEnvValidation,
-})
+function buildConfigModuleOptions(schemas: ValidationSchema[]): ConfigModuleOptions {
+  const testEnvFilePaths = ['.env.test.local', '.env.test', '.env']
+  const prodEnvFilePaths = ['.env.local', '.env']
+  const envFilePath = Env.isTest ? testEnvFilePaths : prodEnvFilePaths
+  const validationSchema = buildValidationSchema(schemas)
+  return {
+    envFilePath,
+    validationSchema,
+    cache: true,
+    expandVariables: true,
+    validationOptions: {
+      allowUnknown: true,
+      dateFormat: 'iso',
+      abortEarly: true,
+      convert: true,
+    },
+  }
+}
 
-export const configModuleOptions: ConfigModuleOptions = {
-  envFilePath:
-    process.env[NODE_ENV.name] === NODE_ENV.options.TEST
-      ? ['.env.test.local', '.env.test', '.env']
-      : ['.env.local', '.env'],
-  cache: true,
-  validationOptions: {
-    allowUnknown: true,
-    abortEarly: true,
-    convert: true,
-    dateFormat: 'iso',
-  },
-  expandVariables: true,
-  load: configsForLoad,
-  validationSchema,
+function buildValidationSchema(schemas: ValidationSchema[]): Joi.ObjectSchema {
+  return Joi.object(schemas.reduce((acc, schema) => ({...acc, ...schema}), {}))
 }

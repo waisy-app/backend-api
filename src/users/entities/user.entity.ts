@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm'
+import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm'
 
 @Entity()
 export class User {
@@ -8,15 +8,9 @@ export class User {
   @Column({unique: true})
   email: string
 
-  @Column({type: String, default: null, nullable: true, comment: 'Hashed password'})
-  password: string | null
+  @CreateDateColumn({type: 'timestamp with time zone'})
+  createdAt: Date
 
-  @Column({
-    type: String,
-    default: null,
-    nullable: true,
-    unique: true,
-    comment: 'Hashed refresh token',
-  })
-  refreshToken: string | null
+  @UpdateDateColumn({type: 'timestamp with time zone'})
+  updatedAt: Date
 }

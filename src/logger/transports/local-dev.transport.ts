@@ -1,11 +1,11 @@
 import {format, transports} from 'winston'
 import {utilities} from 'nest-winston'
-import {APP_NAME} from '../../config/environment/environment.config.constants'
+import {EnvironmentConfigService as Env} from '../../config/environment/environment.config.service'
 
 export const localDevTransport = new transports.Console({
   format: format.combine(
     format.timestamp({format: 'DD/MM/YYYY HH:mm:ss.SSS'}),
-    utilities.format.nestLike(process.env[APP_NAME.name] ?? APP_NAME.defaultValue, {
+    utilities.format.nestLike(Env.appName, {
       colors: true,
       prettyPrint: true,
     }),
