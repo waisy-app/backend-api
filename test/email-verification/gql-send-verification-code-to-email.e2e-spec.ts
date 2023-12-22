@@ -10,7 +10,10 @@ import {EmailVerificationCode} from '../../src/email-verification/entities/email
 import {EmailVerificationSendingLimitService} from '../../src/email-verification/email-verification-sending-limit.service'
 import {GraphqlConfigService} from '../../src/config/graphql/graphql.config.service'
 import {ServerConfigService} from '../../src/config/server/server.config.service'
+// TODO: обновить тесты с учетом нового функционала по отправке писем
+// TODO: замокать отправку кода через unisender
 
+// TODO: разбить по отдельным файлам, чтобы уменьшить размер кода
 describe('sendVerificationCodeToEmail', () => {
   let app: INestApplication
   let gqlService: GqlTestService

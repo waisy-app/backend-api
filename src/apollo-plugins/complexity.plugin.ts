@@ -9,7 +9,7 @@ import {
 } from '@apollo/server'
 import {Logger} from '@nestjs/common'
 import {GraphqlConfigService} from '../config/graphql/graphql.config.service'
-import {GraphqlComplexityLimitException} from '../exceptions/graphql-complexity-limit.exception'
+import {GraphqlComplexityLimitException} from '../exceptions/graphql-complexity-limit/graphql-complexity-limit.exception'
 
 @Plugin()
 export class ComplexityPlugin implements ApolloServerPlugin {

@@ -13,7 +13,7 @@ import {EmailVerificationService} from '../../src/email-verification/email-verif
 import {GraphqlConfigService} from '../../src/config/graphql/graphql.config.service'
 import {ServerConfigService} from '../../src/config/server/server.config.service'
 import {EmailVerificationInputLimitService} from '../../src/email-verification/email-verification-input-limit.service'
-
+// TODO: разбить по отдельным файлам, чтобы уменьшить размер кода
 describe('VerifyEmailCode', () => {
   let app: INestApplication
   let gqlService: GqlTestService

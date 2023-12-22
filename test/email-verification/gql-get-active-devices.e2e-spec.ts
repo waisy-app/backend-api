@@ -10,7 +10,7 @@ import {EmailVerificationCodeInputAttempt} from '../../src/email-verification/en
 import {RefreshTokenService} from '../../src/refresh-token/refresh-token.service'
 import {GraphqlConfigService} from '../../src/config/graphql/graphql.config.service'
 import {ServerConfigService} from '../../src/config/server/server.config.service'
-
+// TODO: разбить по отдельным файлам, чтобы уменьшить размер кода
 describe('GetActiveDevices', () => {
   let app: INestApplication
   let gqlService: GqlTestService
