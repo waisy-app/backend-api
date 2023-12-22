@@ -6,6 +6,7 @@ import {postgresConfigEnvValidationSchema} from './postgres/postgres.config.env-
 import {serverConfigEnvValidationSchema} from './server/server.config.env-validation-schema'
 import {ValidationSchema} from './config.types'
 import {emailVerificationConfigEnvValidationSchema} from './email-verification/email-verification.config.env-validation-schema'
+import {mailingConfigEnvValidationSchema} from './mailing/mailing.config.env-validation-schema'
 
 // Put env validation schemas here
 export const envValidationSchemas: ValidationSchema[] = [
@@ -16,4 +17,5 @@ export const envValidationSchemas: ValidationSchema[] = [
   postgresConfigEnvValidationSchema,
   serverConfigEnvValidationSchema,
   emailVerificationConfigEnvValidationSchema,
+  mailingConfigEnvValidationSchema,
 ]

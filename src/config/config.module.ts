@@ -8,6 +8,7 @@ import {LoggerConfigService} from './logger/logger.config.service'
 import {PostgresConfigService} from './postgres/postgres.config.service'
 import {ServerConfigService} from './server/server.config.service'
 import {EmailVerificationConfigService} from './email-verification/email-verification.config.service'
+import {MailingConfigService} from './mailing/mailing.config.service'
 
 const providers = [
   AuthConfigService,
@@ -17,6 +18,7 @@ const providers = [
   PostgresConfigService,
   ServerConfigService,
   EmailVerificationConfigService,
+  MailingConfigService,
 ]
 
 @Module({
