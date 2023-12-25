@@ -2,8 +2,8 @@ import {GraphQLSchemaBuilderModule, GraphQLSchemaFactory} from '@nestjs/graphql'
 import {NestFactory} from '@nestjs/core'
 import {printSchema} from 'graphql/utilities'
 import * as fs from 'fs'
-import {EmailVerificationResolver} from '../email-verification/email-verification.resolver'
-import {RefreshTokenResolver} from '../refresh-token/refresh-token.resolver'
+import {EmailVerificationResolver} from './email-verification/email-verification.resolver'
+import {RefreshTokenResolver} from './refresh-token/refresh-token.resolver'
 
 async function schemaGenerator(): Promise<void> {
   const app = await NestFactory.create(GraphQLSchemaBuilderModule)
