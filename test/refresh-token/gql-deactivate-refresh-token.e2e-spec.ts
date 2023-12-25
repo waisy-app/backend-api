@@ -198,7 +198,7 @@ describe('deactivateRefreshToken', () => {
         })
       })
 
-      it('GraphqlComplexityLimitException', async () => {
+      it('ComplexityLimitError', async () => {
         const graphqlConfigService = app.get(GraphqlConfigService)
         jest.spyOn(graphqlConfigService, 'complexityLimit', 'get').mockReturnValue(0)
 

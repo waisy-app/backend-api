@@ -296,7 +296,7 @@ describe('sendVerificationCodeToEmail', () => {
       })
     })
 
-    it('should throw GraphqlComplexityLimitException', async () => {
+    it('should throw ComplexityLimitError', async () => {
       const graphqlConfigService = app.get(GraphqlConfigService)
       jest.spyOn(graphqlConfigService, 'complexityLimit', 'get').mockReturnValue(0)
 
