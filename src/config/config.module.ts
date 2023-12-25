@@ -10,6 +10,7 @@ import {ServerConfigService} from './server/server.config.service'
 import {EmailVerificationConfigService} from './email-verification/email-verification.config.service'
 import {MailingConfigService} from './mailing/mailing.config.service'
 
+// Put config services here
 const providers = [
   AuthConfigService,
   EnvironmentConfigService,
