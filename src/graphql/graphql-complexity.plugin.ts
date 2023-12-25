@@ -9,11 +9,11 @@ import {
 } from '@apollo/server'
 import {Logger} from '@nestjs/common'
 import {GraphqlConfigService} from '../config/graphql/graphql.config.service'
-import {GraphqlComplexityLimitException} from '../exceptions/graphql-complexity-limit/graphql-complexity-limit.exception'
+import {ComplexityLimitError} from '../errors/general-errors/complexity-limit.error'
 
 @Plugin()
-export class ComplexityPlugin implements ApolloServerPlugin {
-  private readonly logger = new Logger(ComplexityPlugin.name)
+export class GraphqlComplexityPlugin implements ApolloServerPlugin {
+  private readonly logger = new Logger(GraphqlComplexityPlugin.name)
 
   constructor(
     private readonly gqlSchemaHost: GraphQLSchemaHost,
@@ -51,7 +51,7 @@ export class ComplexityPlugin implements ApolloServerPlugin {
     const maxComplexity = this.graphqlConfigService.complexityLimit
     if (complexity > maxComplexity) {
       const errorText = `Query is too complex: ${complexity}. Maximum allowed complexity: ${maxComplexity}`
-      throw new GraphqlComplexityLimitException(errorText)
+      throw new ComplexityLimitError(errorText)
     }
   }
 }
