@@ -1,6 +1,6 @@
 import {Args, Mutation, Resolver} from '@nestjs/graphql'
 import {SendVerificationCodeToEmailArgs} from './dto/send-verification-code-to-email.args'
-import {ClientIp} from '../utils/client-ip.decorator'
+import {ClientIp} from '../graphql/client-ip.decorator'
 import {SkipJwtAccessTokenGuard} from '../refresh-token/decorators/skip-jwt-access-token-guard.decorator'
 import {EmailVerificationService} from './email-verification.service'
 import {EmailVerificationSendingLimitService} from './email-verification-sending-limit.service'
