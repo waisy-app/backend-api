@@ -6,8 +6,8 @@ import {EmailVerificationService} from './email-verification.service'
 import {EmailVerificationSendingLimitService} from './email-verification-sending-limit.service'
 import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
 import {VerifyEmailCodeArgs} from './dto/verify-email-code.args'
-import {UnauthorizedException} from '@nestjs/common'
 import {Tokens} from '../refresh-token/models/tokens.model'
+import {UnauthorizedError} from '../errors/general-errors/unauthorized.error'
 
 @Resolver()
 export class EmailVerificationResolver {
@@ -40,7 +40,7 @@ export class EmailVerificationResolver {
       await this.inputLimitService.createInputAttempt({senderIp, email, status: 'success'})
       return result
     } catch (error: unknown) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof UnauthorizedError) {
         await this.inputLimitService.createInputAttempt({senderIp, email, status: 'failure'})
       }
       throw error

@@ -1,12 +1,14 @@
-import {ForbiddenException, Injectable} from '@nestjs/common'
+import {Injectable} from '@nestjs/common'
 import {MoreThan, Repository} from 'typeorm'
 import {EmailVerificationCodeInputAttempt as InputAttempt} from './entities/email-verification-code-input-attempt.entity'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
 import {InjectRepository} from '@nestjs/typeorm'
+import {TooManyAttemptsError} from '../errors/general-errors/too-many-attempts.error'
 
 @Injectable()
 export class EmailVerificationInputLimitService {
   private readonly codeLifetimeMs: number
+  private readonly codeLifetimeMinutes: number
   private readonly maxAttempts: number
 
   constructor(
@@ -15,13 +17,16 @@ export class EmailVerificationInputLimitService {
     emailVerificationConfigService: EmailVerificationConfigService,
   ) {
     this.codeLifetimeMs = emailVerificationConfigService.verificationCodeLifetimeMilliseconds
+    this.codeLifetimeMinutes = emailVerificationConfigService.verificationCodeLifetimeMinutes
     this.maxAttempts = emailVerificationConfigService.maxInputVerificationCodeAttempts
   }
 
   public async enforceEmailVerificationInputLimit(senderIp: string): Promise<void> {
     const attemptsCount = await this.getAttemptsCount(senderIp)
     if (attemptsCount >= this.maxAttempts) {
-      throw new ForbiddenException('Max input attempts exceeded')
+      throw new TooManyAttemptsError(
+        `Too many attempts to input verification code. Allowed ${this.maxAttempts} attempts per ${this.codeLifetimeMinutes} minutes`,
+      )
     }
   }
 
