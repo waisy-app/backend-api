@@ -1,13 +1,12 @@
-import {JwtAccessTokenStrategy} from './jwt-access-token.strategy'
 import {Test, TestingModule} from '@nestjs/testing'
+import {JwtAccessTokenStrategy} from './jwt-access-token.strategy'
 import {UsersService} from '../../users/users.service'
-import {getRepositoryToken} from '@nestjs/typeorm'
 import {User} from '../../users/entities/user.entity'
+import {UnauthorizedError} from '../../errors/general-errors/unauthorized.error'
 import {ConfigModule} from '../../config/config.module'
-import {UnauthorizedException} from '@nestjs/common'
 
-describe(JwtAccessTokenStrategy.name, () => {
-  let jwtStrategy: JwtAccessTokenStrategy
+describe('JwtAccessTokenStrategy', () => {
+  let strategy: JwtAccessTokenStrategy
   let usersService: UsersService
 
   beforeEach(async () => {
@@ -15,42 +14,35 @@ describe(JwtAccessTokenStrategy.name, () => {
       imports: [ConfigModule],
       providers: [
         JwtAccessTokenStrategy,
-        UsersService,
         {
-          provide: getRepositoryToken(User),
+          provide: UsersService,
           useValue: {
-            findOne: jest.fn(),
+            getUserById: jest.fn(),
           },
         },
       ],
     }).compile()
 
-    jwtStrategy = module.get<JwtAccessTokenStrategy>(JwtAccessTokenStrategy)
+    strategy = module.get<JwtAccessTokenStrategy>(JwtAccessTokenStrategy)
     usersService = module.get<UsersService>(UsersService)
   })
 
-  afterEach(() => {
-    jest.restoreAllMocks()
+  it('should return user when valid payload is provided', async () => {
+    const user = new User()
+    const payload = {sub: '123'}
+    jest.spyOn(usersService, 'getUserById').mockResolvedValue(user)
+
+    const result = await strategy.validate(payload)
+
+    expect(result).toBe(user)
+    expect(usersService.getUserById).toHaveBeenCalledWith(payload.sub)
   })
 
-  describe(JwtAccessTokenStrategy.prototype.validate.name, () => {
-    it('should return a user when user exists', async () => {
-      const expected = new User()
-      expected.id = 'test-id'
-      expected.email = 'test-email'
+  it('should throw UnauthorizedError when user does not exist', async () => {
+    const payload = {sub: '123'}
+    jest.spyOn(usersService, 'getUserById').mockResolvedValue(null)
 
-      jest.spyOn(usersService, 'getUserById').mockResolvedValue(expected)
-
-      const result = await jwtStrategy.validate({sub: expected.id})
-      expect(result).toEqual(expected)
-    })
-
-    it('should throw UnauthorizedException when user does not exist', async () => {
-      const userId = 'non-existing-id'
-
-      jest.spyOn(usersService, 'getUserById').mockResolvedValue(null)
-
-      await expect(jwtStrategy.validate({sub: userId})).rejects.toThrow(UnauthorizedException)
-    })
+    await expect(strategy.validate(payload)).rejects.toThrow(UnauthorizedError)
+    expect(usersService.getUserById).toHaveBeenCalledWith(payload.sub)
   })
 })

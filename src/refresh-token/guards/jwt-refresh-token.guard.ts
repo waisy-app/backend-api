@@ -7,7 +7,7 @@ import {UnauthorizedError} from '../../errors/general-errors/unauthorized.error'
 @Injectable()
 export class JwtRefreshTokenGuard extends AuthGuard(JWT_REFRESH_TOKEN_STRATEGY) {
   public handleRequest<TUser>(error: unknown, user: false | TUser): TUser {
-    if (error || !user) throw error || new UnauthorizedError()
+    if (error || !user) throw error || new UnauthorizedError('Invalid refresh token')
     return user
   }
 

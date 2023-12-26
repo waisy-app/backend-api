@@ -73,13 +73,7 @@ describe('GetActiveDevices', () => {
           errors: [
             {
               code: 'INTERNAL_SERVER_ERROR',
-              locations: [
-                {
-                  column: 10,
-                  line: 1,
-                },
-              ],
-              message: 'Internal Server Error',
+              message: 'Internal server error',
               path: ['getActiveDevices'],
             },
           ],
@@ -101,7 +95,7 @@ describe('GetActiveDevices', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_COMPLEXITY_LIMIT',
+              code: 'COMPLEXITY_LIMIT',
               message: 'Query is too complex: 1. Maximum allowed complexity: 0',
             },
           ],
@@ -126,13 +120,7 @@ describe('GetActiveDevices', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Request Timeout',
-              locations: [
-                {
-                  column: 10,
-                  line: 1,
-                },
-              ],
+              message: 'Request timeout error',
               path: ['getActiveDevices'],
               code: 'REQUEST_TIMEOUT',
             },

@@ -58,13 +58,7 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message:
                 'Field "refreshTokens" argument "deviceInfo" of type "String!" is required, but it was not provided.',
             },
@@ -90,19 +84,8 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 11,
-                  line: 1,
-                },
-                {
-                  column: 34,
-                  line: 2,
-                },
-              ],
-              message:
-                'Variable "$deviceInfo" of type "Float!" used in position expecting type "String!".',
+              code: 'VALIDATION_ERROR',
+              message: 'Unknown type "Float".',
             },
           ],
         })
@@ -114,28 +97,22 @@ describe('refreshTokens', () => {
           query: {
             operation: 'refreshTokens',
             variables: {
-              deviceInfo: '',
+              deviceInfo: {
+                type: 'String!',
+                value: '',
+              },
             },
             fields: ['access_token', 'refresh_token'],
           },
         })
 
         expect(result.body).toEqual({
+          data: null,
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 11,
-                  line: 1,
-                },
-                {
-                  column: 34,
-                  line: 2,
-                },
-              ],
-              message:
-                'Variable "$deviceInfo" of type "String" used in position expecting type "String!".',
+              code: 'VALIDATION_ERROR',
+              message: 'must not be empty',
+              path: ['refreshTokens'],
             },
           ],
         })
@@ -147,28 +124,22 @@ describe('refreshTokens', () => {
           query: {
             operation: 'refreshTokens',
             variables: {
-              deviceInfo: 'a'.repeat(256),
+              deviceInfo: {
+                type: 'String!',
+                value: 'a'.repeat(256),
+              },
             },
             fields: ['access_token', 'refresh_token'],
           },
         })
 
         expect(result.body).toEqual({
+          data: null,
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 11,
-                  line: 1,
-                },
-                {
-                  column: 34,
-                  line: 2,
-                },
-              ],
-              message:
-                'Variable "$deviceInfo" of type "String" used in position expecting type "String!".',
+              code: 'VALIDATION_ERROR',
+              message: 'must be shorter than or equal to 255 characters',
+              path: ['refreshTokens'],
             },
           ],
         })
@@ -202,8 +173,7 @@ describe('refreshTokens', () => {
           errors: [
             {
               code: 'INTERNAL_SERVER_ERROR',
-              message: 'Internal Server Error',
-              locations: [{line: 2, column: 7}],
+              message: 'Internal server error',
               path: ['refreshTokens'],
             },
           ],
@@ -232,8 +202,8 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: expect.stringContaining('Query is too complex'),
-              code: 'GRAPHQL_COMPLEXITY_LIMIT',
+              message: 'Query is too complex: 3. Maximum allowed complexity: 0',
+              code: 'COMPLEXITY_LIMIT',
             },
           ],
         })
@@ -265,13 +235,7 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Request Timeout',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Request timeout error',
               path: ['refreshTokens'],
               code: 'REQUEST_TIMEOUT',
             },
@@ -300,13 +264,7 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid refresh token',
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -335,13 +293,7 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid refresh token',
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -378,13 +330,7 @@ describe('refreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid refresh token',
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -420,12 +366,6 @@ describe('refreshTokens', () => {
           errors: [
             {
               message: 'Invalid refresh token',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -457,12 +397,6 @@ describe('refreshTokens', () => {
           errors: [
             {
               message: 'Invalid refresh token',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -496,12 +430,6 @@ describe('refreshTokens', () => {
           errors: [
             {
               message: 'Invalid refresh token',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -535,12 +463,6 @@ describe('refreshTokens', () => {
           errors: [
             {
               message: 'Invalid refresh token',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               path: ['refreshTokens'],
               code: 'UNAUTHORIZED',
             },

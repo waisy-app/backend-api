@@ -2,11 +2,11 @@ import {Test, TestingModule} from '@nestjs/testing'
 import {getRepositoryToken} from '@nestjs/typeorm'
 import {Repository} from 'typeorm'
 import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
-import {ForbiddenException} from '@nestjs/common'
 import {EmailVerificationCodeInputAttempt} from './entities/email-verification-code-input-attempt.entity'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
 import {ConfigModule} from '../config/config.module'
 import {ConfigService} from '@nestjs/config'
+import {TooManyAttemptsError} from '../errors/general-errors/too-many-attempts.error'
 
 describe('EmailVerificationInputLimitService', () => {
   let service: EmailVerificationInputLimitService
@@ -37,7 +37,7 @@ describe('EmailVerificationInputLimitService', () => {
   it('should limit the attempts per IP', async () => {
     jest.spyOn(repo, 'count').mockResolvedValue(10)
     await expect(service.enforceEmailVerificationInputLimit('1.1.1.1')).rejects.toThrow(
-      ForbiddenException,
+      TooManyAttemptsError,
     )
   })
 

@@ -10,6 +10,7 @@ import {UsersModule} from '../users/users.module'
 import {EmailVerificationSendingLimitService} from './email-verification-sending-limit.service'
 import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
 import {RefreshTokenModule} from '../refresh-token/refresh-token.module'
+import {UnisenderService} from '../unisender/unisender.service'
 
 @Module({
   imports: [
@@ -27,6 +28,8 @@ import {RefreshTokenModule} from '../refresh-token/refresh-token.module'
     EmailVerificationResolver,
     EmailVerificationSendingLimitService,
     EmailVerificationInputLimitService,
+    UnisenderService,
   ],
+  exports: [EmailVerificationSendingLimitService],
 })
 export class EmailVerificationModule {}

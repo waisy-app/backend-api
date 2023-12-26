@@ -60,8 +60,7 @@ describe('deactivateRefreshToken', () => {
             {
               message:
                 'Field "deactivateRefreshToken" argument "deviceInfo" of type "String!" is required, but it was not provided.',
-              locations: [{line: 2, column: 7}],
-              code: 'GRAPHQL_VALIDATION_FAILED',
+              code: 'VALIDATION_ERROR',
             },
           ],
         })
@@ -86,8 +85,7 @@ describe('deactivateRefreshToken', () => {
             {
               message:
                 'Variable "$deviceInfo" got invalid value 123; String cannot represent a non string value: 123',
-              locations: [{line: 1, column: 11}],
-              code: 'INTERNAL_SERVER_ERROR',
+              code: 'VALIDATION_ERROR',
             },
           ],
         })
@@ -109,17 +107,7 @@ describe('deactivateRefreshToken', () => {
             {
               message:
                 'Variable "$deviceInfo" of type "String" used in position expecting type "String!".',
-              locations: [
-                {
-                  column: 11,
-                  line: 1,
-                },
-                {
-                  column: 43,
-                  line: 2,
-                },
-              ],
-              code: 'GRAPHQL_VALIDATION_FAILED',
+              code: 'VALIDATION_ERROR',
             },
           ],
         })
@@ -141,17 +129,7 @@ describe('deactivateRefreshToken', () => {
             {
               message:
                 'Variable "$deviceInfo" of type "String" used in position expecting type "String!".',
-              locations: [
-                {
-                  column: 11,
-                  line: 1,
-                },
-                {
-                  column: 43,
-                  line: 2,
-                },
-              ],
-              code: 'GRAPHQL_VALIDATION_FAILED',
+              code: 'VALIDATION_ERROR',
             },
           ],
         })
@@ -183,13 +161,7 @@ describe('deactivateRefreshToken', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Internal Server Error',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Internal server error',
               path: ['deactivateRefreshToken'],
               code: 'INTERNAL_SERVER_ERROR',
             },
@@ -219,7 +191,7 @@ describe('deactivateRefreshToken', () => {
           errors: [
             {
               message: 'Query is too complex: 1. Maximum allowed complexity: 0',
-              code: 'GRAPHQL_COMPLEXITY_LIMIT',
+              code: 'COMPLEXITY_LIMIT',
             },
           ],
         })
@@ -252,14 +224,8 @@ describe('deactivateRefreshToken', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Request Timeout',
+              message: 'Request timeout error',
               code: 'REQUEST_TIMEOUT',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               path: ['deactivateRefreshToken'],
             },
           ],
@@ -289,13 +255,7 @@ describe('deactivateRefreshToken', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateRefreshToken'],
               code: 'UNAUTHORIZED',
             },
@@ -323,13 +283,7 @@ describe('deactivateRefreshToken', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateRefreshToken'],
               code: 'UNAUTHORIZED',
             },
@@ -365,13 +319,7 @@ describe('deactivateRefreshToken', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateRefreshToken'],
               code: 'UNAUTHORIZED',
             },
@@ -397,13 +345,7 @@ describe('deactivateRefreshToken', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateRefreshToken'],
               code: 'UNAUTHORIZED',
             },

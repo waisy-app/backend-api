@@ -14,7 +14,7 @@ export class JwtAccessTokenGuard extends AuthGuard(JWT_ACCESS_TOKEN_STRATEGY) {
   }
 
   public handleRequest<TUser>(error: unknown, user: false | TUser): TUser {
-    if (error || !user) throw error || new UnauthorizedError()
+    if (error || !user) throw error || new UnauthorizedError('Invalid access token')
     return user
   }
 
