@@ -62,13 +62,7 @@ describe('deactivateAllRefreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Internal Server Error',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Internal server error',
               path: ['deactivateAllRefreshTokens'],
               code: 'INTERNAL_SERVER_ERROR',
             },
@@ -77,7 +71,7 @@ describe('deactivateAllRefreshTokens', () => {
         })
       })
 
-      it('GraphqlComplexityLimitException', async () => {
+      it('ComplexityLimitError', async () => {
         const graphqlConfigService = app.get(GraphqlConfigService)
         jest.spyOn(graphqlConfigService, 'complexityLimit', 'get').mockReturnValue(0)
 
@@ -92,7 +86,7 @@ describe('deactivateAllRefreshTokens', () => {
           errors: [
             {
               message: 'Query is too complex: 1. Maximum allowed complexity: 0',
-              code: 'GRAPHQL_COMPLEXITY_LIMIT',
+              code: 'COMPLEXITY_LIMIT',
             },
           ],
         })
@@ -117,13 +111,7 @@ describe('deactivateAllRefreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Request Timeout',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Request timeout error',
               path: ['deactivateAllRefreshTokens'],
               code: 'REQUEST_TIMEOUT',
             },
@@ -148,13 +136,7 @@ describe('deactivateAllRefreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateAllRefreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -176,13 +158,7 @@ describe('deactivateAllRefreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateAllRefreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -212,13 +188,7 @@ describe('deactivateAllRefreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateAllRefreshTokens'],
               code: 'UNAUTHORIZED',
             },
@@ -238,13 +208,7 @@ describe('deactivateAllRefreshTokens', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Unauthorized',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Invalid access token',
               path: ['deactivateAllRefreshTokens'],
               code: 'UNAUTHORIZED',
             },

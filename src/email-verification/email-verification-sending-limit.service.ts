@@ -1,8 +1,9 @@
-import {Injectable, Logger, ForbiddenException} from '@nestjs/common'
+import {Injectable, Logger} from '@nestjs/common'
 import {InjectRepository} from '@nestjs/typeorm'
 import {MoreThan, Repository} from 'typeorm'
 import {EmailVerificationCodeSendingAttempt as SendingAttempt} from './entities/email-verification-code-sending-attempt.entity'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
+import {TooManyAttemptsError} from '../errors/general-errors/too-many-attempts.error'
 
 @Injectable()
 export class EmailVerificationSendingLimitService {
@@ -27,8 +28,8 @@ export class EmailVerificationSendingLimitService {
   ): Promise<void> {
     const sendingAttemptsCount = await this.getSendingAttemptsCount(senderIp, email)
     if (sendingAttemptsCount >= this.maxSendingAttempts) {
-      throw new ForbiddenException(
-        `You have exceeded the limit of email verification requests for the last ${this.lifetimeMinutes} minutes.`,
+      throw new TooManyAttemptsError(
+        `Too many attempt to send verification code. Allowed ${this.maxSendingAttempts} attempts per ${this.lifetimeMinutes} minutes`,
       )
     }
     await this.createSendingAttempt({senderIp, email})

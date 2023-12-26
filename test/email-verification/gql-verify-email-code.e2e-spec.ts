@@ -68,15 +68,9 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message:
-                'Field "verifyEmailCode" argument "code" of type "Float!" is required, but it was not provided.',
+                'Field "verifyEmailCode" argument "code" of type "Int!" is required, but it was not provided.',
             },
           ],
         })
@@ -93,7 +87,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 'test',
               },
               deviceInfo: {
@@ -108,15 +102,9 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'INTERNAL_SERVER_ERROR',
-              locations: [
-                {
-                  column: 28,
-                  line: 1,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message:
-                'Variable "$code" got invalid value "test"; Float cannot represent non numeric value: "test"',
+                'Variable "$code" got invalid value "test"; Int cannot represent non-integer value: "test"',
             },
           ],
         })
@@ -133,7 +121,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 99999,
               },
               deviceInfo: {
@@ -149,13 +137,7 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'BAD_REQUEST',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message: 'must be a 6-digit number',
               path: ['verifyEmailCode'],
             },
@@ -174,7 +156,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 1000000,
               },
               deviceInfo: {
@@ -190,13 +172,7 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'BAD_REQUEST',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message: 'must be a 6-digit number',
               path: ['verifyEmailCode'],
             },
@@ -211,7 +187,7 @@ describe('VerifyEmailCode', () => {
             operation: 'verifyEmailCode',
             variables: {
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -226,13 +202,7 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message:
                 'Field "verifyEmailCode" argument "email" of type "String!" is required, but it was not provided.',
             },
@@ -251,7 +221,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -267,13 +237,7 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'BAD_REQUEST',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message: 'must be a valid email address',
               path: ['verifyEmailCode'],
             },
@@ -292,7 +256,7 @@ describe('VerifyEmailCode', () => {
                 value: '',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -308,13 +272,7 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'BAD_REQUEST',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message: 'must be a valid email address',
               path: ['verifyEmailCode'],
             },
@@ -333,7 +291,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
             },
@@ -344,13 +302,7 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_VALIDATION_FAILED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message:
                 'Field "verifyEmailCode" argument "deviceInfo" of type "String!" is required, but it was not provided.',
             },
@@ -369,7 +321,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -384,13 +336,7 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'INTERNAL_SERVER_ERROR',
-              locations: [
-                {
-                  column: 43,
-                  line: 1,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message:
                 'Variable "$deviceInfo" got invalid value 123; String cannot represent a non string value: 123',
             },
@@ -409,7 +355,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -425,13 +371,7 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'BAD_REQUEST',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message: 'must not be empty',
               path: ['verifyEmailCode'],
             },
@@ -450,7 +390,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -466,13 +406,7 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'BAD_REQUEST',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              code: 'VALIDATION_ERROR',
               message: 'must be shorter than or equal to 255 characters',
               path: ['verifyEmailCode'],
             },
@@ -494,7 +428,7 @@ describe('VerifyEmailCode', () => {
                   value: 'test@test.com',
                 },
                 code: {
-                  type: 'Float!',
+                  type: 'Int!',
                   value: 100000,
                 },
                 deviceInfo: {
@@ -517,14 +451,9 @@ describe('VerifyEmailCode', () => {
           data: null,
           errors: [
             {
-              code: 'FORBIDDEN',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
-              message: 'Max input attempts exceeded',
+              code: 'TOO_MANY_ATTEMPTS',
+              message:
+                'Too many attempts to input verification code. Allowed 3 attempts per 10 minutes',
               path: ['verifyEmailCode'],
             },
           ],
@@ -556,7 +485,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -573,12 +502,6 @@ describe('VerifyEmailCode', () => {
           errors: [
             {
               code: 'UNAUTHORIZED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               message: 'Invalid verification code',
               path: ['verifyEmailCode'],
             },
@@ -616,7 +539,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: emailVerificationCode[0].code,
               },
               deviceInfo: {
@@ -633,12 +556,6 @@ describe('VerifyEmailCode', () => {
           errors: [
             {
               code: 'UNAUTHORIZED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               message: 'Invalid verification code',
               path: ['verifyEmailCode'],
             },
@@ -679,7 +596,7 @@ describe('VerifyEmailCode', () => {
                 value: email,
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: emailVerificationCode[0].code,
               },
               deviceInfo: {
@@ -696,12 +613,6 @@ describe('VerifyEmailCode', () => {
           errors: [
             {
               code: 'UNAUTHORIZED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               message: 'Invalid verification code',
               path: ['verifyEmailCode'],
             },
@@ -721,7 +632,7 @@ describe('VerifyEmailCode', () => {
                 value: email,
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -738,12 +649,6 @@ describe('VerifyEmailCode', () => {
           errors: [
             {
               code: 'UNAUTHORIZED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               message: 'Invalid verification code',
               path: ['verifyEmailCode'],
             },
@@ -763,7 +668,7 @@ describe('VerifyEmailCode', () => {
                 value: email,
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -780,12 +685,6 @@ describe('VerifyEmailCode', () => {
           errors: [
             {
               code: 'UNAUTHORIZED',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
               message: 'Invalid verification code',
               path: ['verifyEmailCode'],
             },
@@ -812,7 +711,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -829,20 +728,14 @@ describe('VerifyEmailCode', () => {
           errors: [
             {
               code: 'INTERNAL_SERVER_ERROR',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
-              message: 'Internal Server Error',
+              message: 'Internal server error',
               path: ['verifyEmailCode'],
             },
           ],
         })
       })
 
-      it('GraphqlComplexityLimitException', async () => {
+      it('ComplexityLimitError', async () => {
         const graphqlConfigService: GraphqlConfigService = app.get(GraphqlConfigService)
 
         jest.spyOn(graphqlConfigService, 'complexityLimit', 'get').mockReturnValue(0)
@@ -859,7 +752,7 @@ describe('VerifyEmailCode', () => {
                 value: email,
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -874,7 +767,7 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              code: 'GRAPHQL_COMPLEXITY_LIMIT',
+              code: 'COMPLEXITY_LIMIT',
               message: 'Query is too complex: 3. Maximum allowed complexity: 0',
             },
           ],
@@ -902,7 +795,7 @@ describe('VerifyEmailCode', () => {
                 value: 'test@test.com',
               },
               code: {
-                type: 'Float!',
+                type: 'Int!',
                 value: 100000,
               },
               deviceInfo: {
@@ -916,13 +809,7 @@ describe('VerifyEmailCode', () => {
         expect(result.body).toEqual({
           errors: [
             {
-              message: 'Request Timeout',
-              locations: [
-                {
-                  column: 7,
-                  line: 2,
-                },
-              ],
+              message: 'Request timeout error',
               path: ['verifyEmailCode'],
               code: 'REQUEST_TIMEOUT',
             },
@@ -964,7 +851,7 @@ describe('VerifyEmailCode', () => {
               value: email,
             },
             code: {
-              type: 'Float!',
+              type: 'Int!',
               value: emailVerificationCode[0].code,
             },
             deviceInfo: {

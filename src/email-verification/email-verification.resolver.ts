@@ -1,13 +1,13 @@
 import {Args, Mutation, Resolver} from '@nestjs/graphql'
 import {SendVerificationCodeToEmailArgs} from './dto/send-verification-code-to-email.args'
-import {ClientIp} from '../utils/client-ip.decorator'
+import {ClientIp} from '../graphql/client-ip.decorator'
 import {SkipJwtAccessTokenGuard} from '../refresh-token/decorators/skip-jwt-access-token-guard.decorator'
 import {EmailVerificationService} from './email-verification.service'
 import {EmailVerificationSendingLimitService} from './email-verification-sending-limit.service'
 import {EmailVerificationInputLimitService} from './email-verification-input-limit.service'
 import {VerifyEmailCodeArgs} from './dto/verify-email-code.args'
-import {UnauthorizedException} from '@nestjs/common'
 import {Tokens} from '../refresh-token/models/tokens.model'
+import {UnauthorizedError} from '../errors/general-errors/unauthorized.error'
 
 @Resolver()
 export class EmailVerificationResolver {
@@ -40,7 +40,7 @@ export class EmailVerificationResolver {
       await this.inputLimitService.createInputAttempt({senderIp, email, status: 'success'})
       return result
     } catch (error: unknown) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof UnauthorizedError) {
         await this.inputLimitService.createInputAttempt({senderIp, email, status: 'failure'})
       }
       throw error

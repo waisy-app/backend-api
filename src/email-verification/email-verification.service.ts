@@ -1,4 +1,4 @@
-import {Injectable, Logger, UnauthorizedException} from '@nestjs/common'
+import {Inject, Injectable, Logger} from '@nestjs/common'
 import {InjectRepository} from '@nestjs/typeorm'
 import {MoreThan, Repository} from 'typeorm'
 import {EmailVerificationCode as VerificationCode} from './entities/email-verification-code.entity'
@@ -7,6 +7,8 @@ import {EmailVerificationConfigService} from '../config/email-verification/email
 import {User} from '../users/entities/user.entity'
 import {RefreshTokenService} from '../refresh-token/refresh-token.service'
 import {Tokens} from '../refresh-token/models/tokens.model'
+import {UnisenderService} from '../unisender/unisender.service'
+import {UnauthorizedError} from '../errors/general-errors/unauthorized.error'
 
 @Injectable()
 export class EmailVerificationService {
@@ -18,6 +20,8 @@ export class EmailVerificationService {
     private readonly verificationCodeRepository: Repository<VerificationCode>,
     private readonly usersService: UsersService,
     private readonly tokenService: RefreshTokenService,
+    @Inject(UnisenderService)
+    private readonly unisenderService: UnisenderService,
     emailVerificationConfig: EmailVerificationConfigService,
   ) {
     this.verificationCodeLifetimeMs = emailVerificationConfig.verificationCodeLifetimeMilliseconds
@@ -27,21 +31,20 @@ export class EmailVerificationService {
     const user = await this.usersService.getOrCreateUserByEmail(email)
     const verificationCode = await this.getOrCreateVerificationCodeByUser(user)
 
-    // TODO: Here you should implement the actual logic to send the email
-    this.logger.debug(`Sending the verification code "${verificationCode.code}" to "${email}"`)
+    await this.unisenderService.sendEmailVerification(email, verificationCode.code)
   }
 
   public async verifyEmail(email: string, code: number, deviceInfo: string): Promise<Tokens> {
     const user = await this.usersService.getUserByEmail(email)
     if (!user) {
       this.logger.debug(`User with email "${email}" not found`)
-      throw new UnauthorizedException('Invalid verification code')
+      throw new UnauthorizedError('Invalid verification code')
     }
 
     const verificationCode = await this.getActiveVerificationCodeByUser(user)
     if (verificationCode?.code !== code) {
       this.logger.debug(`Invalid verification code "${code}"`)
-      throw new UnauthorizedException('Invalid verification code')
+      throw new UnauthorizedError('Invalid verification code')
     }
 
     verificationCode.status = 'used'

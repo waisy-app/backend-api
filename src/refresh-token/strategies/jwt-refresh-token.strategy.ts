@@ -1,12 +1,13 @@
 import {PassportStrategy} from '@nestjs/passport'
 import {ExtractJwt, Strategy} from 'passport-jwt'
 import {Request} from 'express'
-import {Injectable, UnauthorizedException} from '@nestjs/common'
+import {Injectable} from '@nestjs/common'
 import {AuthConfigService} from '../../config/auth/auth.config.service'
 import {UsersService} from '../../users/users.service'
 import {User} from '../../users/entities/user.entity'
 import {RefreshTokenService} from '../refresh-token.service'
 import {CryptService} from '../../crypt/crypt.service'
+import {UnauthorizedError} from '../../errors/general-errors/unauthorized.error'
 
 export const JWT_REFRESH_TOKEN_STRATEGY = 'jwt-refresh-token'
 
@@ -30,7 +31,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
 
   public async validate(req: Request, payload: {sub: string; deviceInfo: string}): Promise<User> {
     const refreshToken = req.get('Authorization')?.replace('Bearer ', '')
-    if (!refreshToken) throw new UnauthorizedException('Refresh token not found')
+    if (!refreshToken) throw new UnauthorizedError('Refresh token not found')
 
     const user = await this.usersService.getUserById(payload.sub)
     const authToken = await (user &&
@@ -39,7 +40,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
       this.cryptService.compareHash(refreshToken, authToken.refreshToken))
 
     if (!user || !authToken || !isRefreshTokenValid) {
-      throw new UnauthorizedException('Invalid refresh token')
+      throw new UnauthorizedError('Invalid refresh token')
     }
 
     return user

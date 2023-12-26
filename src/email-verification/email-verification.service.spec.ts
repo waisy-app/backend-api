@@ -7,20 +7,28 @@ import {RefreshTokenService} from '../refresh-token/refresh-token.service'
 import {EmailVerificationConfigService} from '../config/email-verification/email-verification.config.service'
 import {EmailVerificationCode} from './entities/email-verification-code.entity'
 import {User} from '../users/entities/user.entity'
-import {UnauthorizedException} from '@nestjs/common'
 import {Tokens} from '../refresh-token/models/tokens.model'
+import {UnisenderService} from '../unisender/unisender.service'
+import {UnauthorizedError} from '../errors/general-errors/unauthorized.error'
 
 describe('EmailVerificationService', () => {
+  let module: TestingModule
   let service: EmailVerificationService
   let usersService: UsersService
   let tokenService: RefreshTokenService
   let verificationCodeRepository: Repository<EmailVerificationCode>
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         EmailVerificationService,
         {provide: getRepositoryToken(EmailVerificationCode), useClass: Repository},
+        {
+          provide: UnisenderService,
+          useValue: {
+            sendEmailVerification: jest.fn(),
+          },
+        },
         {
           provide: UsersService,
           useValue: {
@@ -61,17 +69,19 @@ describe('EmailVerificationService', () => {
     await service.sendVerificationCodeToEmail('test@example.com')
     expect(usersService.getOrCreateUserByEmail).toHaveBeenCalled()
     expect(verificationCodeRepository.findOne).toHaveBeenCalled()
+    const unisenderService = module.get(UnisenderService)
+    expect(unisenderService.sendEmailVerification).toHaveBeenCalledWith('test@example.com', 123456)
   })
 
-  it('should throw UnauthorizedException when verifying email with invalid user', async () => {
+  it('should throw UnauthorizedError when verifying email with invalid user', async () => {
     jest.spyOn(usersService, 'getUserByEmail').mockResolvedValue(null)
 
     await expect(service.verifyEmail('test@example.com', 123456, 'deviceInfo')).rejects.toThrow(
-      UnauthorizedException,
+      UnauthorizedError,
     )
   })
 
-  it('should throw UnauthorizedException when verifying email with invalid code', async () => {
+  it('should throw UnauthorizedError when verifying email with invalid code', async () => {
     const user = new User()
     const verificationCode = new EmailVerificationCode()
     verificationCode.code = 123456
@@ -80,7 +90,7 @@ describe('EmailVerificationService', () => {
     jest.spyOn(verificationCodeRepository, 'findOne').mockResolvedValue(verificationCode)
 
     await expect(service.verifyEmail('test@example.com', 654321, 'deviceInfo')).rejects.toThrow(
-      UnauthorizedException,
+      UnauthorizedError,
     )
   })
 

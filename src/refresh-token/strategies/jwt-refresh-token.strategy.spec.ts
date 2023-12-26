@@ -1,17 +1,16 @@
 import {Test, TestingModule} from '@nestjs/testing'
-import {UsersService} from '../../users/users.service'
-import {User} from '../../users/entities/user.entity'
-import {CryptService} from '../../crypt/crypt.service'
 import {JwtRefreshTokenStrategy} from './jwt-refresh-token.strategy'
-import {UnauthorizedException} from '@nestjs/common'
+import {UsersService} from '../../users/users.service'
 import {RefreshTokenService} from '../refresh-token.service'
-import {RefreshToken} from '../entities/refresh-token.entity'
+import {CryptService} from '../../crypt/crypt.service'
+import {User} from '../../users/entities/user.entity'
+import {UnauthorizedError} from '../../errors/general-errors/unauthorized.error'
 import {ConfigModule} from '../../config/config.module'
 
 describe('JwtRefreshTokenStrategy', () => {
   let strategy: JwtRefreshTokenStrategy
   let usersService: UsersService
-  let authTokensService: RefreshTokenService
+  let refreshTokenService: RefreshTokenService
   let cryptService: CryptService
 
   beforeEach(async () => {
@@ -42,62 +41,63 @@ describe('JwtRefreshTokenStrategy', () => {
 
     strategy = module.get<JwtRefreshTokenStrategy>(JwtRefreshTokenStrategy)
     usersService = module.get<UsersService>(UsersService)
-    authTokensService = module.get<RefreshTokenService>(RefreshTokenService)
+    refreshTokenService = module.get<RefreshTokenService>(RefreshTokenService)
     cryptService = module.get<CryptService>(CryptService)
   })
 
-  it('should throw UnauthorizedException if refresh token not found', async () => {
-    const req = {get: jest.fn().mockReturnValue(undefined)}
-    const payload = {sub: '1', deviceInfo: 'deviceInfo'}
-
-    await expect(strategy.validate(req as any, payload)).rejects.toThrow(UnauthorizedException)
-  })
-
-  it('should throw UnauthorizedException if user not found', async () => {
-    const req = {get: jest.fn().mockReturnValue('Bearer token')}
-    const payload = {sub: '1', deviceInfo: 'deviceInfo'}
-
-    jest.spyOn(usersService, 'getUserById').mockResolvedValue(null)
-
-    await expect(strategy.validate(req as any, payload)).rejects.toThrow(UnauthorizedException)
-  })
-
-  it('should throw UnauthorizedException if auth token not found', async () => {
-    const req = {get: jest.fn().mockReturnValue('Bearer token')}
-    const payload = {sub: '1', deviceInfo: 'deviceInfo'}
+  it('should return user when valid payload and refresh token are provided', async () => {
     const user = new User()
-
+    const payload = {sub: '123', deviceInfo: 'deviceInfo'}
+    const req = {get: () => 'Bearer token'} as any
     jest.spyOn(usersService, 'getUserById').mockResolvedValue(user)
-    jest.spyOn(authTokensService, 'getActiveTokenByUserAndDeviceInfo').mockResolvedValue(null)
-
-    await expect(strategy.validate(req as any, payload)).rejects.toThrow(UnauthorizedException)
-  })
-
-  it('should throw UnauthorizedException if refresh token is invalid', async () => {
-    const req = {get: jest.fn().mockReturnValue('Bearer token')}
-    const payload = {sub: '1', deviceInfo: 'deviceInfo'}
-    const user = new User()
-    const authToken = new RefreshToken()
-
-    jest.spyOn(usersService, 'getUserById').mockResolvedValue(user)
-    jest.spyOn(authTokensService, 'getActiveTokenByUserAndDeviceInfo').mockResolvedValue(authToken)
-    jest.spyOn(cryptService, 'compareHash').mockResolvedValue(false)
-
-    await expect(strategy.validate(req as any, payload)).rejects.toThrow(UnauthorizedException)
-  })
-
-  it('should return user if refresh token is valid', async () => {
-    const req = {get: jest.fn().mockReturnValue('Bearer token')}
-    const payload = {sub: '1', deviceInfo: 'deviceInfo'}
-    const user = new User()
-    const authToken = new RefreshToken()
-
-    jest.spyOn(usersService, 'getUserById').mockResolvedValue(user)
-    jest.spyOn(authTokensService, 'getActiveTokenByUserAndDeviceInfo').mockResolvedValue(authToken)
+    jest
+      .spyOn(refreshTokenService, 'getActiveTokenByUserAndDeviceInfo')
+      .mockResolvedValue({refreshToken: 'token'} as any)
     jest.spyOn(cryptService, 'compareHash').mockResolvedValue(true)
 
-    const result = await strategy.validate(req as any, payload)
+    const result = await strategy.validate(req, payload)
 
-    expect(result).toEqual(user)
+    expect(result).toBe(user)
+    expect(usersService.getUserById).toHaveBeenCalledWith(payload.sub)
+    expect(refreshTokenService.getActiveTokenByUserAndDeviceInfo).toHaveBeenCalledWith(
+      user,
+      payload.deviceInfo,
+    )
+    expect(cryptService.compareHash).toHaveBeenCalledWith('token', 'token')
+  })
+
+  it('should throw UnauthorizedError when refresh token is not provided', async () => {
+    const payload = {sub: '123', deviceInfo: 'deviceInfo'}
+    const req = {get: () => null} as any
+
+    await expect(strategy.validate(req, payload)).rejects.toThrow(UnauthorizedError)
+  })
+
+  it('should throw UnauthorizedError when user does not exist', async () => {
+    const payload = {sub: '123', deviceInfo: 'deviceInfo'}
+    const req = {get: () => 'Bearer token'} as any
+    jest.spyOn(usersService, 'getUserById').mockResolvedValue(null)
+
+    await expect(strategy.validate(req, payload)).rejects.toThrow(UnauthorizedError)
+    expect(usersService.getUserById).toHaveBeenCalledWith(payload.sub)
+  })
+
+  it('should throw UnauthorizedError when refresh token is invalid', async () => {
+    const user = new User()
+    const payload = {sub: '123', deviceInfo: 'deviceInfo'}
+    const req = {get: () => 'Bearer token'} as any
+    jest.spyOn(usersService, 'getUserById').mockResolvedValue(user)
+    jest
+      .spyOn(refreshTokenService, 'getActiveTokenByUserAndDeviceInfo')
+      .mockResolvedValue({refreshToken: 'token'} as any)
+    jest.spyOn(cryptService, 'compareHash').mockResolvedValue(false)
+
+    await expect(strategy.validate(req, payload)).rejects.toThrow(UnauthorizedError)
+    expect(usersService.getUserById).toHaveBeenCalledWith(payload.sub)
+    expect(refreshTokenService.getActiveTokenByUserAndDeviceInfo).toHaveBeenCalledWith(
+      user,
+      payload.deviceInfo,
+    )
+    expect(cryptService.compareHash).toHaveBeenCalledWith('token', 'token')
   })
 })

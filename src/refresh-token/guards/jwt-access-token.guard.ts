@@ -5,11 +5,17 @@ import {SKIP_JWT_ACCESS_TOKEN_GUARD} from '../decorators/skip-jwt-access-token-g
 import {GqlExecutionContext} from '@nestjs/graphql'
 import {Observable} from 'rxjs'
 import {JWT_ACCESS_TOKEN_STRATEGY} from '../strategies/jwt-access-token.strategy'
+import {UnauthorizedError} from '../../errors/general-errors/unauthorized.error'
 
 @Injectable()
 export class JwtAccessTokenGuard extends AuthGuard(JWT_ACCESS_TOKEN_STRATEGY) {
   constructor(private reflector: Reflector) {
     super()
+  }
+
+  public handleRequest<TUser>(error: unknown, user: false | TUser): TUser {
+    if (error || !user) throw error || new UnauthorizedError('Invalid access token')
+    return user
   }
 
   public canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {

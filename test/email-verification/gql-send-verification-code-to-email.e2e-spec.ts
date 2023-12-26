@@ -10,23 +10,30 @@ import {EmailVerificationCode} from '../../src/email-verification/entities/email
 import {EmailVerificationSendingLimitService} from '../../src/email-verification/email-verification-sending-limit.service'
 import {GraphqlConfigService} from '../../src/config/graphql/graphql.config.service'
 import {ServerConfigService} from '../../src/config/server/server.config.service'
-// TODO: обновить тесты с учетом нового функционала по отправке писем
-// TODO: замокать отправку кода через unisender
+import MockAdapter from 'axios-mock-adapter'
+import {EmailVerificationService} from '../../src/email-verification/email-verification.service'
 
 // TODO: разбить по отдельным файлам, чтобы уменьшить размер кода
 describe('sendVerificationCodeToEmail', () => {
   let app: INestApplication
   let gqlService: GqlTestService
+  let mockAxios: MockAdapter
 
   beforeEach(async () => {
-    const moduleFixture = await Test.createTestingModule({imports: [AppModule]}).compile()
+    const moduleFixture = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile()
     app = moduleFixture.createNestApplication()
     await app.init()
     gqlService = new GqlTestService(app)
+
+    const emailVerificationService = app.get(EmailVerificationService)
+    // @ts-expect-error mock
+    mockAxios = new MockAdapter(emailVerificationService.unisenderService.axios)
   })
 
   afterEach(async () => {
-    jest.restoreAllMocks()
+    mockAxios.reset()
     const emailVerificationCodeSendingAttemptRepository = app.get(
       getRepositoryToken(EmailVerificationCodeSendingAttempt),
     )
@@ -54,8 +61,7 @@ describe('sendVerificationCodeToEmail', () => {
           {
             message:
               'Field "sendVerificationCodeToEmail" argument "email" of type "String!" is required, but it was not provided.',
-            locations: [{line: 2, column: 7}],
-            code: 'GRAPHQL_VALIDATION_FAILED',
+            code: 'VALIDATION_ERROR',
           },
         ],
       })
@@ -76,9 +82,8 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message: 'must be a valid email address',
-            locations: [{line: 2, column: 7}],
             path: ['sendVerificationCodeToEmail'],
-            code: 'BAD_REQUEST',
+            code: 'VALIDATION_ERROR',
           },
         ],
         data: null,
@@ -100,9 +105,8 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message: 'must be a valid email address',
-            locations: [{line: 2, column: 7}],
             path: ['sendVerificationCodeToEmail'],
-            code: 'BAD_REQUEST',
+            code: 'VALIDATION_ERROR',
           },
         ],
         data: null,
@@ -124,9 +128,8 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message: 'must be a valid email address',
-            locations: [{line: 2, column: 7}],
             path: ['sendVerificationCodeToEmail'],
-            code: 'BAD_REQUEST',
+            code: 'VALIDATION_ERROR',
           },
         ],
         data: null,
@@ -163,10 +166,9 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message:
-              'You have exceeded the limit of email verification requests for the last 10 minutes.',
-            locations: [{line: 2, column: 7}],
+              'Too many attempt to send verification code. Allowed 3 attempts per 10 minutes',
             path: ['sendVerificationCodeToEmail'],
-            code: 'FORBIDDEN',
+            code: 'TOO_MANY_ATTEMPTS',
           },
         ],
         data: null,
@@ -209,10 +211,9 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message:
-              'You have exceeded the limit of email verification requests for the last 10 minutes.',
-            locations: [{line: 2, column: 7}],
+              'Too many attempt to send verification code. Allowed 3 attempts per 10 minutes',
             path: ['sendVerificationCodeToEmail'],
-            code: 'FORBIDDEN',
+            code: 'TOO_MANY_ATTEMPTS',
           },
         ],
         data: null,
@@ -253,10 +254,9 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message:
-              'You have exceeded the limit of email verification requests for the last 10 minutes.',
-            locations: [{line: 2, column: 7}],
+              'Too many attempt to send verification code. Allowed 3 attempts per 10 minutes',
             path: ['sendVerificationCodeToEmail'],
-            code: 'FORBIDDEN',
+            code: 'TOO_MANY_ATTEMPTS',
           },
         ],
         data: null,
@@ -286,8 +286,7 @@ describe('sendVerificationCodeToEmail', () => {
       expect(result.body).toEqual({
         errors: [
           {
-            message: 'Internal Server Error',
-            locations: [{line: 2, column: 7}],
+            message: 'Internal server error',
             path: ['sendVerificationCodeToEmail'],
             code: 'INTERNAL_SERVER_ERROR',
           },
@@ -296,7 +295,7 @@ describe('sendVerificationCodeToEmail', () => {
       })
     })
 
-    it('should throw GraphqlComplexityLimitException', async () => {
+    it('should throw ComplexityLimitError', async () => {
       const graphqlConfigService = app.get(GraphqlConfigService)
       jest.spyOn(graphqlConfigService, 'complexityLimit', 'get').mockReturnValue(0)
 
@@ -316,7 +315,7 @@ describe('sendVerificationCodeToEmail', () => {
         errors: [
           {
             message: 'Query is too complex: 1. Maximum allowed complexity: 0',
-            code: 'GRAPHQL_COMPLEXITY_LIMIT',
+            code: 'COMPLEXITY_LIMIT',
           },
         ],
       })
@@ -346,13 +345,7 @@ describe('sendVerificationCodeToEmail', () => {
       expect(result.body).toEqual({
         errors: [
           {
-            message: 'Request Timeout',
-            locations: [
-              {
-                column: 7,
-                line: 2,
-              },
-            ],
+            message: 'Request timeout error',
             path: ['sendVerificationCodeToEmail'],
             code: 'REQUEST_TIMEOUT',
           },
@@ -360,10 +353,135 @@ describe('sendVerificationCodeToEmail', () => {
         data: null,
       })
     })
+
+    describe('unisender api', () => {
+      it('should throw an error if unisender api returns 204 with failure reason', async () => {
+        const email = 'test@test.com'
+
+        mockAxios.onPost().replyOnce(400, {failed_emails: {[email]: 'unsubscribed'}, code: 204})
+
+        const result = await gqlService.sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'sendVerificationCodeToEmail',
+            variables: {email: {type: 'String!', value: email}},
+          },
+        })
+        expect(result.body).toEqual({
+          errors: [
+            {
+              message:
+                'Email is unsubscribed or invalid. Try send email subscribe request and then try again after email activation.',
+              path: ['sendVerificationCodeToEmail'],
+              code: 'UNAVAILABLE_EMAIL',
+              details: {
+                emailStatus: 'unsubscribed',
+              },
+            },
+          ],
+          data: null,
+        })
+
+        const emailVerificationCodeSendingAttemptRepository = app.get(
+          getRepositoryToken(EmailVerificationCodeSendingAttempt),
+        )
+        const emailVerificationCodeSendingAttempts =
+          await emailVerificationCodeSendingAttemptRepository.find()
+        expect(emailVerificationCodeSendingAttempts).toHaveLength(1)
+        expect(emailVerificationCodeSendingAttempts).toEqual([
+          {
+            id: expect.any(String),
+            email,
+            senderIp: '::ffff:127.0.0.1',
+            createdAt: expect.any(Date),
+          },
+        ])
+      })
+
+      it('should throw an error if unisender api returns 901', async () => {
+        const email = 'test@test.com'
+
+        mockAxios.onPost().replyOnce(403, {code: 901})
+
+        const result = await gqlService.sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'sendVerificationCodeToEmail',
+            variables: {email: {type: 'String!', value: email}},
+          },
+        })
+        expect(result.body).toEqual({
+          errors: [
+            {
+              message: 'Service temporarily unavailable. Try again later.',
+              path: ['sendVerificationCodeToEmail'],
+              code: 'SERVICE_UNAVAILABLE',
+            },
+          ],
+          data: null,
+        })
+
+        const emailVerificationCodeSendingAttemptRepository = app.get(
+          getRepositoryToken(EmailVerificationCodeSendingAttempt),
+        )
+        const emailVerificationCodeSendingAttempts =
+          await emailVerificationCodeSendingAttemptRepository.find()
+        expect(emailVerificationCodeSendingAttempts).toHaveLength(1)
+        expect(emailVerificationCodeSendingAttempts).toEqual([
+          {
+            id: expect.any(String),
+            email,
+            senderIp: '::ffff:127.0.0.1',
+            createdAt: expect.any(Date),
+          },
+        ])
+      })
+
+      it('should throw an internal error if unisender api returns unknown error', async () => {
+        const email = 'test@test.com'
+
+        mockAxios.onPost().replyOnce(400, {code: 555})
+
+        const result = await gqlService.sendRequest({
+          queryType: 'mutation',
+          query: {
+            operation: 'sendVerificationCodeToEmail',
+            variables: {email: {type: 'String!', value: email}},
+          },
+        })
+        expect(result.body).toEqual({
+          errors: [
+            {
+              message: 'Internal server error',
+              path: ['sendVerificationCodeToEmail'],
+              code: 'INTERNAL_SERVER_ERROR',
+            },
+          ],
+          data: null,
+        })
+
+        const emailVerificationCodeSendingAttemptRepository = app.get(
+          getRepositoryToken(EmailVerificationCodeSendingAttempt),
+        )
+        const emailVerificationCodeSendingAttempts =
+          await emailVerificationCodeSendingAttemptRepository.find()
+        expect(emailVerificationCodeSendingAttempts).toHaveLength(1)
+        expect(emailVerificationCodeSendingAttempts).toEqual([
+          {
+            id: expect.any(String),
+            email,
+            senderIp: '::ffff:127.0.0.1',
+            createdAt: expect.any(Date),
+          },
+        ])
+      })
+    })
   })
 
   describe('success', () => {
     it('should send verification code to email if user does not exist', async () => {
+      mockAxios.onPost().replyOnce(200)
+
       const result = await gqlService.sendRequest({
         queryType: 'mutation',
         query: {
@@ -375,8 +493,6 @@ describe('sendVerificationCodeToEmail', () => {
       })
 
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
-
-      // TODO: проверка на отправку email после реализации логики
 
       const userRepository: Repository<User> = app.get(getRepositoryToken(User))
       const users = await userRepository.find()
@@ -419,9 +535,44 @@ describe('sendVerificationCodeToEmail', () => {
           updatedAt: expect.any(Date),
         },
       ])
+
+      expect(mockAxios.history.post.length).toBe(1)
+      const postHistory = mockAxios.history.post[0]
+      expect(postHistory.url).toBe(
+        'https://go1.unisender.ru/ru/transactional/api/v1/email/send.json',
+      )
+      expect(postHistory.method).toBe('post')
+      expect(postHistory.timeout).toBe(15000)
+      expect(postHistory.headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-API-KEY': '1234',
+      })
+      expect(postHistory.data).toBe(
+        JSON.stringify({
+          message: {
+            recipients: [{email: 'test@test.com'}],
+            tags: ['verification'],
+            skip_unsubscribe: 0,
+            global_language: 'en',
+            body: {html: `Your verification code: <b>${emailVerificationCodes[0].code}</b>`},
+            subject: 'Waisy verification code',
+            from_email: 'no-reply@waisy.app',
+            from_name: 'Waisy',
+            track_links: 0,
+            track_read: 0,
+            bypass_global: 0,
+            bypass_unavailable: 0,
+            bypass_unsubscribed: 0,
+            bypass_complained: 0,
+          },
+        }),
+      )
     })
 
     it('should send verification code to email if user exists and there is an active verification code', async () => {
+      mockAxios.onPost().replyOnce(200)
+
       const userRepository: Repository<User> = app.get(getRepositoryToken(User))
       const user = await userRepository.save({email: 'test@test.com'})
 
@@ -443,8 +594,6 @@ describe('sendVerificationCodeToEmail', () => {
         },
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
-
-      // TODO: проверка на отправку email после реализации логики
 
       const users = await userRepository.find()
       expect(users).toHaveLength(1)
@@ -485,9 +634,44 @@ describe('sendVerificationCodeToEmail', () => {
           updatedAt: expect.any(Date),
         },
       ])
+
+      expect(mockAxios.history.post.length).toBe(1)
+      const postHistory = mockAxios.history.post[0]
+      expect(postHistory.url).toBe(
+        'https://go1.unisender.ru/ru/transactional/api/v1/email/send.json',
+      )
+      expect(postHistory.method).toBe('post')
+      expect(postHistory.timeout).toBe(15000)
+      expect(postHistory.headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-API-KEY': '1234',
+      })
+      expect(postHistory.data).toEqual(
+        JSON.stringify({
+          message: {
+            recipients: [{email: 'test@test.com'}],
+            tags: ['verification'],
+            skip_unsubscribe: 0,
+            global_language: 'en',
+            body: {html: `Your verification code: <b>${emailVerificationCodes[0].code}</b>`},
+            subject: 'Waisy verification code',
+            from_email: 'no-reply@waisy.app',
+            from_name: 'Waisy',
+            track_links: 0,
+            track_read: 0,
+            bypass_global: 0,
+            bypass_unavailable: 0,
+            bypass_unsubscribed: 0,
+            bypass_complained: 0,
+          },
+        }),
+      )
     })
 
     it('should send verification code to email if user exists and there is an expired verification code', async () => {
+      mockAxios.onPost().replyOnce(200)
+
       const userRepository: Repository<User> = app.get(getRepositoryToken(User))
       const user = await userRepository.save({email: 'test@test.com'})
 
@@ -509,8 +693,6 @@ describe('sendVerificationCodeToEmail', () => {
         },
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
-
-      // TODO: проверка на отправку email после реализации логики
 
       const users = await userRepository.find()
       expect(users).toHaveLength(1)
@@ -562,9 +744,44 @@ describe('sendVerificationCodeToEmail', () => {
           updatedAt: expect.any(Date),
         },
       ])
+
+      expect(mockAxios.history.post.length).toBe(1)
+      const postHistory = mockAxios.history.post[0]
+      expect(postHistory.url).toBe(
+        'https://go1.unisender.ru/ru/transactional/api/v1/email/send.json',
+      )
+      expect(postHistory.method).toBe('post')
+      expect(postHistory.timeout).toBe(15000)
+      expect(postHistory.headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-API-KEY': '1234',
+      })
+      expect(postHistory.data).toEqual(
+        JSON.stringify({
+          message: {
+            recipients: [{email: 'test@test.com'}],
+            tags: ['verification'],
+            skip_unsubscribe: 0,
+            global_language: 'en',
+            body: {html: `Your verification code: <b>${emailVerificationCodes[1].code}</b>`},
+            subject: 'Waisy verification code',
+            from_email: 'no-reply@waisy.app',
+            from_name: 'Waisy',
+            track_links: 0,
+            track_read: 0,
+            bypass_global: 0,
+            bypass_unavailable: 0,
+            bypass_unsubscribed: 0,
+            bypass_complained: 0,
+          },
+        }),
+      )
     })
 
     it('should send verification code to email if user exists and there is a used verification code', async () => {
+      mockAxios.onPost().replyOnce(200)
+
       const userRepository: Repository<User> = app.get(getRepositoryToken(User))
       const user = await userRepository.save({email: 'test@test.com'})
 
@@ -586,8 +803,6 @@ describe('sendVerificationCodeToEmail', () => {
         },
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
-
-      // TODO: проверка на отправку email после реализации логики
 
       const users = await userRepository.find()
       expect(users).toHaveLength(1)
@@ -639,9 +854,44 @@ describe('sendVerificationCodeToEmail', () => {
           updatedAt: expect.any(Date),
         },
       ])
+
+      expect(mockAxios.history.post.length).toBe(1)
+      const postHistory = mockAxios.history.post[0]
+      expect(postHistory.url).toBe(
+        'https://go1.unisender.ru/ru/transactional/api/v1/email/send.json',
+      )
+      expect(postHistory.method).toBe('post')
+      expect(postHistory.timeout).toBe(15000)
+      expect(postHistory.headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-API-KEY': '1234',
+      })
+      expect(postHistory.data).toEqual(
+        JSON.stringify({
+          message: {
+            recipients: [{email: 'test@test.com'}],
+            tags: ['verification'],
+            skip_unsubscribe: 0,
+            global_language: 'en',
+            body: {html: `Your verification code: <b>${emailVerificationCodes[1].code}</b>`},
+            subject: 'Waisy verification code',
+            from_email: 'no-reply@waisy.app',
+            from_name: 'Waisy',
+            track_links: 0,
+            track_read: 0,
+            bypass_global: 0,
+            bypass_unavailable: 0,
+            bypass_unsubscribed: 0,
+            bypass_complained: 0,
+          },
+        }),
+      )
     })
 
     it('should send verification code to email if user exists and there is no verification code', async () => {
+      mockAxios.onPost().replyOnce(200)
+
       const userRepository: Repository<User> = app.get(getRepositoryToken(User))
       await userRepository.save({email: 'test@test.com'})
 
@@ -655,8 +905,6 @@ describe('sendVerificationCodeToEmail', () => {
         },
       })
       expect(result.body).toStrictEqual({data: {sendVerificationCodeToEmail: true}})
-
-      // TODO: проверка на отправку email после реализации логики
 
       const users = await userRepository.find()
       expect(users).toHaveLength(1)
@@ -698,6 +946,39 @@ describe('sendVerificationCodeToEmail', () => {
           updatedAt: expect.any(Date),
         },
       ])
+
+      expect(mockAxios.history.post.length).toBe(1)
+      const postHistory = mockAxios.history.post[0]
+      expect(postHistory.url).toBe(
+        'https://go1.unisender.ru/ru/transactional/api/v1/email/send.json',
+      )
+      expect(postHistory.method).toBe('post')
+      expect(postHistory.timeout).toBe(15000)
+      expect(postHistory.headers).toMatchObject({
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-API-KEY': '1234',
+      })
+      expect(postHistory.data).toEqual(
+        JSON.stringify({
+          message: {
+            recipients: [{email: 'test@test.com'}],
+            tags: ['verification'],
+            skip_unsubscribe: 0,
+            global_language: 'en',
+            body: {html: `Your verification code: <b>${emailVerificationCodes[0].code}</b>`},
+            subject: 'Waisy verification code',
+            from_email: 'no-reply@waisy.app',
+            from_name: 'Waisy',
+            track_links: 0,
+            track_read: 0,
+            bypass_global: 0,
+            bypass_unavailable: 0,
+            bypass_unsubscribed: 0,
+            bypass_complained: 0,
+          },
+        }),
+      )
     })
   })
 })
