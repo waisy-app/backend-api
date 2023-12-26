@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common'
+import {Injectable, Logger} from '@nestjs/common'
 import {MailingConfigService} from '../config/mailing/mailing.config.service'
 import axios, {AxiosInstance} from 'axios'
 import {isNumber, isString} from '@nestjs/common/utils/shared.utils'
@@ -15,11 +15,11 @@ export class UnisenderService {
   private readonly fromEmail = 'no-reply@waisy.app'
   private readonly fromName = 'Waisy'
   private readonly axios: AxiosInstance
+  private readonly logger = new Logger(UnisenderService.name)
 
   constructor(mailingConfigService: MailingConfigService) {
     this.axios = axios.create({
       timeout: 15000,
-      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -29,6 +29,7 @@ export class UnisenderService {
   }
 
   public async sendEmailVerification(email: string, code: number): Promise<void> {
+    this.logger.debug(`Sending the verification code "${code}" to "${email}"`)
     try {
       await this.sendRequest(this.sendEmailEndpoint, {
         message: {

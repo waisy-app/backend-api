@@ -12,7 +12,6 @@ import {GraphqlModule} from './graphql/graphql.module'
 import {CryptModule} from './crypt/crypt.module'
 import {TypeOrmModule} from './type-orm/type-orm.module'
 // TODO: переписать тесты под нативный test_runner
-// TODO: поправить все e2e тесты под новую архитектуру
 @Module({
   imports: [
     UsersModule,
