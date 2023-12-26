@@ -1,7 +1,7 @@
 import {TypeOrmModuleAsyncOptions, TypeOrmModuleOptions} from '@nestjs/typeorm'
-import {EnvironmentConfigService} from './config/environment/environment.config.service'
-import {ConfigModule} from './config/config.module'
-import {PostgresConfigService} from './config/postgres/postgres.config.service'
+import {EnvironmentConfigService} from '../config/environment/environment.config.service'
+import {ConfigModule} from '../config/config.module'
+import {PostgresConfigService} from '../config/postgres/postgres.config.service'
 
 function createTypeOrmOptions(configService: PostgresConfigService): TypeOrmModuleOptions {
   return {

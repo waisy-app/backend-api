@@ -18,7 +18,7 @@ export class ErrorsService {
     const error = this.getFormattedError(gqlError)
 
     if (this.isBaseError(gqlError)) return error
-    else if (this.isValidationError(error)) error.code = ValidationError.code
+    else if (this.isGraphqlValidationError(error)) error.code = ValidationError.code
     else if (this.isGraphqlBadRequest(error)) error.code = BadRequestError.code
     else {
       this.logger.error(gqlError)
@@ -41,11 +41,8 @@ export class ErrorsService {
     return Boolean(gqlError.extensions?.isBaseError)
   }
 
-  private isValidationError(error: FormattedError): boolean {
-    return (
-      (error.message.startsWith('Variable') && error.code === InternalServerError.code) ||
-      error.code === 'UNPROCESSABLE_ENTITY'
-    )
+  private isGraphqlValidationError(error: FormattedError): boolean {
+    return error.message.startsWith('Variable') && error.code === 'INTERNAL_SERVER_ERROR'
   }
 
   private isGraphqlBadRequest(error: FormattedError): boolean {

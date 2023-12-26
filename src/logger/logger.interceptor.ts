@@ -6,8 +6,8 @@ import {HttpArgumentsHost, WsArgumentsHost} from '@nestjs/common/interfaces'
 import {EnvironmentConfigService} from '../config/environment/environment.config.service'
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(LoggingInterceptor.name)
+export class LoggerInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(LoggerInterceptor.name)
 
   public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (EnvironmentConfigService.isDevelopment) return next.handle()

@@ -1,6 +1,6 @@
 import {Module} from '@nestjs/common'
 import {APP_INTERCEPTOR} from '@nestjs/core'
-import {TimeoutInterceptor} from './timeout.interceptor'
+import {RequestTimeoutInterceptor} from './request-timeout.interceptor'
 import {ConfigModule} from '../config/config.module'
 
 @Module({
@@ -8,7 +8,7 @@ import {ConfigModule} from '../config/config.module'
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: TimeoutInterceptor,
+      useClass: RequestTimeoutInterceptor,
     },
   ],
 })

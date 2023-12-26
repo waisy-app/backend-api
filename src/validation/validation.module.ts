@@ -1,6 +1,7 @@
-import {Module, ValidationPipe} from '@nestjs/common'
+import {Module} from '@nestjs/common'
 import {APP_PIPE} from '@nestjs/core'
-import {validationPipeOptions} from './validation-pipe.options'
+import {validationPipeOptions} from './validation.pipe.options'
+import {ValidationPipe} from './validation.pipe'
 
 @Module({
   providers: [
