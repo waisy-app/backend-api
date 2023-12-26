@@ -14,7 +14,7 @@ export class UnisenderService {
   private readonly sendSubscribeEndpoint = `${this.apiEndpoint}/email/subscribe.json`
   private readonly fromEmail = 'no-reply@waisy.app'
   private readonly fromName = 'Waisy'
-  public readonly axios: AxiosInstance
+  private readonly axios: AxiosInstance
 
   constructor(mailingConfigService: MailingConfigService) {
     this.axios = axios.create({
