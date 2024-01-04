@@ -29,6 +29,8 @@ COPY --chown=node:node . .
 
 USER node
 
+RUN npm run graphql:generate-schema
+
 RUN npm run build:webpack
 
 RUN npm ci --omit=dev && npm cache clean --force

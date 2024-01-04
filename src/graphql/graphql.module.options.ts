@@ -1,7 +1,6 @@
 import {ApolloDriver, ApolloDriverConfig} from '@nestjs/apollo'
 import {ApolloServerPluginLandingPageLocalDefault} from '@apollo/server/plugin/landingPage/default'
 import {GqlModuleAsyncOptions, GqlOptionsFactory} from '@nestjs/graphql'
-import {EnvironmentConfigService} from '../config/environment/environment.config.service'
 import {ConfigModule} from '../config/config.module'
 import {GraphqlConfigService} from '../config/graphql/graphql.config.service'
 import {ErrorsService} from '../errors/errors.service'
@@ -15,9 +14,9 @@ export const graphqlModuleOptions: GqlModuleAsyncOptions<
   imports: [ConfigModule, ErrorsModule],
   inject: [GraphqlConfigService, ErrorsService],
   useFactory: (configService: GraphqlConfigService, errorsService: ErrorsService) => {
-    const isDevelopment = EnvironmentConfigService.isDevelopment
-    const plugins = isDevelopment ? [ApolloServerPluginLandingPageLocalDefault()] : undefined
-    const introspection = isDevelopment
+    const plugins = configService.playground
+      ? [ApolloServerPluginLandingPageLocalDefault()]
+      : undefined
     const autoSchemaFile = configService.autoSchemaBuild && 'schema.gql'
     return {
       playground: false,
@@ -25,8 +24,8 @@ export const graphqlModuleOptions: GqlModuleAsyncOptions<
       includeStacktraceInErrorResponses: false,
       subscriptions: {'graphql-ws': true},
       formatError: errorsService.formatGraphQLError.bind(errorsService),
+      introspection: configService.playground,
       plugins,
-      introspection,
       autoSchemaFile,
     }
   },

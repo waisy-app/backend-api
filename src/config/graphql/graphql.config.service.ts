@@ -12,4 +12,8 @@ export class GraphqlConfigService {
   public get complexityLimit(): number {
     return this.configService.get('GRAPHQL_COMPLEXITY_LIMIT')!
   }
+
+  public get playground(): boolean {
+    return !!this.configService.get('APOLLO_PLAYGROUND')
+  }
 }

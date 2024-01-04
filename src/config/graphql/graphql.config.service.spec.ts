@@ -16,6 +16,7 @@ describe('GraphqlConfigService', () => {
               const config: {[key: string]: boolean | number} = {
                 GRAPHQL_AUTO_SCHEMA_BUILD: true,
                 GRAPHQL_COMPLEXITY_LIMIT: 10,
+                APOLLO_PLAYGROUND: true,
               }
               if (typeof key === 'string') {
                 return config[key]
@@ -42,6 +43,12 @@ describe('GraphqlConfigService', () => {
   describe('get complexityLimit', () => {
     it('should return the correct value from config service', () => {
       expect(service.complexityLimit).toBe(10)
+    })
+  })
+
+  describe('get playground', () => {
+    it('should return the correct value from config service', () => {
+      expect(service.playground).toBe(true)
     })
   })
 })
