@@ -71,3 +71,26 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+# Requirements
+
+- Postgres 16.1
+- Node.js 20.10.0
+
+# Docker compose postgres
+`docker compose -f docker-compose.local-postgres.yml up -d`
+
+# Generate new migration
+1. clear the postgres database of the application
+2. `npm run migration:generate`
+
+# Create new migration
+1. clear the postgres database of the application
+2. `npm run migration:create`
+3. write code to the created migration file
+
+# Run migration
+1. `npm run migration:run`
+
+# Revert migration
+1. `npm run migration:revert`

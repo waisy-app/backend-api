@@ -1,0 +1,32 @@
+version: "3.1"
+services:
+  waisy_postgres_db_dev:
+    image: postgres:16.1
+    ports:
+      - '5444:5432'
+    container_name: 'waisy_postgres_db_dev'
+    volumes:
+      - ./temp-postgres-data/dev-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "waisy"
+      POSTGRES_USER: "waisy"
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+      LANG: 'C'
+      LANGUAGE: 'C'
+      LC_ALL: 'C'
+  waisy_postgres_db_test:
+    image: postgres:16.1
+    ports:
+      - '5443:5432'
+    container_name: 'waisy_postgres_db_test'
+    volumes:
+      - ./temp-postgres-data/test-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "waisy"
+      POSTGRES_USER: "waisy"
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+      LANG: 'C'
+      LANGUAGE: 'C'
+      LC_ALL: 'C'

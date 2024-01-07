@@ -3,6 +3,7 @@
 /node_modules
 error-graph.json
 schema.gql
+/temp-postgres-data
 
 # Logs
 logs

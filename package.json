@@ -7,7 +7,6 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "build:webpack": "nest build --webpack --path tsconfig.build-webpack.json",
     "graphql:generate-schema": "ts-node src/schema-generator.script.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -21,7 +20,11 @@
     "test:watch": "NODE_ENV=test jest --watch",
     "test:cov": "NODE_ENV=test jest --coverage",
     "test:debug": "NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json --runInBand"
+    "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json --runInBand",
+    "migration:generate": "typeorm-ts-node-commonjs -d ormconfig.ts -p true migration:generate src/migrations/migration",
+    "migration:create": "typeorm-ts-node-commonjs migration:create src/migrations/migration -- -d ormconfig.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ormconfig.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ormconfig.ts"
   },
   "engines": {
     "node": ">=20.10.0"
@@ -42,6 +45,7 @@
     "axios": "^1.6.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "graphql-query-complexity": "^0.12.0",
     "http-status-codes": "^2.3.0",

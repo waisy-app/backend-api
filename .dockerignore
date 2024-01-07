@@ -1,12 +1,14 @@
 # Docker
 Dockerfile
 .dockerignore
+docker-compose.local-postgres.yml
 
 # Compiled output
 /dist
 node_modules
 error-graph.json
 schema.gql
+/temp-postgres-data
 
 # Logs
 logs
