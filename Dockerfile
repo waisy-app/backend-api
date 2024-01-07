@@ -1,5 +1,5 @@
 ## Development stage
-FROM amd64/node:18.18-alpine As development
+FROM amd64/node:20.10.0-alpine As development
 
 RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
@@ -15,7 +15,7 @@ RUN npm ci
 COPY --chown=node:node . .
 
 ## Build stage
-FROM amd64/node:18.18-alpine As build
+FROM amd64/node:20.10.0-alpine As build
 
 RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
@@ -37,7 +37,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 
 ## Production stage
-FROM amd64/node:18.18-alpine As production
+FROM amd64/node:20.10.0-alpine As production
 
 RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app

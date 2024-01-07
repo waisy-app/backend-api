@@ -11,8 +11,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.18]
-        postgres-version: [16.0]
+        node-version: [20.10.0]
+        postgres-version: [16.1]
 
     services:
       postgres:

@@ -11,7 +11,6 @@ import {ValidationModule} from './validation/validation.module'
 import {GraphqlModule} from './graphql/graphql.module'
 import {CryptModule} from './crypt/crypt.module'
 import {TypeOrmModule} from './type-orm/type-orm.module'
-// TODO: узнать почему не работают e2e тесты локально
 // TODO: переписать тесты под нативный test_runner
 @Module({
   imports: [
