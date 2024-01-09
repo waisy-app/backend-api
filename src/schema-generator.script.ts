@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import {EmailVerificationResolver} from './email-verification/email-verification.resolver'
 import {RefreshTokenResolver} from './refresh-token/refresh-token.resolver'
 import {UnisenderResolver} from './unisender/unisender.resolver'
+import * as path from 'path'
 
 async function schemaGenerator(): Promise<void> {
   const app = await NestFactory.create(GraphQLSchemaBuilderModule)
@@ -17,7 +18,7 @@ async function schemaGenerator(): Promise<void> {
     UnisenderResolver,
   ])
   const schemaString = printSchema(schema)
-  const schemaFilePath = 'schema.gql'
+  const schemaFilePath = path.join(__dirname, '../schema.gql')
   fs.writeFileSync(schemaFilePath, schemaString)
 }
 
