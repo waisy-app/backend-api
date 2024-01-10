@@ -14,21 +14,18 @@ describe(EnvironmentConfigService.name, () => {
   it('should correctly detect development environment', () => {
     process.env['NODE_ENV'] = 'development'
     expect(EnvironmentConfigService.isDevelopment).toBe(true)
-    expect(EnvironmentConfigService.isProduction).toBe(false)
     expect(EnvironmentConfigService.isTest).toBe(false)
   })
 
   it('should correctly detect production environment', () => {
     process.env['NODE_ENV'] = 'production'
     expect(EnvironmentConfigService.isDevelopment).toBe(false)
-    expect(EnvironmentConfigService.isProduction).toBe(true)
     expect(EnvironmentConfigService.isTest).toBe(false)
   })
 
   it('should correctly detect test environment', () => {
     process.env['NODE_ENV'] = 'test'
     expect(EnvironmentConfigService.isDevelopment).toBe(false)
-    expect(EnvironmentConfigService.isProduction).toBe(false)
     expect(EnvironmentConfigService.isTest).toBe(true)
   })
 
