@@ -29,8 +29,6 @@ COPY --chown=node:node . .
 
 USER node
 
-RUN npm run graphql:generate-schema
-
 RUN npm run build
 
 RUN npm ci --omit=dev && npm cache clean --force
@@ -45,7 +43,6 @@ WORKDIR /usr/src/app
 # Copy the bundled code from the build stage to the production image
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
-COPY --chown=node:node --from=build /usr/src/app/schema.gql ./schema.gql
 
 USER node
 

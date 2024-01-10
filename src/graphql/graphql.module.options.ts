@@ -17,7 +17,6 @@ export const graphqlModuleOptions: GqlModuleAsyncOptions<
     const plugins = configService.playground
       ? [ApolloServerPluginLandingPageLocalDefault()]
       : undefined
-    const autoSchemaFile = configService.autoSchemaBuild && 'schema.gql'
     return {
       playground: false,
       autoTransformHttpErrors: false,
@@ -26,7 +25,7 @@ export const graphqlModuleOptions: GqlModuleAsyncOptions<
       formatError: errorsService.formatGraphQLError.bind(errorsService),
       introspection: configService.playground,
       plugins,
-      autoSchemaFile,
+      autoSchemaFile: 'schema.gql',
     }
   },
 }

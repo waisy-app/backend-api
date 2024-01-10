@@ -34,12 +34,6 @@ describe('GraphqlConfigService', () => {
     expect(service).toBeDefined()
   })
 
-  describe('get autoSchemaBuild', () => {
-    it('should return the correct value from config service', () => {
-      expect(service.autoSchemaBuild).toBe(true)
-    })
-  })
-
   describe('get complexityLimit', () => {
     it('should return the correct value from config service', () => {
       expect(service.complexityLimit).toBe(10)
