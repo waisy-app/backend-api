@@ -46,9 +46,6 @@ jobs:
           npm run format:check
           npm run lint:check
 
-      - name: Generate GraphQL schema
-        run: npm run graphql:generate-schema
-
       - name: Execute Tests
         run: |
           npm test
