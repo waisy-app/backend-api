@@ -12,6 +12,7 @@ async function bootstrap(): Promise<void> {
   const loggerInstance = buildLoggerInstance(loggerConfigService.loggerLevel)
   app.useLogger(WinstonModule.createLogger({instance: loggerInstance}))
   const serverConfigService = app.get(ServerConfigService)
+  app.disable('x-powered-by')
   await app.listen(serverConfigService.port)
 }
 

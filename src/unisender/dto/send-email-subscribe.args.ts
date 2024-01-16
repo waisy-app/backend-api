@@ -3,7 +3,7 @@ import {IsEmail} from 'class-validator'
 
 @ArgsType()
 export class SendEmailSubscribeArgs {
-  @Field()
+  @Field({description: 'Email address to send a subscribe link.'})
   @IsEmail({}, {message: 'must be a valid email address'})
   email: string
 }

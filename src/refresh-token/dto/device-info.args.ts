@@ -4,7 +4,7 @@ import {AuthConfigService as AuthConfig} from '../../config/auth/auth.config.ser
 
 @ArgsType()
 export class DeviceInfoArgs {
-  @Field({description: 'Device tag'})
+  @Field({description: 'Device tag for the refresh token.'})
   @IsString({message: 'must be a string'})
   @IsNotEmpty({message: 'must not be empty'})
   @MaxLength(AuthConfig.maxDeviceInfoLength, {

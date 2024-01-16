@@ -7,6 +7,7 @@ import {User} from '../users/entities/user.entity'
 import {RefreshTokenService} from './refresh-token.service'
 import {Tokens} from './models/tokens.model'
 import {DeviceInfoArgs} from './dto/device-info.args'
+import {resolverDescriptions} from './refresh-token.resolver.descriptions'
 
 @Resolver()
 export class RefreshTokenResolver {
@@ -14,7 +15,7 @@ export class RefreshTokenResolver {
 
   @SkipJwtAccessTokenGuard()
   @UseGuards(JwtRefreshTokenGuard)
-  @Mutation(() => Tokens, {description: 'Refresh access token and refresh token'})
+  @Mutation(() => Tokens, {description: resolverDescriptions.refreshTokens})
   public async refreshTokens(
     @CurrentUser() user: User,
     @Args() {deviceInfo}: DeviceInfoArgs,
@@ -23,9 +24,7 @@ export class RefreshTokenResolver {
     return this.tokenService.generateAndSaveTokens(user, deviceInfo)
   }
 
-  @Mutation(() => Boolean, {
-    description: 'Logout user by deactivating refresh token for device',
-  })
+  @Mutation(() => Boolean, {description: resolverDescriptions.deactivateRefreshToken})
   public async deactivateRefreshToken(
     @CurrentUser() user: User,
     @Args() {deviceInfo}: DeviceInfoArgs,
@@ -34,17 +33,13 @@ export class RefreshTokenResolver {
     return true
   }
 
-  @Mutation(() => Boolean, {
-    description: 'Logout user by deactivating all refresh tokens',
-  })
+  @Mutation(() => Boolean, {description: resolverDescriptions.deactivateAllRefreshTokens})
   public async deactivateAllRefreshTokens(@CurrentUser() user: User): Promise<true> {
     await this.tokenService.deactivateTokensByUser(user)
     return true
   }
 
-  @Query(() => [String], {
-    description: 'Get all active devices for user',
-  })
+  @Query(() => [String], {description: resolverDescriptions.getActiveDevices})
   public async getActiveDevices(@CurrentUser() user: User): Promise<string[]> {
     return this.tokenService.getActiveDevicesByUser(user)
   }

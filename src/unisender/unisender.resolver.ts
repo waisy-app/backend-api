@@ -4,6 +4,7 @@ import {SkipJwtAccessTokenGuard} from '../refresh-token/decorators/skip-jwt-acce
 import {EmailVerificationSendingLimitService} from '../email-verification/email-verification-sending-limit.service'
 import {ClientIp} from '../graphql/client-ip.decorator'
 import {SendEmailSubscribeArgs} from './dto/send-email-subscribe.args'
+import {resolverDescriptions} from './unisender.resolver.descriptions'
 
 @Resolver()
 export class UnisenderResolver {
@@ -13,10 +14,7 @@ export class UnisenderResolver {
   ) {}
 
   @SkipJwtAccessTokenGuard()
-  @Mutation(() => Boolean, {
-    description:
-      'Send email with subscribe link. Used for allow send any emails to provided email address',
-  })
+  @Mutation(() => Boolean, {description: resolverDescriptions.sendEmailSubscribe})
   public async sendEmailSubscribe(
     @ClientIp() clientIp: string,
     @Args() {email}: SendEmailSubscribeArgs,

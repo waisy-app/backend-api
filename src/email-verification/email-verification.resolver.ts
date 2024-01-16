@@ -8,6 +8,7 @@ import {EmailVerificationInputLimitService} from './email-verification-input-lim
 import {VerifyEmailCodeArgs} from './dto/verify-email-code.args'
 import {Tokens} from '../refresh-token/models/tokens.model'
 import {UnauthorizedError} from '../errors/general-errors/unauthorized.error'
+import {resolverDescriptions} from './email-verification.resolver.descriptions'
 
 @Resolver()
 export class EmailVerificationResolver {
@@ -18,7 +19,7 @@ export class EmailVerificationResolver {
   ) {}
 
   @SkipJwtAccessTokenGuard()
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, {description: resolverDescriptions.sendVerificationCodeToEmail})
   public async sendVerificationCodeToEmail(
     @Args() {email}: SendVerificationCodeToEmailArgs,
     @ClientIp() clientIp: string,
@@ -29,7 +30,7 @@ export class EmailVerificationResolver {
   }
 
   @SkipJwtAccessTokenGuard()
-  @Mutation(() => Tokens)
+  @Mutation(() => Tokens, {description: resolverDescriptions.verifyEmailCode})
   public async verifyEmailCode(
     @ClientIp() senderIp: string,
     @Args() {email, code, deviceInfo}: VerifyEmailCodeArgs,
