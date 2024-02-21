@@ -31,6 +31,8 @@ export class EmailVerificationService {
     const user = await this.usersService.getOrCreateUserByEmail(email)
     const verificationCode = await this.getOrCreateVerificationCodeByUser(user)
 
+    this.logger.debug(`Sending verification code "${verificationCode.code}" to email "${email}"`)
+
     await this.unisenderService.sendEmailVerification(email, verificationCode.code)
   }
 
