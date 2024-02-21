@@ -3,7 +3,7 @@ import {InternalServerError} from '../errors/general-errors/internal-server.erro
 import {ValidationError} from '../errors/general-errors/validation.error'
 import {RequestTimeoutError} from '../errors/general-errors/request-timeout.error'
 import {ComplexityLimitError} from '../errors/general-errors/complexity-limit.error'
-import {ForbiddenError} from 'src/errors/general-errors/forbidden.error'
+import {ForbiddenError} from '../errors/general-errors/forbidden.error'
 
 export const resolverDescriptions = {
   createProfile: `

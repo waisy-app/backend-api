@@ -1,11 +1,11 @@
 import {Args, Mutation, Query, Resolver} from '@nestjs/graphql'
 import {Profile} from './models/profile.model'
 import {ProfileService} from './profile.service'
-import {CurrentUser} from 'src/refresh-token/decorators/current-user.decorator'
-import {User} from 'src/users/entities/user.entity'
+import {CurrentUser} from '../refresh-token/decorators/current-user.decorator'
+import {User} from '../users/entities/user.entity'
 import {CreateProfileArgs} from './dto/create-profile.args'
 import {resolverDescriptions} from './profile.resolver.descriptions'
-import {ForbiddenError} from 'src/errors/general-errors/forbidden.error'
+import {ForbiddenError} from '../errors/general-errors/forbidden.error'
 
 const MAX_PROFILES = 1
 

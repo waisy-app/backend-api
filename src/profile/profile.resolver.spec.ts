@@ -1,6 +1,6 @@
 import {Test, TestingModule} from '@nestjs/testing'
 import {ProfileResolver} from './profile.resolver'
-import {User} from 'src/users/entities/user.entity'
+import {User} from '../users/entities/user.entity'
 import {ProfileService} from './profile.service'
 
 describe('ProfileResolver', () => {

@@ -34,39 +34,21 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
-
-# Notes
-- Turn off VPN while the e2e tests are running
-
 # Requirements
 
 - Postgres 16.1
 - Node.js 20.10.0
 
-# Docker compose postgres
-`docker compose -f docker-compose.local-postgres.yml up -d`
-
 # Generate new migration
 1. clear the postgres database of the application
-2. `npm run migration:generate`
+2. `npm run migration:run`
+3. `npm run migration:generate`
 
 # Create new migration
 1. clear the postgres database of the application
-2. `npm run migration:create`
-3. write code to the created migration file
+2. `npm run migration:run`
+3. `npm run migration:create`
+4. write code to the created migration file
 
 # Run migration
 1. `npm run migration:run`
@@ -91,26 +73,3 @@ Nest is [MIT licensed](LICENSE).
 9. `npm run test`
 10. `npm run test:e2e`
 11. Push commit
-
-# Requirements
-
-- Postgres 16.1
-- Node.js 20.10.0
-
-# Docker compose postgres
-`docker compose -f docker-compose.local-postgres.yml up -d`
-
-# Generate new migration
-1. clear the postgres database of the application
-2. `npm run migration:generate`
-
-# Create new migration
-1. clear the postgres database of the application
-2. `npm run migration:create`
-3. write code to the created migration file
-
-# Run migration
-1. `npm run migration:run`
-
-# Revert migration
-1. `npm run migration:revert`

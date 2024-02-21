@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common'
 import {Profile as ProfileModel} from './models/profile.model'
 import {Profile} from './entities/profile.entity'
-import {User} from 'src/users/entities/user.entity'
+import {User} from '../users/entities/user.entity'
 import {Repository} from 'typeorm'
 import {InjectRepository} from '@nestjs/typeorm'
 
