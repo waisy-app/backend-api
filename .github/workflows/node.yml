@@ -18,10 +18,11 @@ jobs:
       postgres:
         image: postgres:${{ matrix.postgres-version }}
         ports:
-          - 5443:5432
+          - 5432:5432
         env:
-          POSTGRES_PASSWORD: 1234
-          POSTGRES_USER: waisy
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
